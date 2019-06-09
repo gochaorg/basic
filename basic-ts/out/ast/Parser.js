@@ -97,6 +97,11 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
+     * letStatement ::= SourceLineBeginLex StatementLex(LET)
+     */
+    Parser.prototype.letStatement = function () {
+    };
+    /**
      * expression ::= powExpression | bracketExpression
      */
     Parser.prototype.expression = function () {

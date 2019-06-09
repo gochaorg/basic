@@ -114,6 +114,13 @@ export class Parser {
     }
 
     /**
+     * letStatement ::= SourceLineBeginLex StatementLex(LET)
+     */
+    letStatement() {
+
+    }
+
+    /**
      * expression ::= powExpression | bracketExpression
      */
     expression():Expression|null {
