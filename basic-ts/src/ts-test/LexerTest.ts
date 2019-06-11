@@ -1,4 +1,4 @@
-import * as Ast from './Lexer'
+import * as Ast from '../ts/ast/Lexer'
 
 let lexs = Ast.lexems( ' RUN REM LIST', [Ast.WhiteSpaceLex.parse,Ast.KeyWordLex.parser(['RUN','REM','LIST'])] )
 console.log( lexs )

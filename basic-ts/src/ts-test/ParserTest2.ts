@@ -1,4 +1,4 @@
-import * as Basic from './Parser'
+import * as Basic from '../ts/ast/Parser'
 
 console.log('== Basic parser ==')
 // console.log(
@@ -17,16 +17,20 @@ interface TestExp {
 
 let testExpressions:TestExp[] = [
     //{ code: '10 + 8*3', parseFn: (p)=>p.expression() },
-    //{ code: '10 - 8/3', parseFn: (p)=>p.expression() },
-    { code: 'A + B ^ C', parseFn: (p)=>p.expression(), debug:false },
-    { code: 'A IMP B', parseFn: (p)=>p.expression() },
-    { code: 'A EQV B OR ( C XOR D OR E AND F )', parseFn: (p)=>p.expression(), json:true },
-    { code: 'NOT B AND E', parseFn: (p)=>p.expression() },
-    { code: '2 < 3 AND 3 > 2 AND 4 = 4', parseFn: (p)=>p.expression(), json:true },
-    { code: '2 <= 3 AND 3 => 2 AND 4 <> 5', parseFn: (p)=>p.expression(), json:true },
-    { code: '2 => 3 AND 3 >= 2 AND 4 >< 5', parseFn: (p)=>p.expression(), json:true },
-    { code: '-1', parseFn: (p)=>p.expression(), json:true },
-    { code: '-1-2', parseFn: (p)=>p.expression(), json:true },
+    { code: '10 REM hello', parseFn: (p)=>p.statement(), json:true },
+    { code: '10 LET a = 1', parseFn: (p)=>p.statement(), json:true },
+    { code: '10 LET b = c < d', parseFn: (p)=>p.statement(), json:true },
+    { code: 
+        '10 REM cmnt\n'+
+        '20 LET b = c < d'
+        , parseFn: (p)=>p.statements() },
+    { code: 
+        '10 REM cmnt\n'+
+        '20 LET b = a\n'+
+        'RUN 10'
+        , parseFn: (p)=>p.statements()
+        , debug: false
+     },
 ]
 
 testExpressions.forEach( texp => {

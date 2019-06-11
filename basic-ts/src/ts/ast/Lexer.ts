@@ -199,8 +199,10 @@
      * Лексема начала новой строки
      */
     export class NewLineLex extends KeyWordLex {
+        readonly kind:string
         constructor(keyWord:string, begin?:number, end?:number){
             super(keyWord, begin,end)
+            this.kind = 'NewLineSeparator'
         }
         static parse = KeyWordLex.parser(
             ['\n\r', '\r\n', '\n', '\r'], 
@@ -212,8 +214,10 @@
      * Лексема встроенного оператора
      */
     export class OperatorLex extends KeyWordLex {
+        readonly kind:string
         constructor(keyWord:string, begin?:number, end?:number){
             super(keyWord, begin,end)
+            this.kind = 'OperatorLex'
         }
         static parse = KeyWordLex.parser(
             [
@@ -249,13 +253,16 @@
     }
 
     export class StatementLex extends KeyWordLex {
+        readonly kind:string
         constructor(keyWord:string, begin?:number, end?:number){
             super(keyWord, begin,end)
+            this.kind = 'StatementLex'
         }
         static parse = KeyWordLex.parser(
-            [
-                // Оператор присвоения значения переменной
-                'LET',
+            [                
+                'LET', // Оператор присвоения значения переменной
+                'RUN', 
+                'LIST', 
             ], 
             (kw,begin,end)=>{return new StatementLex(kw,begin,end)}
             )
@@ -271,9 +278,11 @@
      */
     export class RemLex extends AbstractLex {
         readonly comment:string
+        readonly kind:string
         constructor(cmnt:string, begin?:number, end?:number){
             super(begin,end)
             this.comment = cmnt
+            this.kind = 'RemLex'
         }
 
         static parse(str:string, off:number):Lex|null {
@@ -305,9 +314,13 @@
      */
     export class NumberLex extends AbstractLex {
         readonly value:number
-        constructor(val:number, begin?:number, end?:number){
+        readonly kind:string
+        readonly integer:boolean
+        constructor(val:number, integer:boolean, begin?:number, end?:number){
             super(begin,end)
             this.value = val
+            this.integer = integer
+            this.kind = 'NumberLiteral'
         }
         static parseOct(str:string, off:number):Lex|null {
             //console.log("parseOct")
@@ -331,7 +344,7 @@
                 off++
             }
             let end = off
-            return new NumberLex(num,begin,end)
+            return new NumberLex(num,true,begin,end)
         }
         static parseHex(str:string, off:number):Lex|null {
             //console.log("parseHex")
@@ -355,7 +368,7 @@
                 off++
             }
             let end = off
-            return new NumberLex(num,begin,end)
+            return new NumberLex(num,true,begin,end)
         }
         static parseDec(str:string, off:number):Lex|null {
             //console.log("parseDec")
@@ -377,15 +390,23 @@
             */
             let m1 = head.match( /^([+\-]?\d+)((\.\d+)(([eEdD])([+\-]?\d+))?)?([%\#!])?/ )
             if( m1 ){
+                let integer = true
                 let p1 = m1[1];
                 if( m1[3] ) p1 = p1 + m1[3] //float part
                 if( m1[5] && (m1[5]=='e' || m1[5]=='E') ){
                     p1 = p1 + m1[4] // expo
+                    integer = false
+                }
+                if( m1[5] && (m1[5]=='d' || m1[5]=='D') ){
+                    integer = false
+                }
+                if( m1[3] && m1[3].length>0 ){
+                    integer = false
                 }
                 let num = parseFloat(p1)
                 let begin = off
                 let end = off + m1[0].length
-                return new NumberLex(num,begin,end)
+                return new NumberLex(num,integer,begin,end)
             }
             return null            
         }
@@ -413,9 +434,11 @@
      */
     export class StringLex extends AbstractLex {
         readonly value:string
+        readonly kind:string
         constructor(val:string, begin?:number, end?:number){
             super(begin,end)
             this.value = val
+            this.kind = 'StringLiteral'
         }
         static parse(str:string, off:number):Lex|null {
             if( off>=str.length )return null
@@ -452,9 +475,11 @@
      */
     export class IDLex extends AbstractLex {
         readonly id:string
+        readonly kind:string
         constructor(id:string, begin?:number, end?:number){
             super(begin,end)
             this.id = id
+            this.kind = 'ID'
         }
         static parse(str:string, off:number):Lex|null {
             if( off>=str.length )return null
@@ -487,9 +512,11 @@
      */
     export class SourceLineBeginLex extends AbstractLex {
         readonly line:number
+        readonly kind:string
         constructor(line:number, begin:number, end:number){
             super(begin,end)
             this.line = line
+            this.kind = 'SourceLine'
         }
     }
 

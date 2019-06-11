@@ -6,12 +6,15 @@ import {
     StringLex,
     OperatorLex,
     KeyWordLex,
-    IDLex
+    IDLex,
+    StatementLex
 } from './Lexer';
 import { SRemStatement, IRemStatement, ARemStatement } from './RemStatement';
 import { Statement } from './Statement';
 import { SStatements } from './Statements';
 import { ConstExpression, Expression, BinaryOpExpression, UnaryOpExpression, VarRefExpression } from './OperatorExp';
+import { SLetStatement, ILetStatement, ALetStatement } from './LetStatement';
+import { SRunStatement, IRunStatement, ARunStatement } from './RunStatement';
 
 /**
  * Парсинг BASIC
@@ -55,6 +58,8 @@ export class Parser {
         let firstLex : Lex | null = null
         let lastLex :  Lex | null = null
 
+        this.log("statements() lines:", lines)
+
         for( let li=0; li<lines.length; li++ ){
             const lineLex = lines[li]
 
@@ -65,12 +70,18 @@ export class Parser {
                 lastLex = lineLex[lineLex.length-1]
             }
 
+            this.log("statements() line:", lineLex)
+
             const lineParser = new Parser(lineLex)
-            const lineStatement = lineParser.statement()
-            if( lineStatement ){
-                res.push( lineStatement )
-            }else {
-                throw new Error( "can't parse line: "+lineLex )
+            lineParser.debug = this.debug
+
+            while( !lineParser.ptr.eof ){
+                const lineStatement = lineParser.statement()
+                if( lineStatement ){
+                    res.push( lineStatement )
+                }else {
+                    throw new Error( "can't parse line: "+JSON.stringify(lineParser.ptr.gets(5)) )
+                }
             }
         }
 
@@ -82,10 +93,23 @@ export class Parser {
     }
 
     /**
-     * statement ::= remStatement
+     * statement ::= remStatement 
+     *             | letStatement
+     *             | runStatement
      */
-    statement() {
-        return this.remStatement()
+    statement():Statement|null {
+        this.log('statement() ptr=',this.ptr.gets(3))
+
+        const remStmt = this.remStatement()
+        if( remStmt )return remStmt
+
+        const letStmt = this.letStatement()
+        if( letStmt )return letStmt
+
+        const runStmt = this.runStatement()
+        if( runStmt )return runStmt
+
+        return null
     }
 
     /**
@@ -114,10 +138,116 @@ export class Parser {
     }
 
     /**
-     * letStatement ::= SourceLineBeginLex StatementLex(LET)
+     * letStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                  StatementLex(LET) IDLex OperatorLex(=) expression
      */
-    letStatement() {
+    letStatement():ALetStatement|null {
+        if( this.ptr.eof )return null
 
+        let lineNum : number | undefined = undefined
+        let lineNumLex = this.ptr.get(0)
+        let off = 0
+        if( lineNumLex instanceof SourceLineBeginLex 
+            || lineNumLex instanceof NumberLex 
+        ){
+            if( lineNumLex instanceof SourceLineBeginLex ){
+                lineNum = lineNumLex.line
+            }
+            if( lineNumLex instanceof NumberLex ){
+                lineNum = lineNumLex.value
+            }
+            off = 1
+        }
+
+        let lexLet = this.ptr.get(off)
+        if( lexLet instanceof StatementLex && 
+            lexLet.keyWord == 'LET'
+        ){
+            let [ lexId, lexAssign ] = this.ptr.fetch(off+1,2)
+            if( lexAssign instanceof OperatorLex && lexAssign.keyWord == '=' 
+            &&  lexId instanceof IDLex
+            ){
+                // parsing...
+                this.ptr.push()
+                let begin = this.ptr.get() || lexLet
+
+                this.ptr.move(off+3)
+                let exp = this.expression()
+                if( exp ){
+                    this.ptr.drop()
+                    let end = exp.rightTreeLex || begin
+                    if( lineNum ){
+                        return new SLetStatement(begin,end,lexId,exp)
+                    }else{
+                        return new ILetStatement(begin,end,lexId,exp)
+                    }
+                }else{
+                    // syntax error
+                    this.ptr.pop()
+                    return null
+                }
+            }else{
+                // syntax error
+                return null
+            }
+        }
+
+        return null
+    }
+
+    /**
+     * runStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                  StatementLex(RUN) [lineNumber : NumberLex]
+     */
+    runStatement():ARunStatement|null {
+        if( this.ptr.eof )return null
+        this.log('runStatement() ptr=',this.ptr.gets(3))
+
+        let lineNum : number | undefined = undefined
+        let lineNumLex = this.ptr.get(0)
+        let off = 0
+        if( lineNumLex instanceof SourceLineBeginLex 
+            || lineNumLex instanceof NumberLex 
+        ){
+            if( lineNumLex instanceof SourceLineBeginLex ){
+                lineNum = lineNumLex.line
+            }
+            if( lineNumLex instanceof NumberLex ){
+                lineNum = lineNumLex.value
+            }
+            off = 1
+        }
+
+        let runLex = this.ptr.get(off)
+        if( runLex instanceof StatementLex && 
+            runLex.keyWord == 'RUN'
+        ){
+            this.log('runStatement() RUN')
+
+            let runLineLex = this.ptr.get(off+1)
+            if( runLineLex instanceof NumberLex ){
+                off+=2
+                this.ptr.move(off)
+                this.log('runStatement() move ',off, 
+                    { eof: this.ptr.eof
+                    , gets3: this.ptr.gets(3)
+                    }
+                )
+
+                return lineNum != undefined ?
+                    new SRunStatement(lineNumLex || runLex, runLineLex, runLineLex) :
+                    new IRunStatement(lineNumLex || runLex, runLineLex, runLineLex)
+            }
+
+            off+=1
+            this.ptr.move(off)
+
+            return lineNum != undefined ?
+                new SRunStatement(lineNumLex || runLex, runLex) :
+                new IRunStatement(lineNumLex || runLex, runLex)
+        }
+
+        return null
     }
 
     /**
