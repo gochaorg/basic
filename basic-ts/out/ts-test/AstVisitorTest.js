@@ -28,7 +28,9 @@ Ast.visit(ast1, {
         end: function (statements) { console.log("END Statements (" + statements.statements.length + ")"); }
     },
     rem: {
-        begin: function (v) { console.log("COMMENT " + v.rem.comment); }
+        begin: function (v) {
+            console.log("COMMENT " + v.rem.comment + " " + v.sourceLine);
+        }
     },
     let: {
         begin: function (v) {

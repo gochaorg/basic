@@ -53,8 +53,8 @@ function walk(ts, visitor) {
         }
     }
     //#endregion
-    //#region ARemStatement
-    if (ts.value instanceof RemStatement_1.ARemStatement) {
+    //#region RemStatement
+    if (ts.value instanceof RemStatement_1.RemStatement) {
         if (visitor.rem && visitor.rem.begin) {
             visitor.rem.begin(ts.value, ts);
         }

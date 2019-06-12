@@ -13,30 +13,18 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ARunStatement = /** @class */ (function () {
+var Statement_1 = require("./Statement");
+var ARunStatement = /** @class */ (function (_super) {
+    __extends(ARunStatement, _super);
     function ARunStatement(begin, end, line) {
-        this.begin = begin;
-        this.end = end;
-        this.line = line;
-        this.kind = 'Run';
+        var _this = _super.call(this) || this;
+        _this.begin = begin;
+        _this.end = end;
+        _this.line = line;
+        _this.kind = 'Run';
+        return _this;
     }
     return ARunStatement;
-}());
+}(Statement_1.Statement));
 exports.ARunStatement = ARunStatement;
-var IRunStatement = /** @class */ (function (_super) {
-    __extends(IRunStatement, _super);
-    function IRunStatement() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return IRunStatement;
-}(ARunStatement));
-exports.IRunStatement = IRunStatement;
-var SRunStatement = /** @class */ (function (_super) {
-    __extends(SRunStatement, _super);
-    function SRunStatement() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return SRunStatement;
-}(ARunStatement));
-exports.SRunStatement = SRunStatement;
 //# sourceMappingURL=RunStatement.js.map

@@ -13,30 +13,18 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ARemStatement = /** @class */ (function () {
-    function ARemStatement(begin, end, rem) {
-        this.begin = begin;
-        this.end = end;
-        this.rem = rem;
-        this.kind = 'Rem';
+var Statement_1 = require("./Statement");
+var RemStatement = /** @class */ (function (_super) {
+    __extends(RemStatement, _super);
+    function RemStatement(begin, end, rem) {
+        var _this = _super.call(this) || this;
+        _this.begin = begin;
+        _this.end = end;
+        _this.rem = rem;
+        _this.kind = 'Rem';
+        return _this;
     }
-    return ARemStatement;
-}());
-exports.ARemStatement = ARemStatement;
-var SRemStatement = /** @class */ (function (_super) {
-    __extends(SRemStatement, _super);
-    function SRemStatement() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return SRemStatement;
-}(ARemStatement));
-exports.SRemStatement = SRemStatement;
-var IRemStatement = /** @class */ (function (_super) {
-    __extends(IRemStatement, _super);
-    function IRemStatement() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return IRemStatement;
-}(ARemStatement));
-exports.IRemStatement = IRemStatement;
+    return RemStatement;
+}(Statement_1.Statement));
+exports.RemStatement = RemStatement;
 //# sourceMappingURL=RemStatement.js.map

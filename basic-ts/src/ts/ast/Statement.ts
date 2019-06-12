@@ -1,28 +1,26 @@
-import { Lex } from './Lexer'
+import { Lex, SourceLineBeginLex } from './Lexer'
 
 /**
  * Некий кусок кода, который по традиции должен умещаться в одной строке
  */
-export interface Statement {
+export abstract class Statement {
     /**
      * Начальная лексема
      */
-    readonly begin:Lex
+    abstract readonly begin:Lex
 
     /**
      * Конечная лексема
      */
-    readonly end:Lex
-}
+    abstract readonly end:Lex
 
-/**
- * Некий кусок кода, который имеет номер строки
- */
-export interface SourceStatement extends Statement {    
-}
-
-/**
- * Некий кусок кода, который не имеет кода строки и должен быть исполнен прямо сейчас
- */
-export interface ImmediateStatement extends Statement {
+    /**
+     * Номер строки
+     */
+    get sourceLine():number|undefined {
+        if( this.begin instanceof SourceLineBeginLex ){
+            return this.begin.line
+        }
+        return undefined
+    }
 }

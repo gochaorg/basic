@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var Parser_1 = require("../ast/Parser");
 /**
  * Исходная строка
  */
@@ -15,10 +16,18 @@ exports.SourceLine = SourceLine;
  * Исходный текст
  */
 var SourceUnit = /** @class */ (function () {
+    /**
+     * Конструктор
+     * @param sample образец для копирования
+     */
     function SourceUnit(sample) {
+        /**
+         * Набор строк исхдного текста
+         */
         this.sourceLines = [];
+        //#region lines : SourceLine
         this.linesCache = null;
-        if (sample != null) {
+        if (sample) {
             for (var li in sample.sourceLines) {
                 this.sourceLines[li] = sample.sourceLines[li];
             }
@@ -37,6 +46,7 @@ var SourceUnit = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    //#endregion
     /**
      * Возвращает исходную строку (номер, строка / индекс) по ее номеру
      * @param line номер строки
@@ -70,6 +80,37 @@ var SourceUnit = /** @class */ (function () {
         cln.sourceLines.push(new SourceLine(line, code));
         cln.sourceLines = cln.sourceLines.sort(function (a, b) { return a.line - b.line; });
         return cln;
+    };
+    /**
+     * Парсинг исходного текста
+     * @param source исходный текст
+     * @param presult результат парсинга
+     */
+    SourceUnit.prototype.parse = function (source, presult) {
+        if (source) {
+            var parser = Parser_1.Parser.create(source);
+            var stmts = parser.statements();
+            var res = this;
+            if (stmts) {
+                var sstmts = [];
+                //const istmts:
+                if (presult && presult.statments) {
+                    presult.statments(stmts);
+                }
+                for (var _i = 0, _a = stmts.statements; _i < _a.length; _i++) {
+                    var st = _a[_i];
+                    if (st.sourceLine) {
+                        res = res.set(st.sourceLine, st);
+                        sstmts.push(st);
+                    }
+                }
+                if (presult && presult.sources) {
+                    presult.sources(sstmts);
+                }
+            }
+            return res;
+        }
+        return this;
     };
     return SourceUnit;
 }());

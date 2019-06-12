@@ -1,4 +1,6 @@
 import { Statement } from "../ast/Statement";
+import { Parser } from "../ast/Parser";
+import { AStatements } from "../ast/Statements";
 
 /**
  * Исходная строка
@@ -13,18 +15,44 @@ export class SourceLine {
 }
 
 /**
+ * Результаты парсинга
+ */
+export interface ParseResult {
+    /**
+     * Выражения парсинга
+     * @param statements выражения
+     */
+    statments?(statements:AStatements):any
+
+    /**
+     * Выражения включенные в исходники
+     * @param statements выражения
+     */
+    sources?(statements:Statement[]):any
+}
+
+/**
  * Исходный текст
  */
-export class SourceUnit {    
+export class SourceUnit {
+    /**
+     * Набор строк исхдного текста
+     */
     private sourceLines : SourceLine[] = []
+
+    /**
+     * Конструктор
+     * @param sample образец для копирования
+     */
     constructor(sample?: SourceUnit){        
-        if( sample!=null ){
+        if( sample ){
             for( let li in sample.sourceLines ){
                 this.sourceLines[li] = sample.sourceLines[li]
             }
         }
     }
 
+    //#region lines : SourceLine
     private linesCache : ReadonlyArray<SourceLine> | null = null
 
     /**
@@ -35,6 +63,7 @@ export class SourceUnit {
         this.linesCache = Object.freeze(this.sourceLines)
         return this.linesCache
     }
+    //#endregion
 
     /**
      * Возвращает исходную строку (номер, строка / индекс) по ее номеру
@@ -67,5 +96,36 @@ export class SourceUnit {
         cln.sourceLines.push( new SourceLine(line,code) )
         cln.sourceLines = cln.sourceLines.sort( (a,b)=>a.line - b.line )
         return cln
+    }
+
+    /**
+     * Парсинг исходного текста
+     * @param source исходный текст
+     * @param presult результат парсинга
+     */
+    parse( source:string, presult?:ParseResult ):SourceUnit {
+        if( source ){
+            const parser = Parser.create(source)
+            const stmts = parser.statements()
+            let res : SourceUnit = this
+            if( stmts ){
+                const sstmts:Statement[] = []
+                //const istmts:
+                if( presult && presult.statments ){
+                    presult.statments( stmts )
+                }
+                for( let st of stmts.statements ){
+                    if( st.sourceLine ){
+                        res = res.set( st.sourceLine, st )
+                        sstmts.push( st )
+                    }
+                }
+                if( presult && presult.sources ){
+                    presult.sources( sstmts )
+                }
+            }
+            return res
+        }
+        return this
     }
 }

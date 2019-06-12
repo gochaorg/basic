@@ -25,7 +25,9 @@ Ast.visit( ast1, {
         end(statements){ console.log(`END Statements (${statements.statements.length})`) }
     },
     rem: {
-        begin(v){ console.log(`COMMENT ${v.rem.comment}`) }
+        begin(v){ console.log(
+            `COMMENT ${v.rem.comment} ${v.sourceLine}`
+        ) }
     },
     let: {
         begin(v){

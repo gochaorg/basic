@@ -9,12 +9,12 @@ import {
     IDLex,
     StatementLex
 } from './Lexer';
-import { SRemStatement, IRemStatement, ARemStatement } from './RemStatement';
+import { RemStatement } from './RemStatement';
 import { Statement } from './Statement';
-import { SStatements } from './Statements';
+import { Statements } from './Statements';
 import { LiteralExpression, Expression, BinaryOpExpression, UnaryOpExpression, VarRefExpression } from './OperatorExp';
-import { SLetStatement, ILetStatement, ALetStatement } from './LetStatement';
-import { SRunStatement, IRunStatement, ARunStatement } from './RunStatement';
+import { LetStatement } from './LetStatement';
+import { RunStatement } from './RunStatement';
 
 /**
  * Парсинг BASIC
@@ -48,7 +48,7 @@ export class Parser {
     /**
      * statements ::= { statement }
      */
-    statements(): SStatements|null {
+    statements(): Statements|null {
         const res:Statement[] = []
         if( this.ptr.eof )return null
 
@@ -86,10 +86,10 @@ export class Parser {
         }
 
         if( firstLex!=null && lastLex!=null ){
-            return new SStatements(firstLex, lastLex, res)
+            return new Statements(firstLex, lastLex, res)
         }
 
-        return new SStatements(new DummyLex(-1,-1), new DummyLex(-1,-1), res)
+        return new Statements(new DummyLex(-1,-1), new DummyLex(-1,-1), res)
     }
 
     /**
@@ -117,21 +117,21 @@ export class Parser {
      *                | NumberLex RemLex
      *                | RemLex
      */
-    remStatement():ARemStatement|null {
+    remStatement():RemStatement|null {
         if( this.ptr.eof )return null
         
         let [lex1, lex2] = this.ptr.gets(2)
         if( lex1 instanceof SourceLineBeginLex && lex2 instanceof RemLex ){
             this.ptr.move(2)
-            return new SRemStatement(lex1,lex2,lex2)
+            return new RemStatement(lex1,lex2,lex2)
         }
         if( lex1 instanceof NumberLex && lex2 instanceof RemLex ){
             this.ptr.move(2)
-            return new SRemStatement(lex1.asSourceLine,lex2,lex2)
+            return new RemStatement(lex1.asSourceLine,lex2,lex2)
         }
         if( lex1 instanceof RemLex ){
             this.ptr.move(1)
-            return new IRemStatement(lex1,lex1,lex1)
+            return new RemStatement(lex1,lex1,lex1)
         }
 
         return null
@@ -141,7 +141,7 @@ export class Parser {
      * letStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                  StatementLex(LET) IDLex OperatorLex(=) expression
      */
-    letStatement():ALetStatement|null {
+    letStatement():LetStatement|null {
         if( this.ptr.eof )return null
 
         let lineNum : number | undefined = undefined
@@ -177,9 +177,9 @@ export class Parser {
                     this.ptr.drop()
                     let end = exp.rightTreeLex || begin
                     if( lineNum ){
-                        return new SLetStatement(begin,end,lexId,exp)
+                        return new LetStatement(begin,end,lexId,exp)
                     }else{
-                        return new ILetStatement(begin,end,lexId,exp)
+                        return new LetStatement(begin,end,lexId,exp)
                     }
                 }else{
                     // syntax error
@@ -199,7 +199,7 @@ export class Parser {
      * runStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                  StatementLex(RUN) [lineNumber : NumberLex]
      */
-    runStatement():ARunStatement|null {
+    runStatement():RunStatement|null {
         if( this.ptr.eof )return null
         this.log('runStatement() ptr=',this.ptr.gets(3))
 
@@ -234,17 +234,13 @@ export class Parser {
                     }
                 )
 
-                return lineNum != undefined ?
-                    new SRunStatement(lineNumLex || runLex, runLineLex, runLineLex) :
-                    new IRunStatement(lineNumLex || runLex, runLineLex, runLineLex)
+                return new RunStatement(lineNumLex || runLex, runLineLex, runLineLex)
             }
 
             off+=1
             this.ptr.move(off)
 
-            return lineNum != undefined ?
-                new SRunStatement(lineNumLex || runLex, runLex) :
-                new IRunStatement(lineNumLex || runLex, runLex)
+            return new RunStatement(lineNumLex || runLex, runLex)
         }
 
         return null

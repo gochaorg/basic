@@ -3,8 +3,8 @@
  */
 
 import { Statement } from "./Statement";
-import { ARemStatement } from "./RemStatement";
-import { SStatements, AStatements } from "./Statements";
+import { RemStatement } from "./RemStatement";
+import { AStatements } from "./Statements";
 import { ALetStatement } from "./LetStatement";
 import { ARunStatement } from "./RunStatement";
 import { BinaryOpExpression, UnaryOpExpression, LiteralExpression, VarRefExpression } from "./OperatorExp";
@@ -20,7 +20,7 @@ export interface AstBeginEnd<T> {
 
 export interface AstVisitor {
     statements?: AstBeginEnd<AStatements>
-    rem?: AstBeginEnd<ARemStatement>
+    rem?: AstBeginEnd<RemStatement>
     let?: AstBeginEnd<ALetStatement>
     run?: AstBeginEnd<ARunStatement>
     operator?: {
@@ -55,8 +55,8 @@ export function walk( ts:AstTreeStep, visitor:AstVisitor ){
         }
     }
     //#endregion
-    //#region ARemStatement
-    if( ts.value instanceof ARemStatement ){
+    //#region RemStatement
+    if( ts.value instanceof RemStatement ){
         if( visitor.rem && visitor.rem.begin ){
             visitor.rem.begin( ts.value, ts )
         }        

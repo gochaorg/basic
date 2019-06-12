@@ -70,9 +70,9 @@ var Parser = /** @class */ (function () {
             }
         }
         if (firstLex != null && lastLex != null) {
-            return new Statements_1.SStatements(firstLex, lastLex, res);
+            return new Statements_1.Statements(firstLex, lastLex, res);
         }
-        return new Statements_1.SStatements(new Lexer_1.DummyLex(-1, -1), new Lexer_1.DummyLex(-1, -1), res);
+        return new Statements_1.Statements(new Lexer_1.DummyLex(-1, -1), new Lexer_1.DummyLex(-1, -1), res);
     };
     /**
      * statement ::= remStatement
@@ -103,15 +103,15 @@ var Parser = /** @class */ (function () {
         var _a = this.ptr.gets(2), lex1 = _a[0], lex2 = _a[1];
         if (lex1 instanceof Lexer_1.SourceLineBeginLex && lex2 instanceof Lexer_1.RemLex) {
             this.ptr.move(2);
-            return new RemStatement_1.SRemStatement(lex1, lex2, lex2);
+            return new RemStatement_1.RemStatement(lex1, lex2, lex2);
         }
         if (lex1 instanceof Lexer_1.NumberLex && lex2 instanceof Lexer_1.RemLex) {
             this.ptr.move(2);
-            return new RemStatement_1.SRemStatement(lex1.asSourceLine, lex2, lex2);
+            return new RemStatement_1.RemStatement(lex1.asSourceLine, lex2, lex2);
         }
         if (lex1 instanceof Lexer_1.RemLex) {
             this.ptr.move(1);
-            return new RemStatement_1.IRemStatement(lex1, lex1, lex1);
+            return new RemStatement_1.RemStatement(lex1, lex1, lex1);
         }
         return null;
     };
@@ -150,10 +150,10 @@ var Parser = /** @class */ (function () {
                     this.ptr.drop();
                     var end = exp.rightTreeLex || begin;
                     if (lineNum) {
-                        return new LetStatement_1.SLetStatement(begin, end, lexId, exp);
+                        return new LetStatement_1.LetStatement(begin, end, lexId, exp);
                     }
                     else {
-                        return new LetStatement_1.ILetStatement(begin, end, lexId, exp);
+                        return new LetStatement_1.LetStatement(begin, end, lexId, exp);
                     }
                 }
                 else {
@@ -201,15 +201,11 @@ var Parser = /** @class */ (function () {
                 this.log('runStatement() move ', off, { eof: this.ptr.eof,
                     gets3: this.ptr.gets(3)
                 });
-                return lineNum != undefined ?
-                    new RunStatement_1.SRunStatement(lineNumLex || runLex, runLineLex, runLineLex) :
-                    new RunStatement_1.IRunStatement(lineNumLex || runLex, runLineLex, runLineLex);
+                return new RunStatement_1.RunStatement(lineNumLex || runLex, runLineLex, runLineLex);
             }
             off += 1;
             this.ptr.move(off);
-            return lineNum != undefined ?
-                new RunStatement_1.SRunStatement(lineNumLex || runLex, runLex) :
-                new RunStatement_1.IRunStatement(lineNumLex || runLex, runLex);
+            return new RunStatement_1.RunStatement(lineNumLex || runLex, runLex);
         }
         return null;
     };

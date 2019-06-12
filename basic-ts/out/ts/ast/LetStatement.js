@@ -13,31 +13,19 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ALetStatement = /** @class */ (function () {
+var Statement_1 = require("./Statement");
+var ALetStatement = /** @class */ (function (_super) {
+    __extends(ALetStatement, _super);
     function ALetStatement(begin, end, variable, value) {
-        this.begin = begin;
-        this.end = end;
-        this.variable = variable;
-        this.value = value;
-        this.kind = 'Let';
+        var _this = _super.call(this) || this;
+        _this.begin = begin;
+        _this.end = end;
+        _this.variable = variable;
+        _this.value = value;
+        _this.kind = 'Let';
+        return _this;
     }
     return ALetStatement;
-}());
+}(Statement_1.Statement));
 exports.ALetStatement = ALetStatement;
-var ILetStatement = /** @class */ (function (_super) {
-    __extends(ILetStatement, _super);
-    function ILetStatement() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return ILetStatement;
-}(ALetStatement));
-exports.ILetStatement = ILetStatement;
-var SLetStatement = /** @class */ (function (_super) {
-    __extends(SLetStatement, _super);
-    function SLetStatement() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return SLetStatement;
-}(ALetStatement));
-exports.SLetStatement = SLetStatement;
 //# sourceMappingURL=LetStatement.js.map

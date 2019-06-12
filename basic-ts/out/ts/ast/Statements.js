@@ -13,29 +13,17 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var AStatements = /** @class */ (function () {
+var Statement_1 = require("./Statement");
+var AStatements = /** @class */ (function (_super) {
+    __extends(AStatements, _super);
     function AStatements(begin, end, statements) {
-        this.begin = begin;
-        this.end = end;
-        this.statements = statements;
+        var _this = _super.call(this) || this;
+        _this.begin = begin;
+        _this.end = end;
+        _this.statements = statements;
+        return _this;
     }
     return AStatements;
-}());
+}(Statement_1.Statement));
 exports.AStatements = AStatements;
-var SStatements = /** @class */ (function (_super) {
-    __extends(SStatements, _super);
-    function SStatements() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return SStatements;
-}(AStatements));
-exports.SStatements = SStatements;
-var IStatements = /** @class */ (function (_super) {
-    __extends(IStatements, _super);
-    function IStatements() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return IStatements;
-}(AStatements));
-exports.IStatements = IStatements;
 //# sourceMappingURL=Statements.js.map
