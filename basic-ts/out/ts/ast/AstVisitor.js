@@ -39,8 +39,8 @@ function walk(ts, visitor) {
         throw new Error("illegal argument path");
     }
     //#endregion
-    //#region AStatements
-    if (ts.value instanceof Statements_1.AStatements) {
+    //#region Statements
+    if (ts.value instanceof Statements_1.Statements) {
         if (visitor.statements && visitor.statements.begin) {
             visitor.statements.begin(ts.value, ts);
         }
@@ -63,8 +63,8 @@ function walk(ts, visitor) {
         }
     }
     //#endregion
-    //#region ALetStatement
-    if (ts.value instanceof LetStatement_1.ALetStatement) {
+    //#region LetStatement
+    if (ts.value instanceof LetStatement_1.LetStatement) {
         if (visitor.let && visitor.let.begin) {
             visitor.let.begin(ts.value, ts);
         }
@@ -74,8 +74,8 @@ function walk(ts, visitor) {
         }
     }
     //#endregion
-    //#region ARunStatement
-    if (ts.value instanceof RunStatement_1.ARunStatement) {
+    //#region RunStatement
+    if (ts.value instanceof RunStatement_1.RunStatement) {
         if (visitor.run && visitor.run.begin) {
             visitor.run.begin(ts.value, ts);
         }

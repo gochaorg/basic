@@ -14,9 +14,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var Statement_1 = require("./Statement");
-var ALetStatement = /** @class */ (function (_super) {
-    __extends(ALetStatement, _super);
-    function ALetStatement(begin, end, variable, value) {
+var LetStatement = /** @class */ (function (_super) {
+    __extends(LetStatement, _super);
+    function LetStatement(begin, end, variable, value) {
         var _this = _super.call(this) || this;
         _this.begin = begin;
         _this.end = end;
@@ -25,7 +25,7 @@ var ALetStatement = /** @class */ (function (_super) {
         _this.kind = 'Let';
         return _this;
     }
-    return ALetStatement;
+    return LetStatement;
 }(Statement_1.Statement));
-exports.ALetStatement = ALetStatement;
+exports.LetStatement = LetStatement;
 //# sourceMappingURL=LetStatement.js.map

@@ -4,9 +4,9 @@
 
 import { Statement } from "./Statement";
 import { RemStatement } from "./RemStatement";
-import { AStatements } from "./Statements";
-import { ALetStatement } from "./LetStatement";
-import { ARunStatement } from "./RunStatement";
+import { Statements } from "./Statements";
+import { LetStatement } from "./LetStatement";
+import { RunStatement } from "./RunStatement";
 import { BinaryOpExpression, UnaryOpExpression, LiteralExpression, VarRefExpression } from "./OperatorExp";
 import { TreeStep } from "../TreeIt";
 
@@ -19,10 +19,10 @@ export interface AstBeginEnd<T> {
 }
 
 export interface AstVisitor {
-    statements?: AstBeginEnd<AStatements>
+    statements?: AstBeginEnd<Statements>
     rem?: AstBeginEnd<RemStatement>
-    let?: AstBeginEnd<ALetStatement>
-    run?: AstBeginEnd<ARunStatement>
+    let?: AstBeginEnd<LetStatement>
+    run?: AstBeginEnd<RunStatement>
     operator?: {
         binary?: AstBeginEnd<BinaryOpExpression>
         unary?: AstBeginEnd<UnaryOpExpression>
@@ -42,8 +42,8 @@ export function walk( ts:AstTreeStep, visitor:AstVisitor ){
     }
     //#endregion
 
-    //#region AStatements
-    if( ts.value instanceof AStatements ){
+    //#region Statements
+    if( ts.value instanceof Statements ){
         if( visitor.statements && visitor.statements.begin ){
             visitor.statements.begin( ts.value, ts )
         }
@@ -65,8 +65,8 @@ export function walk( ts:AstTreeStep, visitor:AstVisitor ){
         }
     }
     //#endregion
-    //#region ALetStatement
-    if( ts.value instanceof ALetStatement ){        
+    //#region LetStatement
+    if( ts.value instanceof LetStatement ){        
         if( visitor.let && visitor.let.begin ){
             visitor.let.begin( ts.value, ts )
         }
@@ -76,8 +76,8 @@ export function walk( ts:AstTreeStep, visitor:AstVisitor ){
         }
     }
     //#endregion
-    //#region ARunStatement
-    if( ts.value instanceof ARunStatement ){
+    //#region RunStatement
+    if( ts.value instanceof RunStatement ){
         if( visitor.run && visitor.run.begin ){
             visitor.run.begin( ts.value, ts )
         }

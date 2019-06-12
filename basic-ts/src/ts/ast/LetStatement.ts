@@ -2,7 +2,7 @@ import { Statement } from './Statement'
 import { Lex, RemLex, SourceLineBeginLex, IDLex } from './Lexer'
 import { Expression } from './OperatorExp';
 
-export class ALetStatement extends Statement {
+export class LetStatement extends Statement {
     readonly begin:Lex
     readonly end:Lex
     readonly let?:Lex
