@@ -1,10 +1,12 @@
+import { Statement } from "../ast/Statement";
+
 /**
  * Исходная строка
  */
 export class SourceLine {
     readonly line: number
-    readonly code: string
-    constructor(line:number, code:string){
+    readonly code: Statement
+    constructor(line:number, code:Statement){
         this.line = line
         this.code = code
     }
@@ -53,7 +55,7 @@ export class SourceUnit {
      * @param code код
      * @returns модифицированный исходный код
      */
-    set( line:number, code:string ) : SourceUnit {
+    set( line:number, code:Statement ) : SourceUnit {
         if( line<0 )throw new Error("argument line(="+line+") < 0")
         const fnd = this.find(line)
         if( fnd ){

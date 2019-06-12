@@ -27,10 +27,10 @@ export class TreeStep<T> {
  * Обход дерева
  */
 export class TreeIt<T> {
-    readonly follow: (from:T)=>T[]
+    readonly follow: (from:T)=>ReadonlyArray<T>
     protected current:TreeStep<T>[]
 
-    constructor( start:T, follow:(from:T)=>T[] ){
+    constructor( start:T, follow:(from:T)=>ReadonlyArray<T> ){
         this.follow = follow
         this.current = [ new TreeStep<T>(start) ]
     }
@@ -54,7 +54,7 @@ export class TreeIt<T> {
         return undefined
     }
 
-    static each<T>( start:T, follow:(from:T)=>T[], consumer:(n:TreeStep<T>)=>any ){
+    static each<T>( start:T, follow:(from:T)=>ReadonlyArray<T>, consumer:(n:TreeStep<T>)=>any ){
         if( start==null || start==undefined )throw new Error("illegal arg start")
         if( follow==null || follow==undefined )throw new Error("illegal arg follow")
         if( consumer==null || consumer==undefined )throw new Error("illegal arg consumer")
@@ -67,7 +67,7 @@ export class TreeIt<T> {
         }
     }
 
-    static list<T>( start:T, follow:(from:T)=>T[] ):TreeStep<T>[] {
+    static list<T>( start:T, follow:(from:T)=>ReadonlyArray<T> ):TreeStep<T>[] {
         if( start==null || start==undefined )throw new Error("illegal arg start")
         if( follow==null || follow==undefined )throw new Error("illegal arg follow")
         let arr:TreeStep<T>[] = []

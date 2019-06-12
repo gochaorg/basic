@@ -4,7 +4,7 @@ import { Lex } from './Lexer'
 export class AStatements implements Statement {
     readonly begin:Lex
     readonly end:Lex
-    readonly statements:Statement[]
+    readonly statements:ReadonlyArray<Statement>
     constructor( begin:Lex, end:Lex, statements:Statement[] ){
         this.begin = begin
         this.end = end

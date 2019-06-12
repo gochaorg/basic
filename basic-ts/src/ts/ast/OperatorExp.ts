@@ -10,12 +10,12 @@ export interface Expression {
     /**
      * Описвыает список лексем на этом уровне узла-дерева
      */
-    readonly lexems:Lex[]
+    readonly lexems:ReadonlyArray<Lex>
 
     /**
      * Описывает дочерние (поддеревья) мат выражения
      */
-    readonly children:Expression[]
+    readonly children:ReadonlyArray<Expression>
 
     /**
      * Описывает саму первую лексему в (под)дереве
@@ -29,8 +29,8 @@ export interface Expression {
 }
 
 export abstract class AExpression implements Expression {
-    abstract lexems: Lex[]
-    abstract children: Expression[]
+    abstract lexems: ReadonlyArray<Lex>
+    abstract children: ReadonlyArray<Expression>
 
     get treeList():TreeStep<Expression>[] {
         return TreeIt.list( this as Expression, (n) => n.children )
@@ -65,8 +65,8 @@ export abstract class AExpression implements Expression {
 export class LiteralExpression extends AExpression implements Expression {
     readonly lex:Lex
     readonly value:any
-    readonly lexems:Lex[]
-    readonly children:Expression[]
+    readonly lexems:ReadonlyArray<Lex>
+    readonly children:ReadonlyArray<Expression>
     readonly kind:string
     constructor(lex:Lex, value:any) {
         super()
@@ -83,8 +83,8 @@ export class LiteralExpression extends AExpression implements Expression {
  */
 export class VarRefExpression extends AExpression implements Expression {
     readonly id:IDLex
-    readonly lexems:Lex[]
-    readonly children:Expression[]
+    readonly lexems:ReadonlyArray<Lex>
+    readonly children:ReadonlyArray<Expression>
     readonly kind:string
     constructor(lex:IDLex) {
         super()
@@ -102,8 +102,8 @@ export class BinaryOpExpression extends AExpression {
     readonly operator:OperatorLex
     readonly left:Expression
     readonly right:Expression
-    readonly lexems:Lex[]
-    readonly children:Expression[]
+    readonly lexems:ReadonlyArray<Lex>
+    readonly children:ReadonlyArray<Expression>
     readonly kind:string
     constructor(op:OperatorLex, left:Expression, right:Expression){
         super()
@@ -122,8 +122,8 @@ export class BinaryOpExpression extends AExpression {
 export class UnaryOpExpression extends AExpression {
     readonly operator:OperatorLex
     readonly base:Expression
-    readonly lexems:Lex[]
-    readonly children:Expression[]
+    readonly lexems:ReadonlyArray<Lex>
+    readonly children:ReadonlyArray<Expression>
     readonly kind:string
     constructor(op:OperatorLex, base:Expression){
         super()
