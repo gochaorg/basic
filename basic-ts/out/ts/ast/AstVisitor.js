@@ -1,0 +1,145 @@
+"use strict";
+/**
+ * Обход Ast дерева
+ */
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+var RemStatement_1 = require("./RemStatement");
+var Statements_1 = require("./Statements");
+var LetStatement_1 = require("./LetStatement");
+var RunStatement_1 = require("./RunStatement");
+var OperatorExp_1 = require("./OperatorExp");
+var TreeIt_1 = require("../TreeIt");
+var AstTreeStep = /** @class */ (function (_super) {
+    __extends(AstTreeStep, _super);
+    function AstTreeStep() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return AstTreeStep;
+}(TreeIt_1.TreeStep));
+exports.AstTreeStep = AstTreeStep;
+function walk(ts, visitor) {
+    //#region check args
+    if (visitor == undefined || visitor == null) {
+        throw new Error("illegal argument visitor");
+    }
+    if (ts == undefined || ts == null) {
+        throw new Error("illegal argument path");
+    }
+    //#endregion
+    //#region AStatements
+    if (ts.value instanceof Statements_1.AStatements) {
+        if (visitor.statements && visitor.statements.begin) {
+            visitor.statements.begin(ts.value, ts);
+        }
+        for (var _i = 0, _a = ts.value.statements; _i < _a.length; _i++) {
+            var st = _a[_i];
+            walk(ts.follow(st), visitor);
+        }
+        if (visitor.statements && visitor.statements.end) {
+            visitor.statements.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region ARemStatement
+    if (ts.value instanceof RemStatement_1.ARemStatement) {
+        if (visitor.rem && visitor.rem.begin) {
+            visitor.rem.begin(ts.value, ts);
+        }
+        if (visitor.rem && visitor.rem.end) {
+            visitor.rem.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region ALetStatement
+    if (ts.value instanceof LetStatement_1.ALetStatement) {
+        if (visitor.let && visitor.let.begin) {
+            visitor.let.begin(ts.value, ts);
+        }
+        walk(ts.follow(ts.value.value), visitor);
+        if (visitor.let && visitor.let.end) {
+            visitor.let.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region ARunStatement
+    if (ts.value instanceof RunStatement_1.ARunStatement) {
+        if (visitor.run && visitor.run.begin) {
+            visitor.run.begin(ts.value, ts);
+        }
+        if (visitor.run && visitor.run.end) {
+            visitor.run.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region BinaryOpExpression
+    if (ts.value instanceof OperatorExp_1.BinaryOpExpression) {
+        if (visitor.operator && visitor.operator.binary && visitor.operator.binary.begin) {
+            visitor.operator.binary.begin(ts.value, ts);
+        }
+        if (ts.value.left) {
+            walk(ts.follow(ts.value.left), visitor);
+        }
+        if (ts.value.right) {
+            walk(ts.follow(ts.value.right), visitor);
+        }
+        if (visitor.operator && visitor.operator.binary && visitor.operator.binary.end) {
+            visitor.operator.binary.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region UnaryOpExpression
+    if (ts.value instanceof OperatorExp_1.UnaryOpExpression) {
+        if (visitor.operator && visitor.operator.unary && visitor.operator.unary.begin) {
+            visitor.operator.unary.begin(ts.value, ts);
+        }
+        if (ts.value.base) {
+            walk(ts.follow(ts.value.base), visitor);
+        }
+        if (visitor.operator && visitor.operator.unary && visitor.operator.unary.end) {
+            visitor.operator.unary.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region LiteralExpression
+    if (ts.value instanceof OperatorExp_1.LiteralExpression) {
+        if (visitor.operator && visitor.operator.literal && visitor.operator.literal.begin) {
+            visitor.operator.literal.begin(ts.value, ts);
+        }
+        if (visitor.operator && visitor.operator.literal && visitor.operator.literal.end) {
+            visitor.operator.literal.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region VarRefExpression
+    if (ts.value instanceof OperatorExp_1.VarRefExpression) {
+        if (visitor.operator && visitor.operator.varRef && visitor.operator.varRef.begin) {
+            visitor.operator.varRef.begin(ts.value, ts);
+        }
+        if (visitor.operator && visitor.operator.varRef && visitor.operator.varRef.end) {
+            visitor.operator.varRef.end(ts.value, ts);
+        }
+    }
+    //#endregion
+}
+exports.walk = walk;
+function visit(root, visitor) {
+    if (visitor == undefined || visitor == null) {
+        throw new Error("illegal argument visitor");
+    }
+    walk(new TreeIt_1.TreeStep(root), visitor);
+}
+exports.visit = visit;
+//# sourceMappingURL=AstVisitor.js.map

@@ -62,7 +62,7 @@ export abstract class AExpression implements Expression {
 /**
  * Константное значение (Литерал - строка/число/и т.д...)
  */
-export class ConstExpression extends AExpression implements Expression {
+export class LiteralExpression extends AExpression implements Expression {
     readonly lex:Lex
     readonly value:any
     readonly lexems:Lex[]
@@ -82,13 +82,13 @@ export class ConstExpression extends AExpression implements Expression {
  * Ссылка на переменную
  */
 export class VarRefExpression extends AExpression implements Expression {
-    readonly lex:IDLex
+    readonly id:IDLex
     readonly lexems:Lex[]
     readonly children:Expression[]
     readonly kind:string
     constructor(lex:IDLex) {
         super()
-        this.lex = lex
+        this.id = lex
         this.lexems = [ lex ]
         this.children = []
         this.kind = 'VarRef'

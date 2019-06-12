@@ -13,29 +13,30 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var ARemStatement = /** @class */ (function () {
-    function ARemStatement(begin, end, rem) {
+var ARunStatement = /** @class */ (function () {
+    function ARunStatement(begin, end, line) {
         this.begin = begin;
         this.end = end;
-        this.rem = rem;
+        this.line = line;
+        this.kind = 'Run';
     }
-    return ARemStatement;
+    return ARunStatement;
 }());
-exports.ARemStatement = ARemStatement;
-var SRemStatement = /** @class */ (function (_super) {
-    __extends(SRemStatement, _super);
-    function SRemStatement() {
+exports.ARunStatement = ARunStatement;
+var IRunStatement = /** @class */ (function (_super) {
+    __extends(IRunStatement, _super);
+    function IRunStatement() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    return SRemStatement;
-}(ARemStatement));
-exports.SRemStatement = SRemStatement;
-var IRemStatement = /** @class */ (function (_super) {
-    __extends(IRemStatement, _super);
-    function IRemStatement() {
+    return IRunStatement;
+}(ARunStatement));
+exports.IRunStatement = IRunStatement;
+var SRunStatement = /** @class */ (function (_super) {
+    __extends(SRunStatement, _super);
+    function SRunStatement() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
-    return IRemStatement;
-}(ARemStatement));
-exports.IRemStatement = IRemStatement;
-//# sourceMappingURL=RemStatement.js.map
+    return SRunStatement;
+}(ARunStatement));
+exports.SRunStatement = SRunStatement;
+//# sourceMappingURL=RunStatement.js.map

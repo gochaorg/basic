@@ -5,6 +5,8 @@ var Lexer_1 = require("./Lexer");
 var RemStatement_1 = require("./RemStatement");
 var Statements_1 = require("./Statements");
 var OperatorExp_1 = require("./OperatorExp");
+var LetStatement_1 = require("./LetStatement");
+var RunStatement_1 = require("./RunStatement");
 /**
  * Парсинг BASIC
  */
@@ -45,6 +47,7 @@ var Parser = /** @class */ (function () {
         var lines = Lexer_1.filter(tailEntries).lines;
         var firstLex = null;
         var lastLex = null;
+        this.log("statements() lines:", lines);
         for (var li = 0; li < lines.length; li++) {
             var lineLex = lines[li];
             if (firstLex == null && lineLex.length > 0) {
@@ -53,13 +56,17 @@ var Parser = /** @class */ (function () {
             if (lineLex.length > 0) {
                 lastLex = lineLex[lineLex.length - 1];
             }
+            this.log("statements() line:", lineLex);
             var lineParser = new Parser(lineLex);
-            var lineStatement = lineParser.statement();
-            if (lineStatement) {
-                res.push(lineStatement);
-            }
-            else {
-                throw new Error("can't parse line: " + lineLex);
+            lineParser.debug = this.debug;
+            while (!lineParser.ptr.eof) {
+                var lineStatement = lineParser.statement();
+                if (lineStatement) {
+                    res.push(lineStatement);
+                }
+                else {
+                    throw new Error("can't parse line: " + JSON.stringify(lineParser.ptr.gets(5)));
+                }
             }
         }
         if (firstLex != null && lastLex != null) {
@@ -69,9 +76,21 @@ var Parser = /** @class */ (function () {
     };
     /**
      * statement ::= remStatement
+     *             | letStatement
+     *             | runStatement
      */
     Parser.prototype.statement = function () {
-        return this.remStatement();
+        this.log('statement() ptr=', this.ptr.gets(3));
+        var remStmt = this.remStatement();
+        if (remStmt)
+            return remStmt;
+        var letStmt = this.letStatement();
+        if (letStmt)
+            return letStmt;
+        var runStmt = this.runStatement();
+        if (runStmt)
+            return runStmt;
+        return null;
     };
     /**
      * remStatement ::= SourceLineBeginLex RemLex
@@ -97,9 +116,102 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * letStatement ::= SourceLineBeginLex StatementLex(LET)
+     * letStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                  StatementLex(LET) IDLex OperatorLex(=) expression
      */
     Parser.prototype.letStatement = function () {
+        if (this.ptr.eof)
+            return null;
+        var lineNum = undefined;
+        var lineNumLex = this.ptr.get(0);
+        var off = 0;
+        if (lineNumLex instanceof Lexer_1.SourceLineBeginLex
+            || lineNumLex instanceof Lexer_1.NumberLex) {
+            if (lineNumLex instanceof Lexer_1.SourceLineBeginLex) {
+                lineNum = lineNumLex.line;
+            }
+            if (lineNumLex instanceof Lexer_1.NumberLex) {
+                lineNum = lineNumLex.value;
+            }
+            off = 1;
+        }
+        var lexLet = this.ptr.get(off);
+        if (lexLet instanceof Lexer_1.StatementLex &&
+            lexLet.keyWord == 'LET') {
+            var _a = this.ptr.fetch(off + 1, 2), lexId = _a[0], lexAssign = _a[1];
+            if (lexAssign instanceof Lexer_1.OperatorLex && lexAssign.keyWord == '='
+                && lexId instanceof Lexer_1.IDLex) {
+                // parsing...
+                this.ptr.push();
+                var begin = this.ptr.get() || lexLet;
+                this.ptr.move(off + 3);
+                var exp = this.expression();
+                if (exp) {
+                    this.ptr.drop();
+                    var end = exp.rightTreeLex || begin;
+                    if (lineNum) {
+                        return new LetStatement_1.SLetStatement(begin, end, lexId, exp);
+                    }
+                    else {
+                        return new LetStatement_1.ILetStatement(begin, end, lexId, exp);
+                    }
+                }
+                else {
+                    // syntax error
+                    this.ptr.pop();
+                    return null;
+                }
+            }
+            else {
+                // syntax error
+                return null;
+            }
+        }
+        return null;
+    };
+    /**
+     * runStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                  StatementLex(RUN) [lineNumber : NumberLex]
+     */
+    Parser.prototype.runStatement = function () {
+        if (this.ptr.eof)
+            return null;
+        this.log('runStatement() ptr=', this.ptr.gets(3));
+        var lineNum = undefined;
+        var lineNumLex = this.ptr.get(0);
+        var off = 0;
+        if (lineNumLex instanceof Lexer_1.SourceLineBeginLex
+            || lineNumLex instanceof Lexer_1.NumberLex) {
+            if (lineNumLex instanceof Lexer_1.SourceLineBeginLex) {
+                lineNum = lineNumLex.line;
+            }
+            if (lineNumLex instanceof Lexer_1.NumberLex) {
+                lineNum = lineNumLex.value;
+            }
+            off = 1;
+        }
+        var runLex = this.ptr.get(off);
+        if (runLex instanceof Lexer_1.StatementLex &&
+            runLex.keyWord == 'RUN') {
+            this.log('runStatement() RUN');
+            var runLineLex = this.ptr.get(off + 1);
+            if (runLineLex instanceof Lexer_1.NumberLex) {
+                off += 2;
+                this.ptr.move(off);
+                this.log('runStatement() move ', off, { eof: this.ptr.eof,
+                    gets3: this.ptr.gets(3)
+                });
+                return lineNum != undefined ?
+                    new RunStatement_1.SRunStatement(lineNumLex || runLex, runLineLex, runLineLex) :
+                    new RunStatement_1.IRunStatement(lineNumLex || runLex, runLineLex, runLineLex);
+            }
+            off += 1;
+            this.ptr.move(off);
+            return lineNum != undefined ?
+                new RunStatement_1.SRunStatement(lineNumLex || runLex, runLex) :
+                new RunStatement_1.IRunStatement(lineNumLex || runLex, runLex);
+        }
+        return null;
     };
     /**
      * expression ::= powExpression | bracketExpression
@@ -522,11 +634,11 @@ var Parser = /** @class */ (function () {
         var lx = this.ptr.get();
         if (lx instanceof Lexer_1.NumberLex) {
             this.ptr.move(1);
-            return new OperatorExp_1.ConstExpression(lx, lx.value);
+            return new OperatorExp_1.LiteralExpression(lx, lx.value);
         }
         if (lx instanceof Lexer_1.StringLex) {
             this.ptr.move(1);
-            return new OperatorExp_1.ConstExpression(lx, lx.value);
+            return new OperatorExp_1.LiteralExpression(lx, lx.value);
         }
         return null;
     };

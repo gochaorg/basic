@@ -33,6 +33,7 @@ let testExpressions:TestExp[] = [
      },
 ]
 
+console.log("== parse statements ============")
 testExpressions.forEach( texp => {
     console.log( "\ncode:  ",texp.code )
     

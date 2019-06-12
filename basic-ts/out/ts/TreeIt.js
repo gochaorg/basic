@@ -1,12 +1,40 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
+ * Шаг очередной итерации
+ */
+var TreeStep = /** @class */ (function () {
+    function TreeStep(value, parent) {
+        this.value = value;
+        this.parent = parent;
+    }
+    TreeStep.prototype.follow = function (value) {
+        return new TreeStep(value, this);
+    };
+    Object.defineProperty(TreeStep.prototype, "path", {
+        get: function () {
+            var res = [];
+            var ts = this;
+            while (ts != undefined && ts != null) {
+                res.push(ts.value);
+                ts = ts.parent;
+            }
+            res.reverse();
+            return res;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return TreeStep;
+}());
+exports.TreeStep = TreeStep;
+/**
  * Обход дерева
  */
 var TreeIt = /** @class */ (function () {
     function TreeIt(start, follow) {
         this.follow = follow;
-        this.current = [start];
+        this.current = [new TreeStep(start)];
     }
     TreeIt.prototype.hasNext = function () {
         return this.current.length > 0;
@@ -19,7 +47,7 @@ var TreeIt = /** @class */ (function () {
         //let res:T|undefined = this.current.pop()
         if (res != undefined) {
             res.forEach(function (r) {
-                _this.follow(r).forEach(function (n) { return _this.current.push(n); });
+                _this.follow(r.value).forEach(function (n) { return _this.current.push(r.follow(n)); });
             });
         }
         if (res != undefined) {
@@ -54,4 +82,4 @@ var TreeIt = /** @class */ (function () {
     return TreeIt;
 }());
 exports.TreeIt = TreeIt;
-//# sourceMappingURL=TreeIterator.js.map
+//# sourceMappingURL=TreeIt.js.map

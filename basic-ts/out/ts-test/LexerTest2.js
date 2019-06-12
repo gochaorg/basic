@@ -7,7 +7,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var LX = __importStar(require("./Lexer"));
+var LX = __importStar(require("../ts/ast/Lexer"));
 console.log('===== BASIC =================================================');
 console.log(LX.parseBasicLexs('10 REM aa\n' +
     '20 LET A = 12 * 4\n\r' +

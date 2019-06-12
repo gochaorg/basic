@@ -278,7 +278,9 @@ exports.KeyWordLex = KeyWordLex;
 var NewLineLex = /** @class */ (function (_super) {
     __extends(NewLineLex, _super);
     function NewLineLex(keyWord, begin, end) {
-        return _super.call(this, keyWord, begin, end) || this;
+        var _this = _super.call(this, keyWord, begin, end) || this;
+        _this.kind = 'NewLineSeparator';
+        return _this;
     }
     NewLineLex.parse = KeyWordLex.parser(['\n\r', '\r\n', '\n', '\r'], function (kw, begin, end) { return new NewLineLex(kw, begin, end); });
     return NewLineLex;
@@ -290,7 +292,9 @@ exports.NewLineLex = NewLineLex;
 var OperatorLex = /** @class */ (function (_super) {
     __extends(OperatorLex, _super);
     function OperatorLex(keyWord, begin, end) {
-        return _super.call(this, keyWord, begin, end) || this;
+        var _this = _super.call(this, keyWord, begin, end) || this;
+        _this.kind = 'OperatorLex';
+        return _this;
     }
     OperatorLex.parse = KeyWordLex.parser([
         '(', ')',
@@ -322,11 +326,14 @@ exports.OperatorLex = OperatorLex;
 var StatementLex = /** @class */ (function (_super) {
     __extends(StatementLex, _super);
     function StatementLex(keyWord, begin, end) {
-        return _super.call(this, keyWord, begin, end) || this;
+        var _this = _super.call(this, keyWord, begin, end) || this;
+        _this.kind = 'StatementLex';
+        return _this;
     }
     StatementLex.parse = KeyWordLex.parser([
-        // Оператор присвоения значения переменной
         'LET',
+        'RUN',
+        'LIST',
     ], function (kw, begin, end) { return new StatementLex(kw, begin, end); });
     return StatementLex;
 }(KeyWordLex));
@@ -350,6 +357,7 @@ var RemLex = /** @class */ (function (_super) {
     function RemLex(cmnt, begin, end) {
         var _this = _super.call(this, begin, end) || this;
         _this.comment = cmnt;
+        _this.kind = 'RemLex';
         return _this;
     }
     RemLex.parse = function (str, off) {
@@ -383,9 +391,11 @@ exports.RemLex = RemLex;
  */
 var NumberLex = /** @class */ (function (_super) {
     __extends(NumberLex, _super);
-    function NumberLex(val, begin, end) {
+    function NumberLex(val, integer, begin, end) {
         var _this = _super.call(this, begin, end) || this;
         _this.value = val;
+        _this.integer = integer;
+        _this.kind = 'NumberLiteral';
         return _this;
     }
     NumberLex.parseOct = function (str, off) {
@@ -410,7 +420,7 @@ var NumberLex = /** @class */ (function (_super) {
             off++;
         }
         var end = off;
-        return new NumberLex(num, begin, end);
+        return new NumberLex(num, true, begin, end);
     };
     NumberLex.parseHex = function (str, off) {
         //console.log("parseHex")
@@ -434,7 +444,7 @@ var NumberLex = /** @class */ (function (_super) {
             off++;
         }
         var end = off;
-        return new NumberLex(num, begin, end);
+        return new NumberLex(num, true, begin, end);
     };
     NumberLex.parseDec = function (str, off) {
         //console.log("parseDec")
@@ -457,16 +467,24 @@ var NumberLex = /** @class */ (function (_super) {
         */
         var m1 = head.match(/^([+\-]?\d+)((\.\d+)(([eEdD])([+\-]?\d+))?)?([%\#!])?/);
         if (m1) {
+            var integer = true;
             var p1 = m1[1];
             if (m1[3])
                 p1 = p1 + m1[3]; //float part
             if (m1[5] && (m1[5] == 'e' || m1[5] == 'E')) {
                 p1 = p1 + m1[4]; // expo
+                integer = false;
+            }
+            if (m1[5] && (m1[5] == 'd' || m1[5] == 'D')) {
+                integer = false;
+            }
+            if (m1[3] && m1[3].length > 0) {
+                integer = false;
             }
             var num = parseFloat(p1);
             var begin = off;
             var end = off + m1[0].length;
-            return new NumberLex(num, begin, end);
+            return new NumberLex(num, integer, begin, end);
         }
         return null;
     };
@@ -501,6 +519,7 @@ var StringLex = /** @class */ (function (_super) {
     function StringLex(val, begin, end) {
         var _this = _super.call(this, begin, end) || this;
         _this.value = val;
+        _this.kind = 'StringLiteral';
         return _this;
     }
     StringLex.parse = function (str, off) {
@@ -545,6 +564,7 @@ var IDLex = /** @class */ (function (_super) {
     function IDLex(id, begin, end) {
         var _this = _super.call(this, begin, end) || this;
         _this.id = id;
+        _this.kind = 'ID';
         return _this;
     }
     IDLex.parse = function (str, off) {
@@ -582,6 +602,7 @@ var SourceLineBeginLex = /** @class */ (function (_super) {
     function SourceLineBeginLex(line, begin, end) {
         var _this = _super.call(this, begin, end) || this;
         _this.line = line;
+        _this.kind = 'SourceLine';
         return _this;
     }
     return SourceLineBeginLex;

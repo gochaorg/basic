@@ -7,7 +7,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var Ast = __importStar(require("./Lexer"));
+var Ast = __importStar(require("../ts/ast/Lexer"));
 var lexs = Ast.lexems(' RUN REM LIST', [Ast.WhiteSpaceLex.parse, Ast.KeyWordLex.parser(['RUN', 'REM', 'LIST'])]);
 console.log(lexs);
 console.log('===== REM =================================================');

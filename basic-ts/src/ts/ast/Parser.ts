@@ -12,7 +12,7 @@ import {
 import { SRemStatement, IRemStatement, ARemStatement } from './RemStatement';
 import { Statement } from './Statement';
 import { SStatements } from './Statements';
-import { ConstExpression, Expression, BinaryOpExpression, UnaryOpExpression, VarRefExpression } from './OperatorExp';
+import { LiteralExpression, Expression, BinaryOpExpression, UnaryOpExpression, VarRefExpression } from './OperatorExp';
 import { SLetStatement, ILetStatement, ALetStatement } from './LetStatement';
 import { SRunStatement, IRunStatement, ARunStatement } from './RunStatement';
 
@@ -696,18 +696,18 @@ export class Parser {
     /**
      * constExpression ::= NumberLex | StringLex
      */
-    constExpression() : ConstExpression | null {
+    constExpression() : LiteralExpression | null {
         this.log('constExpression() ptr=', this.ptr.gets(3))
 
         if( this.ptr.eof )return null
         let lx = this.ptr.get()
         if( lx instanceof NumberLex ){
             this.ptr.move(1)
-            return new ConstExpression( lx, lx.value )
+            return new LiteralExpression( lx, lx.value )
         }
         if( lx instanceof StringLex ){
             this.ptr.move(1)
-            return new ConstExpression( lx, lx.value )
+            return new LiteralExpression( lx, lx.value )
         }
         return null
     }

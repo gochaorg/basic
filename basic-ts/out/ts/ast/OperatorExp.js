@@ -13,42 +13,72 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var TreeIterator_1 = require("../TreeIterator");
+var TreeIt_1 = require("../TreeIt");
 var AExpression = /** @class */ (function () {
     function AExpression() {
     }
-    /**
-     * Обход всех дочерних узлов включая себя
-     * @param f функция приемник
-     */
-    AExpression.prototype.each = function (f) {
-        TreeIterator_1.TreeIt.each(this, function (n) { return n.children; }, function (n) {
-            f(n);
-        });
-    };
-    AExpression.prototype.minMaxLex = function () {
-        var minl = null;
-        var maxl = null;
-    };
+    Object.defineProperty(AExpression.prototype, "treeList", {
+        get: function () {
+            return TreeIt_1.TreeIt.list(this, function (n) { return n.children; });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AExpression.prototype, "treeLexList", {
+        get: function () {
+            var arr = [];
+            this.treeList.forEach(function (exp) {
+                exp.value.lexems.forEach(function (lx) { return arr.push(lx); });
+            });
+            return arr;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AExpression.prototype, "leftTreeLex", {
+        get: function () {
+            var lxs = this.treeLexList;
+            if (lxs.length < 1)
+                return undefined;
+            if (lxs.length == 1)
+                return lxs[0];
+            return lxs.reduce(function (a, b) { return a.begin > b.begin ? b : a; });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AExpression.prototype, "rightTreeLex", {
+        get: function () {
+            var lxs = this.treeLexList;
+            if (lxs.length < 1)
+                return undefined;
+            if (lxs.length == 1)
+                return lxs[0];
+            return lxs.reduce(function (a, b) { return a.begin > b.begin ? a : b; });
+        },
+        enumerable: true,
+        configurable: true
+    });
     return AExpression;
 }());
 exports.AExpression = AExpression;
 /**
  * Константное значение (Литерал - строка/число/и т.д...)
  */
-var ConstExpression = /** @class */ (function (_super) {
-    __extends(ConstExpression, _super);
-    function ConstExpression(lex, value) {
+var LiteralExpression = /** @class */ (function (_super) {
+    __extends(LiteralExpression, _super);
+    function LiteralExpression(lex, value) {
         var _this = _super.call(this) || this;
         _this.lex = lex;
         _this.value = value;
         _this.lexems = [lex];
         _this.children = [];
+        _this.kind = 'Literal';
         return _this;
     }
-    return ConstExpression;
+    return LiteralExpression;
 }(AExpression));
-exports.ConstExpression = ConstExpression;
+exports.LiteralExpression = LiteralExpression;
 /**
  * Ссылка на переменную
  */
@@ -56,9 +86,10 @@ var VarRefExpression = /** @class */ (function (_super) {
     __extends(VarRefExpression, _super);
     function VarRefExpression(lex) {
         var _this = _super.call(this) || this;
-        _this.lex = lex;
+        _this.id = lex;
         _this.lexems = [lex];
         _this.children = [];
+        _this.kind = 'VarRef';
         return _this;
     }
     return VarRefExpression;
@@ -76,6 +107,7 @@ var BinaryOpExpression = /** @class */ (function (_super) {
         _this.right = right;
         _this.lexems = [op];
         _this.children = [left, right];
+        _this.kind = 'BinaryOperator';
         return _this;
     }
     return BinaryOpExpression;
@@ -92,6 +124,7 @@ var UnaryOpExpression = /** @class */ (function (_super) {
         _this.base = base;
         _this.lexems = [op];
         _this.children = [base];
+        _this.kind = 'UnaryOperator';
         return _this;
     }
     return UnaryOpExpression;
