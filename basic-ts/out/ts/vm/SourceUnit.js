@@ -93,7 +93,7 @@ var SourceUnit = /** @class */ (function () {
             var res = this;
             if (stmts) {
                 var sstmts = [];
-                //const istmts:
+                var istmts = [];
                 if (presult && presult.statments) {
                     presult.statments(stmts);
                 }
@@ -103,9 +103,15 @@ var SourceUnit = /** @class */ (function () {
                         res = res.set(st.sourceLine, st);
                         sstmts.push(st);
                     }
+                    else {
+                        istmts.push(st);
+                    }
                 }
                 if (presult && presult.sources) {
                     presult.sources(sstmts);
+                }
+                if (presult && presult.immediateStatements) {
+                    presult.immediateStatements(istmts);
                 }
             }
             return res;

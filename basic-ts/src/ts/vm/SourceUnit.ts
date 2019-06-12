@@ -29,6 +29,12 @@ export interface ParseResult {
      * @param statements выражения
      */
     sources?(statements:Statement[]):any
+
+    /**
+     * Выражения включенные которые не именют номер строк
+     * @param statements выражения
+     */
+    immediateStatements?(statements:Statement[]):any
 }
 
 /**
@@ -110,7 +116,7 @@ export class SourceUnit {
             let res : SourceUnit = this
             if( stmts ){
                 const sstmts:Statement[] = []
-                //const istmts:
+                const istmts:Statement[] = []
                 if( presult && presult.statments ){
                     presult.statments( stmts )
                 }
@@ -118,10 +124,15 @@ export class SourceUnit {
                     if( st.sourceLine ){
                         res = res.set( st.sourceLine, st )
                         sstmts.push( st )
+                    }else {
+                        istmts.push( st )
                     }
                 }
                 if( presult && presult.sources ){
                     presult.sources( sstmts )
+                }
+                if( presult && presult.immediateStatements ){
+                    presult.immediateStatements( istmts )
                 }
             }
             return res
