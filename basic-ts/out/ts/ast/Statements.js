@@ -14,16 +14,16 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var Statement_1 = require("./Statement");
-var AStatements = /** @class */ (function (_super) {
-    __extends(AStatements, _super);
-    function AStatements(begin, end, statements) {
+var Statements = /** @class */ (function (_super) {
+    __extends(Statements, _super);
+    function Statements(begin, end, statements) {
         var _this = _super.call(this) || this;
         _this.begin = begin;
         _this.end = end;
         _this.statements = statements;
         return _this;
     }
-    return AStatements;
+    return Statements;
 }(Statement_1.Statement));
-exports.AStatements = AStatements;
+exports.Statements = Statements;
 //# sourceMappingURL=Statements.js.map

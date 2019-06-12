@@ -14,9 +14,9 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var Statement_1 = require("./Statement");
-var ARunStatement = /** @class */ (function (_super) {
-    __extends(ARunStatement, _super);
-    function ARunStatement(begin, end, line) {
+var RunStatement = /** @class */ (function (_super) {
+    __extends(RunStatement, _super);
+    function RunStatement(begin, end, line) {
         var _this = _super.call(this) || this;
         _this.begin = begin;
         _this.end = end;
@@ -24,7 +24,7 @@ var ARunStatement = /** @class */ (function (_super) {
         _this.kind = 'Run';
         return _this;
     }
-    return ARunStatement;
+    return RunStatement;
 }(Statement_1.Statement));
-exports.ARunStatement = ARunStatement;
+exports.RunStatement = RunStatement;
 //# sourceMappingURL=RunStatement.js.map

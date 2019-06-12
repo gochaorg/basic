@@ -1,7 +1,7 @@
 import { Statement } from './Statement'
 import { Lex, RemLex, SourceLineBeginLex, IDLex, NumberLex } from './Lexer'
 
-export class ARunStatement extends Statement {
+export class RunStatement extends Statement {
     readonly begin:Lex
     readonly end:Lex
     readonly line?:NumberLex

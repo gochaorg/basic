@@ -1,7 +1,7 @@
 import { Statement } from './Statement'
 import { Lex } from './Lexer'
 
-export class AStatements extends Statement {
+export class Statements extends Statement {
     readonly begin:Lex
     readonly end:Lex
     readonly statements:ReadonlyArray<Statement>

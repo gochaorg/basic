@@ -1,6 +1,6 @@
 import { Statement } from "../ast/Statement";
 import { Parser } from "../ast/Parser";
-import { AStatements } from "../ast/Statements";
+import { Statements } from "../ast/Statements";
 
 /**
  * Исходная строка
@@ -22,7 +22,7 @@ export interface ParseResult {
      * Выражения парсинга
      * @param statements выражения
      */
-    statments?(statements:AStatements):any
+    statments?(statements:Statements):any
 
     /**
      * Выражения включенные в исходники
