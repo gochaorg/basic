@@ -17,4 +17,5 @@ export class LetStatement extends Statement {
         this.value = value
         this.kind = 'Let'
     }
+    get varname(){ return this.variable.id }
 }

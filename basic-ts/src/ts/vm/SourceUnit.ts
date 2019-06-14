@@ -38,6 +38,26 @@ export interface ParseResult {
 }
 
 /**
+ * Исходная строка
+ */
+export type IDXSourceLine = {
+    /**
+     * Выражение BASIC
+     */
+    statement: Statement
+
+    /**
+     * Номер BASIC строки
+     */
+    line: number
+
+    /**
+     * Индекс строки
+     */
+    index: number
+}
+
+/**
  * Исходный текст
  */
 export class SourceUnit {
@@ -75,13 +95,25 @@ export class SourceUnit {
      * Возвращает исходную строку (номер, строка / индекс) по ее номеру
      * @param line номер строки
      */
-    find( line:number ) : {sline:SourceLine, index:number} | null {
+    find( line:number ) : IDXSourceLine | null {
         if( line<0 )return null
         for( let i in this.sourceLines ){
             let sline = this.sourceLines[i]
-            if( sline.line == line )return {sline:sline, index:parseInt(i)}
+            if( sline.line == line ){
+                return {statement: sline.code, index:parseInt(i), line:sline.line}
+            }
         }
         return null
+    }
+
+    /**
+     * Возвращает исходную строку (номер, строка / индекс) по ее номеру
+     * @param line номер строки
+     */
+    line( line:number ) : IDXSourceLine {
+        const res = this.find(line)
+        if( res )return res
+        throw new Error(`source line with number ${line} not found`)
     }
 
     /**
@@ -139,4 +171,12 @@ export class SourceUnit {
         }
         return this
     }
+}
+
+/**
+ * Парсинг исходника
+ * @param source исходник
+ */
+export function parse(source:string):SourceUnit {
+    return new SourceUnit().parse(source)
 }

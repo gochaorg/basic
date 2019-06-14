@@ -298,9 +298,7 @@ export class Parser {
         let leftOp = this.mulExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && 
-                (lx.keyWord=='^') 
-            ){
+            if( lx instanceof OperatorLex && lx.pow ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -327,9 +325,7 @@ export class Parser {
         let leftOp = this.intDivExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && 
-                (lx.keyWord=='*'  || lx.keyWord=='/') 
-            ){
+            if( lx instanceof OperatorLex && (lx.mult || lx.div) ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -356,9 +352,7 @@ export class Parser {
         let leftOp = this.modExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && 
-                (lx.keyWord=='\\') 
-            ){
+            if( lx instanceof OperatorLex && lx.idiv ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -383,19 +377,10 @@ export class Parser {
         if( this.ptr.eof )return null
         this.ptr.push()
 
-        // let unary = false
-        // let unaryLx = this.ptr.get()
-        // if( unaryLx instanceof OperatorLex && (unaryLx.keyWord=='-' || unaryLx.keyWord=='+')){
-        //     this.ptr.move(1)
-        //     unary = true
-        // }
-
         let leftOp = this.plusExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && 
-                (lx.keyWord=='MOD') 
-            ){
+            if( lx instanceof OperatorLex && lx.mod ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -408,9 +393,6 @@ export class Parser {
                 }
             }else{
                 this.ptr.drop()
-                // if( unary ){
-                //     return new UnaryOpExpression(unaryLx as OperatorLex, leftOp)
-                // }
                 return leftOp
             }
         }
@@ -429,9 +411,7 @@ export class Parser {
         let leftOp = this.relationExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && 
-                (lx.keyWord=='+'  || lx.keyWord=='-') 
-            ){
+            if( lx instanceof OperatorLex && (lx.plus || lx.minus) ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -461,13 +441,7 @@ export class Parser {
         let leftOp = this.notExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && 
-                (lx.keyWord=='='  || lx.keyWord=='<>' ||
-                 lx.keyWord=='><' || lx.keyWord=='<'  || lx.keyWord=='>' ||
-                 lx.keyWord=='<=' || lx.keyWord=='>=' ||
-                 lx.keyWord=='=<' || lx.keyWord=='=>'
-                ) 
-            ){
+            if( lx instanceof OperatorLex && lx.ordReleation ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -492,7 +466,7 @@ export class Parser {
         if( this.ptr.eof )return null
         
         let lx = this.ptr.get()
-        if( lx instanceof OperatorLex && lx.keyWord=='NOT' ){
+        if( lx instanceof OperatorLex && lx.not ){
             this.ptr.push()
             this.ptr.move(1)
             let exp = this.andExpression()
@@ -518,7 +492,7 @@ export class Parser {
         let leftOp = this.orExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.keyWord=='AND' ){
+            if( lx instanceof OperatorLex && lx.and ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -545,7 +519,7 @@ export class Parser {
         let leftOp = this.xorExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.keyWord=='OR' ){
+            if( lx instanceof OperatorLex && lx.or ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -572,7 +546,7 @@ export class Parser {
         let leftOp = this.eqvExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.keyWord=='XOR' ){
+            if( lx instanceof OperatorLex && lx.xor ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -599,7 +573,7 @@ export class Parser {
         let leftOp = this.impExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.keyWord=='EQV' ){
+            if( lx instanceof OperatorLex && lx.eqv ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){
@@ -635,7 +609,7 @@ export class Parser {
         let leftOp = this.baseValueExpression()
         if( leftOp ){
             let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.keyWord=='IMP' ){
+            if( lx instanceof OperatorLex && lx.imp ){
                 this.ptr.move(1)
                 let rightOp = this.expression()
                 if( rightOp ){

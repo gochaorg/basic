@@ -56,10 +56,21 @@ var SourceUnit = /** @class */ (function () {
             return null;
         for (var i in this.sourceLines) {
             var sline = this.sourceLines[i];
-            if (sline.line == line)
-                return { sline: sline, index: parseInt(i) };
+            if (sline.line == line) {
+                return { statement: sline.code, index: parseInt(i), line: sline.line };
+            }
         }
         return null;
+    };
+    /**
+     * Возвращает исходную строку (номер, строка / индекс) по ее номеру
+     * @param line номер строки
+     */
+    SourceUnit.prototype.line = function (line) {
+        var res = this.find(line);
+        if (res)
+            return res;
+        throw new Error("source line with number " + line + " not found");
     };
     /**
      * Добавляет строку и возвращает новый объект исходного когда
@@ -121,4 +132,12 @@ var SourceUnit = /** @class */ (function () {
     return SourceUnit;
 }());
 exports.SourceUnit = SourceUnit;
+/**
+ * Парсинг исходника
+ * @param source исходник
+ */
+function parse(source) {
+    return new SourceUnit().parse(source);
+}
+exports.parse = parse;
 //# sourceMappingURL=SourceUnit.js.map

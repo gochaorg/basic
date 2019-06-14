@@ -8,13 +8,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var Ast = __importStar(require("../ts/ast/Lexer"));
-var lexs = Ast.lexems(' RUN REM LIST', [Ast.WhiteSpaceLex.parse, Ast.KeyWordLex.parser(['RUN', 'REM', 'LIST'])]);
+var lexs = Ast.lexems(' RUN REM LIST', [Ast.WhiteSpaceLex.parse,
+    Ast.KeyWordLex.parser(true, ['RUN', 'REM', 'LIST'])
+]);
 console.log(lexs);
 console.log('===== REM =================================================');
 console.log(Ast.lexems(' REM LIST comment\n LIST  REM 1234', [
     Ast.WhiteSpaceLex.parse,
     Ast.RemLex.parse,
-    Ast.KeyWordLex.parser(['RUN', 'REM', 'LIST'])
+    Ast.KeyWordLex.parser(true, ['RUN', 'REM', 'LIST'])
 ]));
 console.log('===== NUMS =================================================');
 console.log(Ast.lexems(' 12 014 0 &HFF &o010 +14 -23 +15.67 34.23 10.34e+1', [
@@ -29,7 +31,7 @@ console.log(Ast.lexems(' "str 1" "str2" ', [
 console.log('===== Key Words =================================================');
 console.log(Ast.lexems(' aa abc ab a ab abc ', [
     Ast.WhiteSpaceLex.parse,
-    Ast.KeyWordLex.parser(['a', 'ab', 'abc', 'c', 'b', 'aa', 'ac'])
+    Ast.KeyWordLex.parser(true, ['a', 'ab', 'abc', 'c', 'b', 'aa', 'ac'])
 ]));
 console.log('===== ID =================================================');
 console.log(Ast.lexems('A B1 B$', [Ast.WhiteSpaceLex.parse, Ast.IDLex.parse]));

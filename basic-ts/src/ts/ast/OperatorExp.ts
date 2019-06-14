@@ -93,6 +93,7 @@ export class VarRefExpression extends AExpression implements Expression {
         this.children = []
         this.kind = 'VarRef'
     }
+    get varname() { return this.id.id }
 }
 
 /**

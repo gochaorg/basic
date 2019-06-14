@@ -92,6 +92,11 @@ var VarRefExpression = /** @class */ (function (_super) {
         _this.kind = 'VarRef';
         return _this;
     }
+    Object.defineProperty(VarRefExpression.prototype, "varname", {
+        get: function () { return this.id.id; },
+        enumerable: true,
+        configurable: true
+    });
     return VarRefExpression;
 }(AExpression));
 exports.VarRefExpression = VarRefExpression;

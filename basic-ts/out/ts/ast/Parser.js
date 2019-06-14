@@ -256,8 +256,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.mulExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex &&
-                (lx.keyWord == '^')) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.pow) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -284,8 +283,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.intDivExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex &&
-                (lx.keyWord == '*' || lx.keyWord == '/')) {
+            if (lx instanceof Lexer_1.OperatorLex && (lx.mult || lx.div)) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -312,8 +310,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.modExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex &&
-                (lx.keyWord == '\\')) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.idiv) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -337,17 +334,10 @@ var Parser = /** @class */ (function () {
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        // let unary = false
-        // let unaryLx = this.ptr.get()
-        // if( unaryLx instanceof OperatorLex && (unaryLx.keyWord=='-' || unaryLx.keyWord=='+')){
-        //     this.ptr.move(1)
-        //     unary = true
-        // }
         var leftOp = this.plusExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex &&
-                (lx.keyWord == 'MOD')) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.mod) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -361,9 +351,6 @@ var Parser = /** @class */ (function () {
             }
             else {
                 this.ptr.drop();
-                // if( unary ){
-                //     return new UnaryOpExpression(unaryLx as OperatorLex, leftOp)
-                // }
                 return leftOp;
             }
         }
@@ -381,8 +368,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.relationExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex &&
-                (lx.keyWord == '+' || lx.keyWord == '-')) {
+            if (lx instanceof Lexer_1.OperatorLex && (lx.plus || lx.minus)) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -411,11 +397,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.notExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex &&
-                (lx.keyWord == '=' || lx.keyWord == '<>' ||
-                    lx.keyWord == '><' || lx.keyWord == '<' || lx.keyWord == '>' ||
-                    lx.keyWord == '<=' || lx.keyWord == '>=' ||
-                    lx.keyWord == '=<' || lx.keyWord == '=>')) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.ordReleation) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -439,7 +421,7 @@ var Parser = /** @class */ (function () {
         if (this.ptr.eof)
             return null;
         var lx = this.ptr.get();
-        if (lx instanceof Lexer_1.OperatorLex && lx.keyWord == 'NOT') {
+        if (lx instanceof Lexer_1.OperatorLex && lx.not) {
             this.ptr.push();
             this.ptr.move(1);
             var exp = this.andExpression();
@@ -463,7 +445,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.orExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.keyWord == 'AND') {
+            if (lx instanceof Lexer_1.OperatorLex && lx.and) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -490,7 +472,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.xorExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.keyWord == 'OR') {
+            if (lx instanceof Lexer_1.OperatorLex && lx.or) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -517,7 +499,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.eqvExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.keyWord == 'XOR') {
+            if (lx instanceof Lexer_1.OperatorLex && lx.xor) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -544,7 +526,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.impExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.keyWord == 'EQV') {
+            if (lx instanceof Lexer_1.OperatorLex && lx.eqv) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {
@@ -577,7 +559,7 @@ var Parser = /** @class */ (function () {
         var leftOp = this.baseValueExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.keyWord == 'IMP') {
+            if (lx instanceof Lexer_1.OperatorLex && lx.imp) {
                 this.ptr.move(1);
                 var rightOp = this.expression();
                 if (rightOp) {

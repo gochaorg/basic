@@ -1,4 +1,7 @@
 "use strict";
+/**
+ * Работа с лексемами BASIC
+ */
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -245,7 +248,7 @@ var KeyWordLex = /** @class */ (function (_super) {
         _this.keyWord = keyWord;
         return _this;
     }
-    KeyWordLex.parser = function (keyWords, keyWordBuilder) {
+    KeyWordLex.parser = function (ignorecase, keyWords, keyWordBuilder) {
         keyWords = keyWords.sort(function (a, b) { return 0 - (a.length - b.length); });
         return function (str, off) {
             if (off >= str.length)
@@ -253,7 +256,8 @@ var KeyWordLex = /** @class */ (function (_super) {
             for (var _i = 0, keyWords_1 = keyWords; _i < keyWords_1.length; _i++) {
                 var kw = keyWords_1[_i];
                 var ss = str.substring(off, off + kw.length);
-                if (ss == kw) {
+                if ((ignorecase && ss.toUpperCase() == kw.toUpperCase()) ||
+                    (!ignorecase && ss == kw)) {
                     //return new KeyWordLex(ss,off,off+ss.length)
                     if (keyWordBuilder) {
                         return keyWordBuilder(ss, off, off + ss.length);
@@ -282,7 +286,7 @@ var NewLineLex = /** @class */ (function (_super) {
         _this.kind = 'NewLineSeparator';
         return _this;
     }
-    NewLineLex.parse = KeyWordLex.parser(['\n\r', '\r\n', '\n', '\r'], function (kw, begin, end) { return new NewLineLex(kw, begin, end); });
+    NewLineLex.parse = KeyWordLex.parser(false, ['\n\r', '\r\n', '\n', '\r'], function (kw, begin, end) { return new NewLineLex(kw, begin, end); });
     return NewLineLex;
 }(KeyWordLex));
 exports.NewLineLex = NewLineLex;
@@ -296,7 +300,107 @@ var OperatorLex = /** @class */ (function (_super) {
         _this.kind = 'OperatorLex';
         return _this;
     }
-    OperatorLex.parse = KeyWordLex.parser([
+    Object.defineProperty(OperatorLex.prototype, "pow", {
+        get: function () { return this.keyWord != null && this.keyWord == '^'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "mult", {
+        get: function () { return this.keyWord != null && this.keyWord == '*'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "div", {
+        get: function () { return this.keyWord != null && this.keyWord == '/'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "idiv", {
+        get: function () { return this.keyWord != null && this.keyWord == '\\'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "mod", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'MOD'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "plus", {
+        get: function () { return this.keyWord != null && this.keyWord == '+'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "minus", {
+        get: function () { return this.keyWord != null && this.keyWord == '-'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "equals", {
+        get: function () { return this.keyWord != null && this.keyWord == '='; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "notEquals", {
+        get: function () { return this.keyWord != null && (this.keyWord == '<>' || this.keyWord == '><'); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "less", {
+        get: function () { return this.keyWord != null && this.keyWord == '<'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "lesOrEquals", {
+        get: function () { return this.keyWord != null && (this.keyWord == '<=' || this.keyWord == '=<'); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "more", {
+        get: function () { return this.keyWord != null && this.keyWord == '>'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "moreOrEquals", {
+        get: function () { return this.keyWord != null && (this.keyWord == '>=' || this.keyWord == '=>'); },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "ordReleation", {
+        get: function () { return this.more || this.moreOrEquals || this.equals || this.notEquals || this.lesOrEquals || this.less; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "not", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'NOT'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "and", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'AND'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "or", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'OR'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "xor", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'XOR'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "eqv", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'EQV'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "imp", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'IMP'; },
+        enumerable: true,
+        configurable: true
+    });
+    OperatorLex.parse = KeyWordLex.parser(true, [
         '(', ')',
         // математические операции в порядке уменьшения приоритета
         '^',
@@ -330,7 +434,7 @@ var StatementLex = /** @class */ (function (_super) {
         _this.kind = 'StatementLex';
         return _this;
     }
-    StatementLex.parse = KeyWordLex.parser([
+    StatementLex.parse = KeyWordLex.parser(true, [
         'LET',
         'RUN',
         'LIST',
@@ -732,5 +836,4 @@ function parseBasicLexs(source) {
     return filter(res).dropNewLines.lexs;
 }
 exports.parseBasicLexs = parseBasicLexs;
-//}
 //# sourceMappingURL=Lexer.js.map

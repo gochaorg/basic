@@ -25,6 +25,11 @@ var LetStatement = /** @class */ (function (_super) {
         _this.kind = 'Let';
         return _this;
     }
+    Object.defineProperty(LetStatement.prototype, "varname", {
+        get: function () { return this.variable.id; },
+        enumerable: true,
+        configurable: true
+    });
     return LetStatement;
 }(Statement_1.Statement));
 exports.LetStatement = LetStatement;
