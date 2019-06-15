@@ -56,6 +56,9 @@ export function input( attribs?: {[index:string]:any} ) : HtmlElementBuilder<HTM
 export function textInput( attribs?: {[index:string]:any} ) {
     return el<HTMLInputElement>('input',attribs).attr('type','text')
 }
+export function textArea( attribs?: {[index:string]:any} ) {
+    return el<HTMLTextAreaElement>('textarea',attribs)
+}
 export function button( attribs?: {[index:string]:any} ) : HtmlElementBuilder<HTMLButtonElement> {
     return el( 'button', attribs )
 }

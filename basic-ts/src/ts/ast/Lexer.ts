@@ -5,8 +5,11 @@
 /**
  * Определяет лексему
  */
-export interface Lex {        
+export interface Lex {
+    /** Начало лексемы в тексте */
     readonly begin:number
+
+    /** Конец лексемы в тексте */
     readonly end:number
 }
 
@@ -14,7 +17,7 @@ export interface Lex {
  * Абстрактная поддержка лексем
  */
 export abstract class AbstractLex implements Lex {
-    readonly begin: number;        
+    readonly begin: number;
     readonly end: number;
     constructor(begin?:number, end?:number){
         if( begin!==undefined ) {
@@ -58,7 +61,7 @@ export function lexems( text:string, lexs:((str:string, off:number)=>Lex|null)[]
 }
 
 /**
- * ПОддержка разных классов символов
+ * Поддержка разных классов символов
  */
 export class Chars {
     static isWS(str:string) {
@@ -178,7 +181,7 @@ export class KeyWordLex extends AbstractLex {
     static parser(ignorecase:boolean,keyWords:string[], keyWordBuilder?:(kw:string, kwBegin:number, kwEnd:number)=>Lex ) {
         keyWords = keyWords.sort( (a,b) => 0-(a.length - b.length) )
         return (str:string, off:number):Lex|null=>{
-            if( off>=str.length )return null                
+            if( off>=str.length )return null
             for( let kw of keyWords ){
                 let ss = str.substring(off,off+kw.length)
                 if( (ignorecase && ss.toUpperCase()==kw.toUpperCase()) || 

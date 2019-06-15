@@ -10,7 +10,10 @@ import { RunStatement } from "./RunStatement";
 import { BinaryOpExpression, UnaryOpExpression, LiteralExpression, VarRefExpression } from "./OperatorExp";
 import { TreeStep } from "../TreeIt";
 
-export class AstTreeStep extends TreeStep<any> {    
+/**
+Шаг при обходе дерева
+*/
+export class AstTreeStep extends TreeStep<any> {
 }
 
 export interface AstBeginEnd<T> {
@@ -59,14 +62,14 @@ export function walk( ts:AstTreeStep, visitor:AstVisitor ){
     if( ts.value instanceof RemStatement ){
         if( visitor.rem && visitor.rem.begin ){
             visitor.rem.begin( ts.value, ts )
-        }        
+        }
         if( visitor.rem && visitor.rem.end ){
             visitor.rem.end( ts.value, ts )
         }
     }
     //#endregion
     //#region LetStatement
-    if( ts.value instanceof LetStatement ){        
+    if( ts.value instanceof LetStatement ){
         if( visitor.let && visitor.let.begin ){
             visitor.let.begin( ts.value, ts )
         }

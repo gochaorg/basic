@@ -3,7 +3,7 @@ var HtmlWebpackPlugin = require('html-webpack-plugin');
 var WebpackCleanPlugin = require('webpack-clean');
 
 module.exports = {
-    entry: './out/hello.js',
+    entry: './out/ts/hello.js',
     output: {
       filename: 'bundle.js',
       path: path.resolve(__dirname, 'dist')
@@ -26,6 +26,9 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: 'Like GW BASIC',
             template: './src/index.html'
-        })
+        }),
+        new CopyPlugin([
+            { from: 'src/**/*.css', to: '', flatten:true, ignore:['**/node_modules/**/*.css'] }
+        ])
     ]
   };

@@ -1,9 +1,10 @@
 import * as wu from './WidgetUtil'
+//const s = require('./Button.css');
 
 class GWBASICApp {
     //#region root : HTMLElement
-    get root(): HTMLElement|null { 
-        return document.getElementById('app'); 
+    get root(): HTMLElement|null {
+        return document.getElementById('app');
     }
     get appInnerHtml():string|null {
         if( this.root ){
@@ -28,14 +29,14 @@ class GWBASICApp {
     init(){
         if( this.root ){
             // header
-            wu.div().html('Like GWBasic').append(this.root)
+            // wu.div().html('Like GWBasic').append(this.root)
 
             // source block
-            wu.div({class:'source'}).append(this.root)
+            // wu.div({class:'source'}).append(this.root)
 
             // eval block
             const evalBlock = wu.div({class:'eval'}).append(this.root).el
-            const inp1 = wu.textInput().append(evalBlock).el
+            const inp1 = wu.textArea().append(evalBlock).el
             wu.button().html('eval').onclick( e => this.gwBasicEval(inp1.value) ).append(evalBlock)
         }
     }
