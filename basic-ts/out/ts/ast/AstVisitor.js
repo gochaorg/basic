@@ -22,6 +22,9 @@ var LetStatement_1 = require("./LetStatement");
 var RunStatement_1 = require("./RunStatement");
 var OperatorExp_1 = require("./OperatorExp");
 var TreeIt_1 = require("../TreeIt");
+/**
+Шаг при обходе дерева
+*/
 var AstTreeStep = /** @class */ (function (_super) {
     __extends(AstTreeStep, _super);
     function AstTreeStep() {

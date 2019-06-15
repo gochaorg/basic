@@ -69,7 +69,7 @@ function lexems(text, lexs) {
 }
 exports.lexems = lexems;
 /**
- * ПОддержка разных классов символов
+ * Поддержка разных классов символов
  */
 var Chars = /** @class */ (function () {
     function Chars() {

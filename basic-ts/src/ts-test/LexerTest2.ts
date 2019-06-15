@@ -8,11 +8,6 @@ let lexs1 = LX.parseBasicLexs(
     '99 REM finish\r\n'
 )
 
-const l1 = lexs1[1]
-if( l1 ){
-    console.log( l1.sourceCode.substring(l1.begin,l1.end) )
-}
-
 let lines = LX.filter(lexs1).lines
 for( let li=0; li<lines.length; li++ ){
     console.log( "line "+li )

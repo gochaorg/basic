@@ -1,0 +1,15 @@
+.eval textarea {
+    flex: 1;
+    min-height: 5em;
+}
+
+.eval {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+}
+
+.eval button {
+    flex-basis: 75px;
+    margin-left: 5px;
+}

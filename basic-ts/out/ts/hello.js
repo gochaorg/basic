@@ -8,6 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var wu = __importStar(require("./WidgetUtil"));
+//const s = require('./Button.css');
 var GWBASICApp = /** @class */ (function () {
     function GWBASICApp() {
     }
@@ -51,12 +52,12 @@ var GWBASICApp = /** @class */ (function () {
         var _this = this;
         if (this.root) {
             // header
-            wu.div().html('Like GWBasic').append(this.root);
+            // wu.div().html('Like GWBasic').append(this.root)
             // source block
-            wu.div({ class: 'source' }).append(this.root);
+            // wu.div({class:'source'}).append(this.root)
             // eval block
             var evalBlock = wu.div({ class: 'eval' }).append(this.root).el;
-            var inp1_1 = wu.textInput().append(evalBlock).el;
+            var inp1_1 = wu.textArea().append(evalBlock).el;
             wu.button().html('eval').onclick(function (e) { return _this.gwBasicEval(inp1_1.value); }).append(evalBlock);
         }
     };

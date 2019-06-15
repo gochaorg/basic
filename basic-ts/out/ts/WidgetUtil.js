@@ -63,6 +63,10 @@ function textInput(attribs) {
     return el('input', attribs).attr('type', 'text');
 }
 exports.textInput = textInput;
+function textArea(attribs) {
+    return el('textarea', attribs);
+}
+exports.textArea = textArea;
 function button(attribs) {
     return el('button', attribs);
 }
