@@ -62,7 +62,23 @@ export function astToBasic( root:ValidAstType|SourceUnit ):string{
     //#endregion
     //#region BinaryOpExpression
     if( root instanceof BinaryOpExpression ){
-        return `(${astToBasic(root.left)}) ${root.operator.keyWord} (${astToBasic(root.right)})`
+        let code = ''
+        
+        if( root.left.treeSize>1 ){            
+            code += '(' + astToBasic(root.left) + ')'
+        }else{
+            code += astToBasic(root.left)
+        }
+
+        code += root.operator.keyWord
+
+        if( root.right.treeSize>1 ){            
+            code += '(' + astToBasic(root.right) + ')'
+        }else{
+            code += astToBasic(root.right)
+        }
+
+        return code
     }
     //#endregion
     //#region LET

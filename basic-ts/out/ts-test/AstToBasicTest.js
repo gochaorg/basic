@@ -8,6 +8,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var su = __importStar(require("../ts/vm/SourceUnit"));
+var AstToBasic_1 = require("../ts/ast/AstToBasic");
 var su1 = new su.SourceUnit;
 console.log("parsing");
 console.log("======================");
@@ -19,7 +20,5 @@ su1 = su1.parse('10 REM cmnt\n' +
         //commands.forEach( cmd => console.log(cmd))
     }
 });
-console.log(su1.line(20).statement);
-//console.log( su1.line(20).statement )
-//console.log( astToBasic(su1.line(20).statement) )
+console.log(AstToBasic_1.astToBasic(su1.line(20).statement));
 //# sourceMappingURL=AstToBasicTest.js.map

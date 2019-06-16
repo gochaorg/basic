@@ -17,9 +17,4 @@ su1 = su1.parse(
     }
 )
 
-console.log( 
-    su1.line(20).statement 
-)
-
-//console.log( su1.line(20).statement )
-//console.log( astToBasic(su1.line(20).statement) )
+console.log( astToBasic(su1.line(20).statement) )

@@ -26,11 +26,23 @@ export interface Expression {
      * Описывает саму последнюю лексему в (под)дереве
      */
     rightTreeLex:Lex|undefined
+
+    /**
+     * Размер поддерева, т.е. кол-во узлов включая всех вложенных
+     */
+    treeSize:number
 }
 
 export abstract class AExpression implements Expression {
     abstract lexems: ReadonlyArray<Lex>
     abstract children: ReadonlyArray<Expression>
+
+    private treeSizeValue:number|undefined
+    get treeSize():number {
+        if( this.treeSizeValue!==undefined )return this.treeSizeValue
+        this.treeSizeValue = this.treeList.length
+        return this.treeSizeValue
+    }
 
     get treeList():TreeStep<Expression>[] {
         return TreeIt.list( this as Expression, (n) => n.children )

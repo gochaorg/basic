@@ -71,7 +71,21 @@ function astToBasic(root) {
     //#endregion
     //#region BinaryOpExpression
     if (root instanceof OperatorExp_1.BinaryOpExpression) {
-        return "(" + astToBasic(root.left) + ") " + root.operator.keyWord + " (" + astToBasic(root.right) + ")";
+        var code = '';
+        if (root.left.treeSize > 1) {
+            code += '(' + astToBasic(root.left) + ')';
+        }
+        else {
+            code += astToBasic(root.left);
+        }
+        code += root.operator.keyWord;
+        if (root.right.treeSize > 1) {
+            code += '(' + astToBasic(root.right) + ')';
+        }
+        else {
+            code += astToBasic(root.right);
+        }
+        return code;
     }
     //#endregion
     //#region LET

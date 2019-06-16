@@ -17,6 +17,16 @@ var TreeIt_1 = require("../TreeIt");
 var AExpression = /** @class */ (function () {
     function AExpression() {
     }
+    Object.defineProperty(AExpression.prototype, "treeSize", {
+        get: function () {
+            if (this.treeSizeValue !== undefined)
+                return this.treeSizeValue;
+            this.treeSizeValue = this.treeList.length;
+            return this.treeSizeValue;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(AExpression.prototype, "treeList", {
         get: function () {
             return TreeIt_1.TreeIt.list(this, function (n) { return n.children; });
