@@ -16,17 +16,16 @@ interface TestExp {
 }
 
 let testExpressions:TestExp[] = [
-    //{ code: '10 + 8*3', parseFn: (p)=>p.expression() },
-    //{ code: '10 - 8/3', parseFn: (p)=>p.expression() },
-    { code: 'A + B ^ C', parseFn: (p)=>p.expression(), debug:false },
-    { code: 'A IMP B', parseFn: (p)=>p.expression() },
-    { code: 'A EQV B OR ( C XOR D OR E AND F )', parseFn: (p)=>p.expression(), json:true },
-    { code: 'NOT B AND E', parseFn: (p)=>p.expression() },
-    { code: '2 < 3 AND 3 > 2 AND 4 = 4', parseFn: (p)=>p.expression(), json:true },
-    { code: '2 <= 3 AND 3 => 2 AND 4 <> 5', parseFn: (p)=>p.expression(), json:true },
-    { code: '2 => 3 AND 3 >= 2 AND 4 >< 5', parseFn: (p)=>p.expression(), json:true },
-    { code: '-1', parseFn: (p)=>p.expression(), json:true },
-    { code: '-1-2', parseFn: (p)=>p.expression(), json:true },
+    //{ code: 'A + B ^ C', parseFn: (p)=>p.expression(), debug:false },
+    //{ code: 'A IMP B', parseFn: (p)=>p.expression() },
+    //{ code: 'A EQV B OR ( C XOR D OR E AND F )', parseFn: (p)=>p.expression(), json:true },
+    //{ code: 'NOT B AND E', parseFn: (p)=>p.expression() },
+    //{ code: '2 < 3 AND 3 > 2 AND 4 = 4', parseFn: (p)=>p.expression(), json:true },
+    //{ code: '2 <= 3 AND 3 => 2 AND 4 <> 5', parseFn: (p)=>p.expression(), json:true },
+    //{ code: '2 => 3 AND 3 >= 2 AND 4 >< 5', parseFn: (p)=>p.expression(), json:true },
+    //{ code: '-1', parseFn: (p)=>p.expression(), json:true },
+    //{ code: '-1-2', parseFn: (p)=>p.expression(), json:true },
+    { code: '10*2+7', parseFn: (p)=>p.expression(), json:true },
 ]
 
 testExpressions.forEach( texp => {
