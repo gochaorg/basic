@@ -1,6 +1,7 @@
 var path = require('path');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var WebpackCleanPlugin = require('webpack-clean');
+var CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: './out/ts/hello.js',

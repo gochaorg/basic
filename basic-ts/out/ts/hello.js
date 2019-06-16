@@ -1,71 +1,57 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var wu = __importStar(require("./WidgetUtil"));
-//const s = require('./Button.css');
+var SourceUnit_1 = require("./vm/SourceUnit");
+var AstToBasic_1 = require("./ast/AstToBasic");
 var GWBASICApp = /** @class */ (function () {
     function GWBASICApp() {
+        this.suValue = new SourceUnit_1.SourceUnit;
     }
-    Object.defineProperty(GWBASICApp.prototype, "root", {
-        //#region root : HTMLElement
+    Object.defineProperty(GWBASICApp.prototype, "ui", {
         get: function () {
-            return document.getElementById('app');
+            return {
+                get sourceUnit() {
+                    return document.querySelector('#sourceUnit');
+                },
+                get sourceCode() {
+                    return document.querySelector('#sourceCode');
+                },
+                get parseSourceCode() {
+                    return document.querySelector('#parseSourceCode');
+                }
+            };
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(GWBASICApp.prototype, "appInnerHtml", {
-        get: function () {
-            if (this.root) {
-                return this.root.innerHTML;
-            }
-            return null;
-        },
-        set: function (html) {
-            if (html && this.root) {
-                this.root.innerHTML = html;
-            }
+    Object.defineProperty(GWBASICApp.prototype, "sourceUnit", {
+        get: function () { return this.suValue; },
+        set: function (su) {
+            this.suValue = su;
+            this.renderSourceUnit();
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(GWBASICApp.prototype, "sourceBlock", {
-        //#endregion
-        //#region sourceBlock : HTMLElement
-        get: function () {
-            if (this.root) {
-                return this.root.querySelector('.source');
-            }
-            return null;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    //#endregion
-    GWBASICApp.prototype.init = function () {
-        var _this = this;
-        if (this.root) {
-            // header
-            // wu.div().html('Like GWBasic').append(this.root)
-            // source block
-            // wu.div({class:'source'}).append(this.root)
-            // eval block
-            var evalBlock = wu.div({ class: 'eval' }).append(this.root).el;
-            var inp1_1 = wu.textArea().append(evalBlock).el;
-            wu.button().html('eval').onclick(function (e) { return _this.gwBasicEval(inp1_1.value); }).append(evalBlock);
+    GWBASICApp.prototype.parseBasic = function (command) {
+        this.sourceUnit = this.sourceUnit.parse(command);
+    };
+    GWBASICApp.prototype.renderSourceUnit = function () {
+        if (this.ui.sourceUnit) {
+            this.ui.sourceUnit.textContent = AstToBasic_1.astToBasic(this.sourceUnit);
         }
     };
-    GWBASICApp.prototype.gwBasicEval = function (command) {
-        if (this.sourceBlock) {
-            this.sourceBlock.textContent = command;
+    GWBASICApp.prototype.init = function () {
+        var _this = this;
+        if (this.ui.parseSourceCode && this.ui.sourceCode) {
+            var btn = this.ui.parseSourceCode;
+            var txt_1 = this.ui.sourceCode;
+            btn.addEventListener('click', function (e) { return _this.parseBasic(txt_1.value); });
+            txt_1.addEventListener('keydown', function (e) {
+                if (e.keyCode == 13 && e.ctrlKey) {
+                    _this.parseBasic(txt_1.value);
+                }
+            });
         }
-        console.log('eval command ' + command);
     };
     return GWBASICApp;
 }());
