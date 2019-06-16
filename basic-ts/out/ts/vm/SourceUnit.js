@@ -7,7 +7,7 @@ var Parser_1 = require("../ast/Parser");
 var SourceLine = /** @class */ (function () {
     function SourceLine(line, code) {
         this.line = line;
-        this.code = code;
+        this.statement = code;
     }
     return SourceLine;
 }());
@@ -57,7 +57,7 @@ var SourceUnit = /** @class */ (function () {
         for (var i in this.sourceLines) {
             var sline = this.sourceLines[i];
             if (sline.line == line) {
-                return { statement: sline.code, index: parseInt(i), line: sline.line };
+                return { statement: sline.statement, index: parseInt(i), line: sline.line };
             }
         }
         return null;

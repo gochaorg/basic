@@ -7,10 +7,10 @@ import { Statements } from "../ast/Statements";
  */
 export class SourceLine {
     readonly line: number
-    readonly code: Statement
+    readonly statement: Statement
     constructor(line:number, code:Statement){
         this.line = line
-        this.code = code
+        this.statement = code
     }
 }
 
@@ -100,7 +100,7 @@ export class SourceUnit {
         for( let i in this.sourceLines ){
             let sline = this.sourceLines[i]
             if( sline.line == line ){
-                return {statement: sline.code, index:parseInt(i), line:sline.line}
+                return {statement: sline.statement, index:parseInt(i), line:sline.line}
             }
         }
         return null

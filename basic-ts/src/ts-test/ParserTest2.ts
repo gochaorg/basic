@@ -16,7 +16,7 @@ interface TestExp {
 }
 
 let testExpressions:TestExp[] = [
-    //{ code: '10 + 8*3', parseFn: (p)=>p.expression() },
+    //{ statement: '10 + 8*3', parseFn: (p)=>p.expression() },
     { code: '10 REM hello', parseFn: (p)=>p.statement(), json:true },
     { code: '10 LET a = 1', parseFn: (p)=>p.statement(), json:true },
     { code: '10 LET b = c < d', parseFn: (p)=>p.statement(), json:true },
