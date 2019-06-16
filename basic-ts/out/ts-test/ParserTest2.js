@@ -10,7 +10,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var Basic = __importStar(require("../ts/ast/Parser"));
 console.log('== Basic parser ==');
 var testExpressions = [
-    //{ code: '10 + 8*3', parseFn: (p)=>p.expression() },
+    //{ statement: '10 + 8*3', parseFn: (p)=>p.expression() },
     { code: '10 REM hello', parseFn: function (p) { return p.statement(); }, json: true },
     { code: '10 LET a = 1', parseFn: function (p) { return p.statement(); }, json: true },
     { code: '10 LET b = c < d', parseFn: function (p) { return p.statement(); }, json: true },

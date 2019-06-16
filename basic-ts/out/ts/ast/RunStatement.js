@@ -20,7 +20,7 @@ var RunStatement = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.begin = begin;
         _this.end = end;
-        _this.line = line;
+        _this.runLine = line;
         _this.kind = 'Run';
         return _this;
     }
