@@ -1,4 +1,7 @@
 import * as Basic from '../ts/ast/Parser'
+import { Statement } from '../ts/ast/Statement';
+import { BinaryOpExpression, UnaryOpExpression } from '../ts/ast/OperatorExp';
+import { astToBasic } from '../ts/ast/AstToBasic';
 
 console.log('== Basic parser ==')
 // console.log(
@@ -11,6 +14,7 @@ console.log('== Basic parser ==')
 interface TestExp {
     debug?: boolean,
     json?:boolean,
+    toBasic?:boolean,
     code: string,
     parseFn: (parser:Basic.Parser) => any
 }
@@ -24,8 +28,8 @@ let testExpressions:TestExp[] = [
     //{ code: '2 <= 3 AND 3 => 2 AND 4 <> 5', parseFn: (p)=>p.expression(), json:true },
     //{ code: '2 => 3 AND 3 >= 2 AND 4 >< 5', parseFn: (p)=>p.expression(), json:true },
     //{ code: '-1', parseFn: (p)=>p.expression(), json:true },
-    //{ code: '-1-2', parseFn: (p)=>p.expression(), json:true },
-    { code: '10*2+7', parseFn: (p)=>p.expression(), json:true },
+    //{ code: '-1-2', parseFn: (p)=>p.expression(), json:true, toBasic: true },
+    { code: '10*2+7', parseFn: (p)=>p.expression(), debug:true, json:false, toBasic: true },
 ]
 
 testExpressions.forEach( texp => {
@@ -35,6 +39,15 @@ testExpressions.forEach( texp => {
     if( texp.debug!=undefined )parser.debug = texp.debug
 
     let presult = texp.parseFn( parser )
+    
+    if( texp.toBasic ){
+        if( presult instanceof BinaryOpExpression 
+        ||  presult instanceof UnaryOpExpression
+        ){
+            console.log("toBasic: ",astToBasic(presult))
+        }
+    }
+
     if( texp.json && presult ){
         console.log( "result (json):" )
         console.log( JSON.stringify(presult,null,4) )

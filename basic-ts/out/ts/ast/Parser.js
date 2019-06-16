@@ -210,11 +210,11 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * expression ::= powExpression | bracketExpression
+     * expression ::= impExpression | bracketExpression
      */
     Parser.prototype.expression = function () {
         this.log('expression() ptr=', this.ptr.gets(3));
-        var powExp = this.powExpression();
+        var powExp = this.impExpression();
         if (powExp)
             return powExp;
         var brExp = this.bracketExpression();
@@ -246,19 +246,64 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * powExpression ::= mulExpression [ '^' expression ]
+     * impExpression ::= eqvExpression [ 'IMP' eqvExpression ]
      */
-    Parser.prototype.powExpression = function () {
-        this.log('powExpression() ptr=', this.ptr.gets(3));
+    Parser.prototype.impExpression = function () {
+        this.log('impExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.mulExpression();
+        // let unary = false
+        // let unaryLx = this.ptr.get()
+        // if( unaryLx instanceof OperatorLex && (unaryLx.keyWord=='-' || unaryLx.keyWord=='+')){
+        //     this.ptr.move(1)
+        //     unary = true
+        // }
+        var leftOp = this.eqvExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.pow) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.imp) {
                 this.ptr.move(1);
-                var rightOp = this.expression();
+                var rightOp = this.eqvExpression();
+                if (rightOp) {
+                    this.ptr.drop();
+                    // if( unary ){
+                    //     return new UnaryOpExpression(
+                    //         unaryLx as OperatorLex,
+                    //         new BinaryOpExpression(lx,leftOp,rightOp)
+                    //     )
+                    // }
+                    return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
+                }
+            }
+            else {
+                this.ptr.drop();
+                // if( unary ){
+                // return new UnaryOpExpression(
+                //     unaryLx as OperatorLex,
+                //     leftOp
+                // )
+                // }               
+                return leftOp;
+            }
+        }
+        this.ptr.pop();
+        return null;
+    };
+    /**
+     * eqvExpression ::= xorExpression [ 'EQV' xorExpression ]
+     */
+    Parser.prototype.eqvExpression = function () {
+        this.log('eqvExpression() ptr=', this.ptr.gets(3));
+        if (this.ptr.eof)
+            return null;
+        this.ptr.push();
+        var leftOp = this.xorExpression();
+        if (leftOp) {
+            var lx = this.ptr.get();
+            if (lx instanceof Lexer_1.OperatorLex && lx.eqv) {
+                this.ptr.move(1);
+                var rightOp = this.xorExpression();
                 if (rightOp) {
                     this.ptr.drop();
                     return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
@@ -273,19 +318,19 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * mulExpression ::= intDivExpression [ ( '*' | '/' ) expression ]
+     * xorExpression ::= orExpression [ 'XOR' orExpression ]
      */
-    Parser.prototype.mulExpression = function () {
-        this.log('mulExpression() ptr=', this.ptr.gets(3));
+    Parser.prototype.xorExpression = function () {
+        this.log('xorExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.intDivExpression();
+        var leftOp = this.orExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && (lx.mult || lx.div)) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.xor) {
                 this.ptr.move(1);
-                var rightOp = this.expression();
+                var rightOp = this.orExpression();
                 if (rightOp) {
                     this.ptr.drop();
                     return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
@@ -300,19 +345,19 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * intDivExpression ::= modExpression [ '\' expression ]
+     * orExpression ::= andExpression [ 'OR' andExpression ]
      */
-    Parser.prototype.intDivExpression = function () {
-        this.log('intDivExpression() ptr=', this.ptr.gets(3));
+    Parser.prototype.orExpression = function () {
+        this.log('orExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.modExpression();
+        var leftOp = this.andExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.idiv) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.or) {
                 this.ptr.move(1);
-                var rightOp = this.expression();
+                var rightOp = this.andExpression();
                 if (rightOp) {
                     this.ptr.drop();
                     return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
@@ -327,19 +372,123 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * modExpression ::= plusExpression [ 'MOD' expression ]
+     * andExpression ::= notExpression [ 'AND' notExpression ]
      */
-    Parser.prototype.modExpression = function () {
-        this.log('modExpression() ptr=', this.ptr.gets(3));
+    Parser.prototype.andExpression = function () {
+        this.log('andExpression() ptr=', this.ptr.gets(3));
+        if (this.ptr.eof)
+            return null;
+        this.ptr.push();
+        var leftOp = this.notExpression();
+        if (leftOp) {
+            var lx = this.ptr.get();
+            if (lx instanceof Lexer_1.OperatorLex && lx.and) {
+                this.ptr.move(1);
+                var rightOp = this.notExpression();
+                if (rightOp) {
+                    this.ptr.drop();
+                    return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
+                }
+            }
+            else {
+                this.ptr.drop();
+                return leftOp;
+            }
+        }
+        this.ptr.pop();
+        return null;
+    };
+    /**
+     * notExpression ::= ['NOT'] relationExpression
+     */
+    Parser.prototype.notExpression = function () {
+        this.log('notExpression() ptr=', this.ptr.gets(3));
+        if (this.ptr.eof)
+            return null;
+        var lx = this.ptr.get();
+        if (lx instanceof Lexer_1.OperatorLex && lx.not) {
+            this.ptr.push();
+            this.ptr.move(1);
+            var exp = this.relationExpression();
+            if (exp) {
+                this.ptr.drop();
+                return new OperatorExp_1.UnaryOpExpression(lx, exp);
+            }
+            this.ptr.pop();
+            return null;
+        }
+        return this.relationExpression();
+    };
+    /**
+     * relationExpression ::= plusExpression [ ('=', '<>', '><', '<', '>', '>=', '<=', '=>', '=<') plusExpression ]
+     */
+    Parser.prototype.relationExpression = function () {
+        this.log('relationExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
         var leftOp = this.plusExpression();
         if (leftOp) {
             var lx = this.ptr.get();
+            if (lx instanceof Lexer_1.OperatorLex && lx.ordReleation) {
+                this.ptr.move(1);
+                var rightOp = this.plusExpression();
+                if (rightOp) {
+                    this.ptr.drop();
+                    return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
+                }
+            }
+            else {
+                this.ptr.drop();
+                return leftOp;
+            }
+        }
+        this.ptr.pop();
+        return null;
+    };
+    /**
+     * plusExpression ::= modExpression [ ('+' | '-') modExpression ]
+     */
+    Parser.prototype.plusExpression = function () {
+        this.log('plusExpression() ptr=', this.ptr.gets(3));
+        if (this.ptr.eof)
+            return null;
+        this.ptr.push();
+        var leftOp = this.modExpression();
+        if (leftOp) {
+            var lx = this.ptr.get();
+            if (lx instanceof Lexer_1.OperatorLex && (lx.plus || lx.minus)) {
+                this.ptr.move(1);
+                var rightOp = this.modExpression();
+                this.log("plusExpression() right=", rightOp);
+                if (rightOp) {
+                    this.ptr.drop();
+                    this.log("plusExpression() succ=", lx.keyWord, leftOp, rightOp);
+                    return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
+                }
+            }
+            else {
+                this.ptr.drop();
+                return leftOp;
+            }
+        }
+        this.ptr.pop();
+        return null;
+    };
+    /**
+     * modExpression ::= intDivExpression [ 'MOD' intDivExpression ]
+     */
+    Parser.prototype.modExpression = function () {
+        this.log('modExpression() ptr=', this.ptr.gets(3));
+        if (this.ptr.eof)
+            return null;
+        this.ptr.push();
+        var leftOp = this.intDivExpression();
+        if (leftOp) {
+            var lx = this.ptr.get();
             if (lx instanceof Lexer_1.OperatorLex && lx.mod) {
                 this.ptr.move(1);
-                var rightOp = this.expression();
+                var rightOp = this.intDivExpression();
                 if (rightOp) {
                     this.ptr.drop();
                     var binOp = new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
@@ -358,48 +507,19 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * plusExpression ::= relationExpression [ ('+' | '-') expression ]
+     * intDivExpression ::= mulExpression [ '\' mulExpression ]
      */
-    Parser.prototype.plusExpression = function () {
-        this.log('plusExpression() ptr=', this.ptr.gets(3));
+    Parser.prototype.intDivExpression = function () {
+        this.log('intDivExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.relationExpression();
+        var leftOp = this.mulExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && (lx.plus || lx.minus)) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.idiv) {
                 this.ptr.move(1);
-                var rightOp = this.expression();
-                if (rightOp) {
-                    this.ptr.drop();
-                    return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
-                }
-            }
-            else {
-                this.ptr.drop();
-                return leftOp;
-            }
-        }
-        this.ptr.pop();
-        return null;
-    };
-    //unaryExpression(){        
-    //}
-    /**
-     * relationExpression ::= notExpression [ ('=', '<>', '><', '<', '>', '>=', '<=', '=>', '=<') expression ]
-     */
-    Parser.prototype.relationExpression = function () {
-        this.log('relationExpression() ptr=', this.ptr.gets(3));
-        if (this.ptr.eof)
-            return null;
-        this.ptr.push();
-        var leftOp = this.notExpression();
-        if (leftOp) {
-            var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.ordReleation) {
-                this.ptr.move(1);
-                var rightOp = this.expression();
+                var rightOp = this.mulExpression();
                 if (rightOp) {
                     this.ptr.drop();
                     return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
@@ -414,42 +534,23 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * notExpression ::= ['NOT'] andExpression
+     * mulExpression ::= powExpression [ ( '*' | '/' ) powExpression ]
      */
-    Parser.prototype.notExpression = function () {
-        this.log('notExpression() ptr=', this.ptr.gets(3));
-        if (this.ptr.eof)
-            return null;
-        var lx = this.ptr.get();
-        if (lx instanceof Lexer_1.OperatorLex && lx.not) {
-            this.ptr.push();
-            this.ptr.move(1);
-            var exp = this.andExpression();
-            if (exp) {
-                this.ptr.drop();
-                return new OperatorExp_1.UnaryOpExpression(lx, exp);
-            }
-            this.ptr.pop();
-            return null;
-        }
-        return this.andExpression();
-    };
-    /**
-     * andExpression ::= orExpression [ 'AND' expression ]
-     */
-    Parser.prototype.andExpression = function () {
-        this.log('andExpression() ptr=', this.ptr.gets(3));
+    Parser.prototype.mulExpression = function () {
+        this.log('mulExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.orExpression();
+        var leftOp = this.powExpression();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.and) {
+            if (lx instanceof Lexer_1.OperatorLex && (lx.mult || lx.div)) {
                 this.ptr.move(1);
-                var rightOp = this.expression();
+                var rightOp = this.powExpression();
+                this.log("mulExpression() rightOp=" + rightOp);
                 if (rightOp) {
                     this.ptr.drop();
+                    this.log("mulExpression() succ=", lx.keyWord, leftOp, rightOp);
                     return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
                 }
             }
@@ -462,26 +563,44 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * orExpression ::= xorExpression [ 'OR' expression ]
+     * powExpression ::= signedAtom [ '^' signedAtom ]
      */
-    Parser.prototype.orExpression = function () {
-        this.log('orExpression() ptr=', this.ptr.gets(3));
+    Parser.prototype.powExpression = function () {
+        this.log('powExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.xorExpression();
+        // let unary = false
+        // let unaryLx = this.ptr.get()
+        // if( unaryLx instanceof OperatorLex && (unaryLx.keyWord=='-' || unaryLx.keyWord=='+')){
+        //     this.ptr.move(1)
+        //     unary = true
+        // }
+        var leftOp = this.signedAtom();
         if (leftOp) {
             var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.or) {
+            if (lx instanceof Lexer_1.OperatorLex && lx.pow) {
                 this.ptr.move(1);
-                var rightOp = this.expression();
+                var rightOp = this.signedAtom();
                 if (rightOp) {
                     this.ptr.drop();
+                    // if( unary ){
+                    //     return new UnaryOpExpression(
+                    //         unaryLx as OperatorLex,
+                    //         new BinaryOpExpression(lx,leftOp,rightOp)
+                    //     )
+                    // }
                     return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
                 }
             }
             else {
                 this.ptr.drop();
+                // if( unary ){
+                //     return new UnaryOpExpression(
+                //         unaryLx as OperatorLex,
+                //         leftOp
+                //     )
+                // }
                 return leftOp;
             }
         }
@@ -489,64 +608,10 @@ var Parser = /** @class */ (function () {
         return null;
     };
     /**
-     * xorExpression ::= eqvExpression [ 'XOR' expression ]
+     * signedAtom ::= [ '+' | '-' ] atom
      */
-    Parser.prototype.xorExpression = function () {
-        this.log('xorExpression() ptr=', this.ptr.gets(3));
-        if (this.ptr.eof)
-            return null;
-        this.ptr.push();
-        var leftOp = this.eqvExpression();
-        if (leftOp) {
-            var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.xor) {
-                this.ptr.move(1);
-                var rightOp = this.expression();
-                if (rightOp) {
-                    this.ptr.drop();
-                    return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
-                }
-            }
-            else {
-                this.ptr.drop();
-                return leftOp;
-            }
-        }
-        this.ptr.pop();
-        return null;
-    };
-    /**
-     * eqvExpression ::= impExpression [ 'EQV' expression ]
-     */
-    Parser.prototype.eqvExpression = function () {
-        this.log('eqvExpression() ptr=', this.ptr.gets(3));
-        if (this.ptr.eof)
-            return null;
-        this.ptr.push();
-        var leftOp = this.impExpression();
-        if (leftOp) {
-            var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.eqv) {
-                this.ptr.move(1);
-                var rightOp = this.expression();
-                if (rightOp) {
-                    this.ptr.drop();
-                    return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
-                }
-            }
-            else {
-                this.ptr.drop();
-                return leftOp;
-            }
-        }
-        this.ptr.pop();
-        return null;
-    };
-    /**
-     * impExpression ::= [ '+' | '-' ] baseValueExpression [ 'IMP' expression ]
-     */
-    Parser.prototype.impExpression = function () {
-        this.log('impExpression() ptr=', this.ptr.gets(3));
+    Parser.prototype.signedAtom = function () {
+        this.log('signedAtom() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
@@ -556,30 +621,41 @@ var Parser = /** @class */ (function () {
             this.ptr.move(1);
             unary = true;
         }
-        var leftOp = this.baseValueExpression();
-        if (leftOp) {
-            var lx = this.ptr.get();
-            if (lx instanceof Lexer_1.OperatorLex && lx.imp) {
-                this.ptr.move(1);
-                var rightOp = this.expression();
-                if (rightOp) {
-                    this.ptr.drop();
-                    if (unary) {
-                        return new OperatorExp_1.UnaryOpExpression(unaryLx, new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp));
-                    }
-                    return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
-                }
+        var atom = this.atom();
+        if (atom) {
+            this.ptr.drop();
+            if (unary) {
+                return new OperatorExp_1.UnaryOpExpression(unaryLx, atom);
             }
-            else {
-                this.ptr.drop();
-                if (unary) {
-                    return new OperatorExp_1.UnaryOpExpression(unaryLx, leftOp);
-                }
-                return leftOp;
-            }
+            return atom;
         }
         this.ptr.pop();
         return null;
+    };
+    /**
+     * atom ::= '(' expression ')'
+     *        | baseValueExpression
+     */
+    Parser.prototype.atom = function () {
+        this.log('atom() ptr=', this.ptr.gets(3));
+        if (this.ptr.eof)
+            return null;
+        var leftBr = this.ptr.get(0);
+        if (leftBr instanceof Lexer_1.KeyWordLex && leftBr.keyWord == '(') {
+            this.ptr.push();
+            this.ptr.move(1);
+            var exp = this.expression();
+            if (exp) {
+                var rightBr = this.ptr.get(0);
+                if (rightBr instanceof Lexer_1.KeyWordLex && rightBr.keyWord == ')') {
+                    this.ptr.move(1);
+                    this.ptr.drop();
+                    return exp;
+                }
+            }
+            this.ptr.pop();
+        }
+        return this.baseValueExpression();
     };
     /**
      * baseValueExpression ::= constExpression | varRefExpression
