@@ -13,6 +13,10 @@ export class HtmlElementBuilder<EL extends HTMLElement> {
         this.el.innerHTML = v
         return this
     }
+    text(v:string):HtmlElementBuilder<EL> {
+        this.el.textContent = v
+        return this
+    }
     attr(name:string, val:string):HtmlElementBuilder<EL> {
         this.el.setAttribute(name, val)
         return this

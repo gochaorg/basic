@@ -13,3 +13,21 @@
     flex-basis: 75px;
     margin-left: 5px;
 }
+
+.sourceLine {
+    display: flex;
+}
+
+.sourceLine .lineNum {
+    margin-right: 5px;
+    flex-basis: 30pt;
+    text-align: right;
+}
+
+#parseError {
+    color: #8c0000;
+}
+
+.sourceLine.active {
+    color: #ff5722;
+}

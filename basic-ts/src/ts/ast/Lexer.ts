@@ -295,6 +295,9 @@ export class StatementLex extends KeyWordLex {
         super(keyWord, begin,end)
         this.kind = 'StatementLex'
     }
+    get LET() { return this.keyWord.toUpperCase()=='LET' }
+    get RUN() { return this.keyWord.toUpperCase()=='RUN' }
+    get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     static parse = KeyWordLex.parser(
         true,
         [                
@@ -326,10 +329,10 @@ export class RemLex extends AbstractLex {
     static parse(str:string, off:number):Lex|null {
         if( off>=str.length )return null
         let rm1 = str.substring(off,off+4)
-        if( rm1=='REM' ){
+        if( rm1.toUpperCase()=='REM' ){
             return new RemLex('',off,off+rm1.length)
         }
-        if( !(rm1=='REM ') )return null
+        if( !(rm1.toUpperCase()=='REM ') )return null
 
         let begin = off
         off += 4

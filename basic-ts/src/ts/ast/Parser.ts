@@ -161,7 +161,7 @@ export class Parser {
 
         let lexLet = this.ptr.get(off)
         if( lexLet instanceof StatementLex && 
-            lexLet.keyWord == 'LET'
+            lexLet.LET
         ){
             let [ lexId, lexAssign ] = this.ptr.fetch(off+1,2)
             if( lexAssign instanceof OperatorLex && lexAssign.keyWord == '=' 

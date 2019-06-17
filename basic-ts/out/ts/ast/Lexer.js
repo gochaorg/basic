@@ -434,6 +434,21 @@ var StatementLex = /** @class */ (function (_super) {
         _this.kind = 'StatementLex';
         return _this;
     }
+    Object.defineProperty(StatementLex.prototype, "LET", {
+        get: function () { return this.keyWord.toUpperCase() == 'LET'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StatementLex.prototype, "RUN", {
+        get: function () { return this.keyWord.toUpperCase() == 'RUN'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StatementLex.prototype, "LIST", {
+        get: function () { return this.keyWord.toUpperCase() == 'LIST'; },
+        enumerable: true,
+        configurable: true
+    });
     StatementLex.parse = KeyWordLex.parser(true, [
         'LET',
         'RUN',
@@ -468,10 +483,10 @@ var RemLex = /** @class */ (function (_super) {
         if (off >= str.length)
             return null;
         var rm1 = str.substring(off, off + 4);
-        if (rm1 == 'REM') {
+        if (rm1.toUpperCase() == 'REM') {
             return new RemLex('', off, off + rm1.length);
         }
-        if (!(rm1 == 'REM '))
+        if (!(rm1.toUpperCase() == 'REM '))
             return null;
         var begin = off;
         off += 4;

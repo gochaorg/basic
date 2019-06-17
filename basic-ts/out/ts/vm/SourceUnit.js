@@ -25,7 +25,7 @@ var SourceUnit = /** @class */ (function () {
          * Набор строк исхдного текста
          */
         this.sourceLines = [];
-        //#region lines : SourceLine
+        //#region lines : IDXSourceLine
         this.linesCache = null;
         if (sample) {
             for (var li in sample.sourceLines) {
@@ -40,7 +40,14 @@ var SourceUnit = /** @class */ (function () {
         get: function () {
             if (this.linesCache)
                 return this.linesCache;
-            this.linesCache = Object.freeze(this.sourceLines);
+            var lines = [];
+            var idx = -1;
+            for (var _i = 0, _a = this.sourceLines; _i < _a.length; _i++) {
+                var sl = _a[_i];
+                idx++;
+                lines.push({ statement: sl.statement, index: idx, line: sl.line });
+            }
+            this.linesCache = Object.freeze(lines);
             return this.linesCache;
         },
         enumerable: true,

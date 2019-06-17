@@ -6,14 +6,17 @@ class GWBASICApp {
     get ui() {
         return {
             get sourceUnit() {
-                return document.querySelector('#sourceUnit')
+                return document.querySelector('#sourceUnit') as HTMLDivElement
             },
             get sourceCode():HTMLTextAreaElement|undefined { 
                 return document.querySelector('#sourceCode') as HTMLTextAreaElement
             },
             get parseSourceCode():HTMLButtonElement|undefined { 
                 return document.querySelector('#parseSourceCode') as HTMLButtonElement
-            }
+            },
+            get parseError() {
+                return document.querySelector('#parseError') as HTMLDivElement
+            },
         }
     }
 
@@ -25,12 +28,45 @@ class GWBASICApp {
     }
 
     parseBasic(command:string) {
-        this.sourceUnit = this.sourceUnit.parse( command )
+        try {
+            this.sourceUnit = this.sourceUnit.parse( command )
+            if( this.ui.parseError ){
+                this.ui.parseError.innerHTML = ''
+                this.ui.parseError.style.display = 'none'
+            }
+        } catch ( err ){
+            if( this.ui.parseError ){
+                this.ui.parseError.textContent = err.toString()
+                this.ui.parseError.style.display = ''
+                console.log('log parse error:',err.toString())
+            }else{
+                console.log('log parse error:',err.toString())                
+            }
+        }
     }
 
+    private renderedSourceLines:{[lineIdx:number]:HTMLElement} = {}
+
     renderSourceUnit(){
+        this.renderedSourceLines = {}
         if( this.ui.sourceUnit ){
-            this.ui.sourceUnit.textContent = astToBasic(this.sourceUnit)
+            const ui = this.ui.sourceUnit
+            ui.innerHTML = ''
+            for( let line of this.sourceUnit.lines ){
+                const ldiv = wu.
+                    div({class:`sourceLine l${line.line} li${line.index}`}).
+                    append(ui).el;
+                wu.span({class:`lineNum`}).text(line.line.toString()).append(ldiv);
+                wu.span({class:'code'}).
+                    text(astToBasic(line.statement,{
+                        sourceLineNumber:false
+                    })).
+                    append(ldiv);
+                this.renderedSourceLines[line.index] = ldiv
+                if( line.index==0 ){
+                    ldiv.classList.add( 'active' )
+                }
+            }
         }
     }
 

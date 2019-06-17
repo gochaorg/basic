@@ -11,7 +11,17 @@ import { SourceUnit } from '../vm/SourceUnit';
 /**
  * Генератор из AST в BASIC
  */
-export function astToBasic( root:ValidAstType|SourceUnit ):string{
+export function astToBasic( 
+        root:ValidAstType|SourceUnit, 
+        opts?:{
+            sourceLineNumber?:boolean
+        }
+):string{
+    if( opts==undefined ){
+        opts = {
+            sourceLineNumber:true
+        }
+    }
     if( root==undefined ) return ""
     if( root==null ) return ""
     //#region LiteralExpression
@@ -57,7 +67,7 @@ export function astToBasic( root:ValidAstType|SourceUnit ):string{
     //#endregion
     //#region unary ref
     if( root instanceof UnaryOpExpression ){
-        return root.operator.keyWord + '(' + astToBasic(root.base) + ')'
+        return root.operator.keyWord + '(' + astToBasic(root.base,opts) + ')'
     }
     //#endregion
     //#region BinaryOpExpression
@@ -65,17 +75,17 @@ export function astToBasic( root:ValidAstType|SourceUnit ):string{
         let code = ''
         
         if( root.left.treeSize>1 ){            
-            code += '(' + astToBasic(root.left) + ')'
+            code += '(' + astToBasic(root.left,opts) + ')'
         }else{
-            code += astToBasic(root.left)
+            code += astToBasic(root.left,opts)
         }
 
         code += root.operator.keyWord
 
         if( root.right.treeSize>1 ){            
-            code += '(' + astToBasic(root.right) + ')'
+            code += '(' + astToBasic(root.right,opts) + ')'
         }else{
-            code += astToBasic(root.right)
+            code += astToBasic(root.right,opts)
         }
 
         return code
@@ -84,17 +94,17 @@ export function astToBasic( root:ValidAstType|SourceUnit ):string{
     //#region LET
     if( root instanceof LetStatement ){
         let code = ''
-        if( root.sourceLine!=undefined ){
+        if( root.sourceLine!=undefined && opts.sourceLineNumber ){
             code = `${root.sourceLine} `
         }
-        code += `LET ${root.varname} = ${astToBasic(root.value)}`
+        code += `LET ${root.varname} = ${astToBasic(root.value,opts)}`
         return code
     }
     //#endregion
     //#region REM
     if( root instanceof RemStatement ){
         let code = ''
-        if( root.sourceLine!=undefined ){
+        if( root.sourceLine!=undefined && opts.sourceLineNumber ){
             code = `${root.sourceLine} `
         }
         code += `REM ${root.rem.comment}`
@@ -104,7 +114,7 @@ export function astToBasic( root:ValidAstType|SourceUnit ):string{
     //#region RUN
     if( root instanceof RunStatement ){
         let code = ''
-        if( root.sourceLine!=undefined ){
+        if( root.sourceLine!=undefined && opts.sourceLineNumber ){
             code = `${root.sourceLine} `
         }
         code += "RUN"
@@ -121,7 +131,7 @@ export function astToBasic( root:ValidAstType|SourceUnit ):string{
             if( code.length>0 ){
                 code += "\n"
             }
-            code += astToBasic(st)
+            code += astToBasic(st,opts)
         })
         return code
     }
@@ -133,7 +143,7 @@ export function astToBasic( root:ValidAstType|SourceUnit ):string{
             if( code.length>0 ){
                 code += "\n"
             }
-            code += astToBasic( line.statement )
+            code += astToBasic( line.statement,opts )
         });
         return code
     }

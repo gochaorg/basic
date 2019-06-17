@@ -78,15 +78,21 @@ export class SourceUnit {
         }
     }
 
-    //#region lines : SourceLine
-    private linesCache : ReadonlyArray<SourceLine> | null = null
+    //#region lines : IDXSourceLine
+    private linesCache : ReadonlyArray<IDXSourceLine> | null = null
 
     /**
      * Возвращает список исходных строк
      */
-    get lines() : ReadonlyArray<SourceLine> { 
+    get lines() : ReadonlyArray<IDXSourceLine> { 
         if( this.linesCache )return this.linesCache
-        this.linesCache = Object.freeze(this.sourceLines)
+        let lines:IDXSourceLine[] = []
+        let idx = -1
+        for( let sl of this.sourceLines ){
+            idx++
+            lines.push( {statement:sl.statement, index:idx, line:sl.line} )
+        }
+        this.linesCache = Object.freeze(lines)
         return this.linesCache
     }
     //#endregion

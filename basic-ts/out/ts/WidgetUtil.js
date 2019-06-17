@@ -14,6 +14,10 @@ var HtmlElementBuilder = /** @class */ (function () {
         this.el.innerHTML = v;
         return this;
     };
+    HtmlElementBuilder.prototype.text = function (v) {
+        this.el.textContent = v;
+        return this;
+    };
     HtmlElementBuilder.prototype.attr = function (name, val) {
         this.el.setAttribute(name, val);
         return this;

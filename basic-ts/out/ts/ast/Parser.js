@@ -137,7 +137,7 @@ var Parser = /** @class */ (function () {
         }
         var lexLet = this.ptr.get(off);
         if (lexLet instanceof Lexer_1.StatementLex &&
-            lexLet.keyWord == 'LET') {
+            lexLet.LET) {
             var _a = this.ptr.fetch(off + 1, 2), lexId = _a[0], lexAssign = _a[1];
             if (lexAssign instanceof Lexer_1.OperatorLex && lexAssign.keyWord == '='
                 && lexId instanceof Lexer_1.IDLex) {

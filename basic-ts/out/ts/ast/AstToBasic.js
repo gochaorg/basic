@@ -9,7 +9,12 @@ var SourceUnit_1 = require("../vm/SourceUnit");
 /**
  * Генератор из AST в BASIC
  */
-function astToBasic(root) {
+function astToBasic(root, opts) {
+    if (opts == undefined) {
+        opts = {
+            sourceLineNumber: true
+        };
+    }
     if (root == undefined)
         return "";
     if (root == null)
@@ -66,24 +71,24 @@ function astToBasic(root) {
     //#endregion
     //#region unary ref
     if (root instanceof OperatorExp_1.UnaryOpExpression) {
-        return root.operator.keyWord + '(' + astToBasic(root.base) + ')';
+        return root.operator.keyWord + '(' + astToBasic(root.base, opts) + ')';
     }
     //#endregion
     //#region BinaryOpExpression
     if (root instanceof OperatorExp_1.BinaryOpExpression) {
         var code = '';
         if (root.left.treeSize > 1) {
-            code += '(' + astToBasic(root.left) + ')';
+            code += '(' + astToBasic(root.left, opts) + ')';
         }
         else {
-            code += astToBasic(root.left);
+            code += astToBasic(root.left, opts);
         }
         code += root.operator.keyWord;
         if (root.right.treeSize > 1) {
-            code += '(' + astToBasic(root.right) + ')';
+            code += '(' + astToBasic(root.right, opts) + ')';
         }
         else {
-            code += astToBasic(root.right);
+            code += astToBasic(root.right, opts);
         }
         return code;
     }
@@ -91,17 +96,17 @@ function astToBasic(root) {
     //#region LET
     if (root instanceof LetStatement_1.LetStatement) {
         var code = '';
-        if (root.sourceLine != undefined) {
+        if (root.sourceLine != undefined && opts.sourceLineNumber) {
             code = root.sourceLine + " ";
         }
-        code += "LET " + root.varname + " = " + astToBasic(root.value);
+        code += "LET " + root.varname + " = " + astToBasic(root.value, opts);
         return code;
     }
     //#endregion
     //#region REM
     if (root instanceof RemStatement_1.RemStatement) {
         var code = '';
-        if (root.sourceLine != undefined) {
+        if (root.sourceLine != undefined && opts.sourceLineNumber) {
             code = root.sourceLine + " ";
         }
         code += "REM " + root.rem.comment;
@@ -111,7 +116,7 @@ function astToBasic(root) {
     //#region RUN
     if (root instanceof RunStatement_1.RunStatement) {
         var code = '';
-        if (root.sourceLine != undefined) {
+        if (root.sourceLine != undefined && opts.sourceLineNumber) {
             code = root.sourceLine + " ";
         }
         code += "RUN";
@@ -128,7 +133,7 @@ function astToBasic(root) {
             if (code_1.length > 0) {
                 code_1 += "\n";
             }
-            code_1 += astToBasic(st);
+            code_1 += astToBasic(st, opts);
         });
         return code_1;
     }
@@ -140,7 +145,7 @@ function astToBasic(root) {
             if (code_2.length > 0) {
                 code_2 += "\n";
             }
-            code_2 += astToBasic(line.statement);
+            code_2 += astToBasic(line.statement, opts);
         });
         return code_2;
     }
