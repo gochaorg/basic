@@ -32,6 +32,11 @@ font-family: 'Roboto Mono', monospace;
     font-family: 'Roboto Mono', monospace;
 }
 
+.sourceLine a {
+    color: #365fb1;
+    text-decoration: none;
+}
+
 .var:nth-child(odd),
 .sourceLine:nth-child(odd) {
     background-color:#ddd

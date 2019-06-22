@@ -96,7 +96,7 @@ var GWBASICApp = /** @class */ (function () {
                     sourceLineNumber: false
                 })).
                     append(ldiv);
-                wu.button({ class: 'goto' }).text('goto').append(ldiv).onclick(function (e) {
+                wu.a({ class: 'goto', href: '#' }).text('goto').append(ldiv).onclick(function (e) {
                     _this.goto(line.index);
                 });
                 this_1.renderedSourceLines[line.index] = ldiv;

@@ -75,5 +75,9 @@ function button(attribs) {
     return el('button', attribs);
 }
 exports.button = button;
+function a(attribs) {
+    return el('a', attribs);
+}
+exports.a = a;
 //createEL( 'aa', {a:1,b:2} )
 //# sourceMappingURL=WidgetUtil.js.map

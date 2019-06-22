@@ -79,7 +79,7 @@ class GWBASICApp {
                         sourceLineNumber:false
                     })).
                     append(ldiv);
-                wu.button({class:'goto'}).text('goto').append(ldiv).onclick(e=>{
+                wu.a({class:'goto',href:'#'}).text('goto').append(ldiv).onclick(e=>{
                     this.goto(line.index)
                 })
                 this.renderedSourceLines[line.index] = ldiv

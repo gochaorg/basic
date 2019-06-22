@@ -66,5 +66,8 @@ export function textArea( attribs?: {[index:string]:any} ) {
 export function button( attribs?: {[index:string]:any} ) : HtmlElementBuilder<HTMLButtonElement> {
     return el( 'button', attribs )
 }
+export function a( attribs?: {[index:string]:any} ) : HtmlElementBuilder<HTMLAnchorElement> {
+    return el( 'a', attribs )
+}
 
 //createEL( 'aa', {a:1,b:2} )
