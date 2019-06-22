@@ -8,13 +8,23 @@
 </head>
 
 <body>
-    <h1>BASIC-TS</h1>
-    <div id="sourceUnit"></div>
-    <div class="eval">
-        <textarea id="sourceCode"></textarea>
-        <button id="parseSourceCode">Evaluate</button>
+    <h1>
+        BASIC-TS
+        <div class="vmControl">
+            <button id="goNext">next</button>
+        </div>
+    </h1>
+    <div class="content">
+        <div class="vmContent">
+            <div id="sourceUnit" class="sourceUnit"></div>
+            <div id="memoDump" class="memoDump"></div>
+        </div>
+        <div class="eval">
+            <textarea id="sourceCode"></textarea>
+            <button id="parseSourceCode">Evaluate</button>
+        </div>
+        <div id="parseError"></div>
     </div>
-    <div id="parseError"></div>
     <!-- <script type="text/javascript" src="bundle.js"></script> -->
 </body>
 

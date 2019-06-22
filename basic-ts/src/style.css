@@ -1,6 +1,14 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono&display=swap');
+
+/*
+font-family: 'Roboto', sans-serif;
+font-family: 'Roboto Mono', monospace;
+*/
+
 .eval textarea {
     flex: 1;
     min-height: 5em;
+    font-family: 'Roboto Mono', monospace;
 }
 
 .eval {
@@ -14,20 +22,89 @@
     margin-left: 5px;
 }
 
+.var,
 .sourceLine {
     display: flex;
 }
 
+.memoDump, 
+.sourceLine {
+    font-family: 'Roboto Mono', monospace;
+}
+
+.var:nth-child(odd),
+.sourceLine:nth-child(odd) {
+    background-color:#ddd
+}
+
+.var .name,
 .sourceLine .lineNum {
     margin-right: 5px;
-    flex-basis: 30pt;
+    flex-basis: 40pt;
     text-align: right;
+}
+
+.sourceLine .code {
+    flex: 1;
 }
 
 #parseError {
     color: #8c0000;
 }
 
+.sourceUnit::before {
+    content:'SourceUnit';
+    font-family: 'Roboto', sans-serif;
+    color:#888;    
+}
+
+.memoDump::before {
+    content:'Memory';
+    font-family: 'Roboto', sans-serif;
+    color:#888;    
+}
+
+.sourceUnit {
+    margin-bottom: 2mm;
+}
+
 .sourceLine.active {
     color: #ff5722;
+}
+
+h1 .vmControl {
+    float: right;
+}
+
+h1 {
+    background-color: #444;
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+}
+
+body > h1 {
+    margin-top:0;
+    padding-left: 3mm;
+    padding-right: 3mm;
+    padding-bottom: 2mm;
+}
+
+body {
+    margin: 0;
+   background-color:#eee
+}
+
+.content {
+    padding-left: 3mm;
+    padding-right: 3mm;
+}
+
+.vmContent {
+    display: flex;
+}
+.vmContent .sourceUnit {
+    flex: 1;
+}
+.vmContent .memoDump {
+    flex: 1;
 }
