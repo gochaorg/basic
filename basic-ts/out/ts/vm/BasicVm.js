@@ -8,6 +8,10 @@ var RemStatement_1 = require("../ast/RemStatement");
 var RunStatement_1 = require("../ast/RunStatement");
 var BasicVm = /** @class */ (function () {
     function BasicVm(source, memo) {
+        /**
+         * Регистр IP (Instruction Pointer)
+         */
+        this.ip = -1;
         this.source = source;
         if (memo) {
             this.memo = memo;
@@ -121,6 +125,35 @@ var BasicVm = /** @class */ (function () {
         if (st instanceof RunStatement_1.RunStatement) {
             return;
         }
+    };
+    /**
+     * Проверяет есть ли еще инструкции для выполнения
+     * @returns true - есть инструкции для выполенения
+     */
+    BasicVm.prototype.hasNext = function () {
+        if (this.ip < 0)
+            return false;
+        if (this.ip >= this.source.lines.length)
+            return false;
+        return true;
+    };
+    /**
+     * Выполняет очередную инструкцию
+     * @returns true - инструкция выполнена / false - инструкция не была выполнена ибо конец
+     */
+    BasicVm.prototype.next = function () {
+        if (!this.hasNext())
+            return false;
+        var st = this.source.lines[this.ip];
+        if (st == undefined || st == null)
+            return false;
+        var beforeIp = this.ip;
+        this.evalStatement(st.statement);
+        var afterIp = this.ip;
+        if (afterIp == beforeIp) {
+            this.ip++;
+        }
+        return false;
     };
     return BasicVm;
 }());

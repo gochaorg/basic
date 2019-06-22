@@ -27,9 +27,11 @@ let testExpressions:TestExp[] = [
     //{ code: '2 < 3 AND 3 > 2 AND 4 = 4', parseFn: (p)=>p.expression(), json:true },
     //{ code: '2 <= 3 AND 3 => 2 AND 4 <> 5', parseFn: (p)=>p.expression(), json:true },
     //{ code: '2 => 3 AND 3 >= 2 AND 4 >< 5', parseFn: (p)=>p.expression(), json:true },
-    //{ code: '-1', parseFn: (p)=>p.expression(), json:true },
-    //{ code: '-1-2', parseFn: (p)=>p.expression(), json:true, toBasic: true },
+    { code: '-1', parseFn: (p)=>p.expression(), json:true },
+    { code: '-1-2', parseFn: (p)=>p.expression(), json:true, toBasic: true },
     { code: '10*2+7', parseFn: (p)=>p.expression(), debug:true, json:false, toBasic: true },
+    { code: '2+7+3', parseFn: (p)=>p.expression(), debug:false, json:false, toBasic: true },
+    { code: '2*7*3', parseFn: (p)=>p.expression(), debug:false, json:false, toBasic: true },
 ]
 
 testExpressions.forEach( texp => {

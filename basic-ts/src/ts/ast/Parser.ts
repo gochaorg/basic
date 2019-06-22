@@ -287,8 +287,43 @@ export class Parser {
         return null
     }
 
+    binaryRepeatExpression(
+        ruleName:string,
+        leftOp:Expression,
+        rightExp:()=>Expression|null,
+        accpetOperator:(op:OperatorLex)=>boolean
+    ):Expression|null {
+        let res : Expression = leftOp
+        while( true ){
+            let lx = this.ptr.get()
+            if( lx instanceof OperatorLex && accpetOperator(lx) ){
+                this.ptr.move(1)
+                let rightOp = rightExp()
+                this.log( `${ruleName} right=`,rightOp )
+                if( rightOp ){
+                    this.ptr.drop()
+                    this.log( `${ruleName} succ=`,lx.keyWord,res,rightOp )
+                    res = new BinaryOpExpression(lx,res,rightOp)
+                    lx = this.ptr.get()
+                    if( lx instanceof OperatorLex && accpetOperator(lx) ){
+                        this.log(`${ruleName} has right ${lx.keyWord}`)
+                        this.ptr.push()
+                        continue
+                    }
+                    return res
+                }else{
+                    this.ptr.pop()
+                    return null
+                }
+            }else{
+                this.ptr.drop()
+                return res
+            }
+        }
+    }
+
     /**
-     * impExpression ::= eqvExpression [ 'IMP' eqvExpression ]
+     * impExpression ::= eqvExpression [ { 'IMP' eqvExpression } ]
      */
     impExpression():Expression|null{
         this.log('impExpression() ptr=', this.ptr.gets(3))
@@ -297,39 +332,14 @@ export class Parser {
 
         this.ptr.push()
 
-        // let unary = false
-        // let unaryLx = this.ptr.get()
-        // if( unaryLx instanceof OperatorLex && (unaryLx.keyWord=='-' || unaryLx.keyWord=='+')){
-        //     this.ptr.move(1)
-        //     unary = true
-        // }
-
         let leftOp = this.eqvExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.imp ){
-                this.ptr.move(1)
-                let rightOp = this.eqvExpression()
-                if( rightOp ){
-                    this.ptr.drop()
-                    // if( unary ){
-                    //     return new UnaryOpExpression(
-                    //         unaryLx as OperatorLex,
-                    //         new BinaryOpExpression(lx,leftOp,rightOp)
-                    //     )
-                    // }
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop() 
-                // if( unary ){
-                    // return new UnaryOpExpression(
-                    //     unaryLx as OperatorLex,
-                    //     leftOp
-                    // )
-                // }               
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'impExpression()',
+                leftOp,
+                ()=>this.eqvExpression(),
+                (lx:OperatorLex)=>lx.imp
+            )
         }
         this.ptr.pop()
         return null
@@ -345,25 +355,19 @@ export class Parser {
         this.ptr.push()
         let leftOp = this.xorExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.eqv ){
-                this.ptr.move(1)
-                let rightOp = this.xorExpression()
-                if( rightOp ){
-                    this.ptr.drop()
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop()
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'eqvExpression()',
+                leftOp,
+                ()=>this.xorExpression(),
+                (lx:OperatorLex)=>lx.eqv
+            )
         }
         this.ptr.pop()
         return null
     }
 
     /**
-     * xorExpression ::= orExpression [ 'XOR' orExpression ]
+     * xorExpression ::= orExpression [ { 'XOR' orExpression } ]
      */
     xorExpression():Expression|null{
         this.log('xorExpression() ptr=', this.ptr.gets(3))
@@ -372,25 +376,19 @@ export class Parser {
         this.ptr.push()
         let leftOp = this.orExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.xor ){
-                this.ptr.move(1)
-                let rightOp = this.orExpression()
-                if( rightOp ){
-                    this.ptr.drop()
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop()
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'xorExpression()',
+                leftOp,
+                ()=>this.orExpression(),
+                (lx:OperatorLex)=>lx.xor
+            )
         }
         this.ptr.pop()
         return null
     }
 
     /**
-     * orExpression ::= andExpression [ 'OR' andExpression ]
+     * orExpression ::= andExpression [ { 'OR' andExpression } ]
      */
     orExpression():Expression|null{
         this.log('orExpression() ptr=', this.ptr.gets(3))
@@ -399,25 +397,19 @@ export class Parser {
         this.ptr.push()
         let leftOp = this.andExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.or ){
-                this.ptr.move(1)
-                let rightOp = this.andExpression()
-                if( rightOp ){
-                    this.ptr.drop()
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop()
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'orExpression()',
+                leftOp,
+                ()=>this.andExpression(),
+                (lx:OperatorLex)=>lx.or
+            )
         }
         this.ptr.pop()
         return null
     }
 
     /**
-     * andExpression ::= notExpression [ 'AND' notExpression ]
+     * andExpression ::= notExpression [ { 'AND' notExpression } ]
      */
     andExpression():Expression|null{
         this.log('andExpression() ptr=', this.ptr.gets(3))
@@ -426,18 +418,12 @@ export class Parser {
         this.ptr.push()
         let leftOp = this.notExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.and ){
-                this.ptr.move(1)
-                let rightOp = this.notExpression()
-                if( rightOp ){
-                    this.ptr.drop()
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop()
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'andExpression()',
+                leftOp,
+                ()=>this.notExpression(),
+                (lx:OperatorLex)=>lx.and
+            )
         }
         this.ptr.pop()
         return null
@@ -495,7 +481,7 @@ export class Parser {
     }
 
     /**
-     * plusExpression ::= modExpression [ ('+' | '-') modExpression ]
+     * plusExpression ::= modExpression [ { ('+' | '-') modExpression } ]
      */
     plusExpression():Expression|null{
         this.log('plusExpression() ptr=', this.ptr.gets(3))
@@ -504,27 +490,19 @@ export class Parser {
         this.ptr.push()
         let leftOp = this.modExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && (lx.plus || lx.minus) ){
-                this.ptr.move(1)
-                let rightOp = this.modExpression()
-                this.log( `plusExpression() right=`,rightOp )
-                if( rightOp ){
-                    this.ptr.drop()
-                    this.log( `plusExpression() succ=`,lx.keyWord,leftOp,rightOp )
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop()
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'plusExpression()',
+                leftOp,
+                ()=>this.modExpression(),
+                (lx:OperatorLex)=>lx.plus || lx.minus
+            )
         }
         this.ptr.pop()
         return null
     }
 
     /**
-     * modExpression ::= intDivExpression [ 'MOD' intDivExpression ]
+     * modExpression ::= intDivExpression [ { 'MOD' intDivExpression } ]
      */
     modExpression():Expression|null{
         this.log('modExpression() ptr=', this.ptr.gets(3))
@@ -534,29 +512,19 @@ export class Parser {
 
         let leftOp = this.intDivExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.mod ){
-                this.ptr.move(1)
-                let rightOp = this.intDivExpression()
-                if( rightOp ){
-                    this.ptr.drop()
-                    let binOp = new BinaryOpExpression(lx,leftOp,rightOp)
-                    // if( unary ){
-                    //     return new UnaryOpExpression(unaryLx as OperatorLex,binOp)
-                    // }
-                    return binOp
-                }
-            }else{
-                this.ptr.drop()
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'modExpression()',
+                leftOp,
+                ()=>this.intDivExpression(),
+                (lx:OperatorLex)=>lx.mod
+            )
         }
         this.ptr.pop()
         return null
     }
 
     /**
-     * intDivExpression ::= mulExpression [ '\' mulExpression ]
+     * intDivExpression ::= mulExpression [ { '\' mulExpression } ]
      */
     intDivExpression():Expression|null{
         this.log('intDivExpression() ptr=', this.ptr.gets(3))
@@ -565,25 +533,19 @@ export class Parser {
         this.ptr.push()
         let leftOp = this.mulExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.idiv ){
-                this.ptr.move(1)
-                let rightOp = this.mulExpression()
-                if( rightOp ){
-                    this.ptr.drop()
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop()
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'intDivExpression()',
+                leftOp,
+                ()=>this.mulExpression(),
+                (lx:OperatorLex)=>lx.idiv
+            )
         }
         this.ptr.pop()
         return null
     }
 
     /**
-     * mulExpression ::= powExpression [ ( '*' | '/' ) powExpression ]
+     * mulExpression ::= powExpression [ { ( '*' | '/' ) powExpression } ]
      */
     mulExpression():Expression|null{
         this.log('mulExpression() ptr=', this.ptr.gets(3))
@@ -592,27 +554,19 @@ export class Parser {
         this.ptr.push()
         let leftOp = this.powExpression()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && (lx.mult || lx.div) ){
-                this.ptr.move(1)
-                let rightOp = this.powExpression()
-                this.log( `mulExpression() rightOp=${rightOp}` )
-                if( rightOp ){
-                    this.ptr.drop()
-                    this.log( `mulExpression() succ=`,lx.keyWord,leftOp,rightOp )
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop()
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'mulExpression()',
+                leftOp,
+                ()=>this.powExpression(),
+                (lx:OperatorLex)=>lx.mult || lx.div
+            )
         }
         this.ptr.pop()
         return null
     }
 
     /**
-     * powExpression ::= signedAtom [ '^' signedAtom ]
+     * powExpression ::= signedAtom [ { '^' signedAtom } ]
      */
     powExpression():Expression|null{
         this.log('powExpression() ptr=', this.ptr.gets(3))
@@ -621,39 +575,14 @@ export class Parser {
 
         this.ptr.push()
 
-        // let unary = false
-        // let unaryLx = this.ptr.get()
-        // if( unaryLx instanceof OperatorLex && (unaryLx.keyWord=='-' || unaryLx.keyWord=='+')){
-        //     this.ptr.move(1)
-        //     unary = true
-        // }
-
         let leftOp = this.signedAtom()
         if( leftOp ){
-            let lx = this.ptr.get()
-            if( lx instanceof OperatorLex && lx.pow ){
-                this.ptr.move(1)
-                let rightOp = this.signedAtom()
-                if( rightOp ){
-                    this.ptr.drop()
-                    // if( unary ){
-                    //     return new UnaryOpExpression(
-                    //         unaryLx as OperatorLex,
-                    //         new BinaryOpExpression(lx,leftOp,rightOp)
-                    //     )
-                    // }
-                    return new BinaryOpExpression(lx,leftOp,rightOp)
-                }
-            }else{
-                this.ptr.drop()
-                // if( unary ){
-                //     return new UnaryOpExpression(
-                //         unaryLx as OperatorLex,
-                //         leftOp
-                //     )
-                // }
-                return leftOp
-            }
+            return this.binaryRepeatExpression(
+                'powExpression()',
+                leftOp,
+                ()=>this.signedAtom(),
+                (lx:OperatorLex)=>lx.pow
+            )
         }
         this.ptr.pop()
         return null
