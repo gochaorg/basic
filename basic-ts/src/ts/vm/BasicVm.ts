@@ -7,9 +7,17 @@ import { asInt } from "../Num";
 import { RemStatement } from "../ast/RemStatement";
 import { RunStatement } from "../ast/RunStatement";
 
-export class BasicVm {
-    source: SourceUnit
-    memo: Memo
+export class BasicVm {    
+    /**
+     * Набор исходников для исполнения
+     */
+    readonly source: SourceUnit
+
+    /**
+     * Память
+     */
+    readonly memo: Memo
+
     constructor( source:SourceUnit, memo?:Memo ){
         this.source = source
         if( memo ){
@@ -114,5 +122,41 @@ export class BasicVm {
         if( st instanceof RunStatement ){
             return
         }
+    }
+
+    /**
+     * Регистр IP (Instruction Pointer)
+     */
+    ip:number = -1
+
+    /**
+     * Проверяет есть ли еще инструкции для выполнения
+     * @returns true - есть инструкции для выполенения
+     */
+    hasNext() {
+        if( this.ip<0 )return false
+        if( this.ip>=this.source.lines.length )return false
+        return true
+    }
+
+    /**
+     * Выполняет очередную инструкцию
+     * @returns true - инструкция выполнена / false - инструкция не была выполнена ибо конец
+     */
+    next(){
+        if( !this.hasNext() )return false
+
+        const st = this.source.lines[this.ip]
+        if( st==undefined || st==null )return false
+
+        const beforeIp = this.ip        
+        this.evalStatement( st.statement )
+
+        const afterIp = this.ip
+        if( afterIp==beforeIp ){
+            this.ip++
+        }
+
+        return false
     }
 }
