@@ -113,3 +113,18 @@ body {
 .vmContent .memoDump {
     flex: 1;
 }
+
+#helpContent {
+    flex: 1;
+    display: none;
+}
+#helpContent.active {
+    flex: 1;
+    display: block;
+    background-color: #fff;
+    position: relative;
+    margin-bottom: 3mm;
+    padding: 2mm;
+    border: 1px solid #888;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.5);
+}

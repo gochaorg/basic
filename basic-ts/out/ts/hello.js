@@ -42,9 +42,10 @@ var GWBASICApp = /** @class */ (function () {
                 get goNext() {
                     return document.querySelector('#goNext');
                 },
-                get memoDump() {
-                    return document.querySelector('#memoDump');
-                },
+                get memoDump() { return document.querySelector('#memoDump'); },
+                get helpContent() { return document.querySelector('#helpContent'); },
+                get showHelp() { return document.querySelector('#showHelp'); },
+                get closeHelp() { return document.querySelector('#closeHelp'); },
             };
         },
         enumerable: true,
@@ -245,6 +246,22 @@ var GWBASICApp = /** @class */ (function () {
             console.log('handled var changes ', varname, from, to);
             _this.renderMemoVar(varname, from, to);
         });
+        if (this.ui.showHelp) {
+            this.ui.showHelp.addEventListener('click', function (e) {
+                if (_this.ui.helpContent) {
+                    _this.ui.helpContent.classList.add('active');
+                    console.log("clicked 1");
+                }
+            });
+        }
+        if (this.ui.closeHelp) {
+            this.ui.closeHelp.addEventListener('click', function (e) {
+                if (_this.ui.helpContent) {
+                    _this.ui.helpContent.classList.remove('active');
+                    console.log("clicked 2");
+                }
+            });
+        }
     };
     return GWBASICApp;
 }());

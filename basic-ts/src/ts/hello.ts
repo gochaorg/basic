@@ -30,9 +30,10 @@ class GWBASICApp {
             get goNext() {
                 return document.querySelector('#goNext') as HTMLElement
             },
-            get memoDump() {
-                return document.querySelector('#memoDump') as HTMLDivElement
-            },
+            get memoDump() { return document.querySelector('#memoDump') as HTMLDivElement },
+            get helpContent() { return document.querySelector('#helpContent') as HTMLDivElement },
+            get showHelp() { return document.querySelector('#showHelp') as HTMLElement },
+            get closeHelp() { return document.querySelector('#closeHelp') as HTMLElement },
         }
     }
     //#endregion
@@ -218,6 +219,23 @@ class GWBASICApp {
             console.log('handled var changes ',varname,from,to)
             this.renderMemoVar(varname,from,to)
         })
+
+        if( this.ui.showHelp ){
+            this.ui.showHelp.addEventListener('click',e=>{
+                if( this.ui.helpContent ){
+                    this.ui.helpContent.classList.add('active')
+                    console.log("clicked 1")
+                }
+            })
+        }
+        if( this.ui.closeHelp ){
+            this.ui.closeHelp.addEventListener('click',e=>{
+                if( this.ui.helpContent ){
+                    this.ui.helpContent.classList.remove('active')
+                    console.log("clicked 2")
+                }
+            })
+        }
     }
 }
 
