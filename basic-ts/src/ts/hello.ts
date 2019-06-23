@@ -1,8 +1,9 @@
 import * as wu from './WidgetUtil'
-import { SourceUnit } from './vm/SourceUnit';
+import { SourceUnit, ParseResult } from './vm/SourceUnit';
 import { astToBasic } from './ast/AstToBasic';
 import { Memo } from './vm/Memo';
 import { BasicVm } from './vm/BasicVm';
+import { Statement } from './ast/Statement';
 
 type MemVarUI = {
     container:HTMLDivElement
@@ -46,11 +47,19 @@ class GWBASICApp {
 
     parseBasic(command:string) {
         try {
-            this.sourceUnit = this.sourceUnit.parse( command )
+            let imStmts:Statement[] = []
+            this.sourceUnit = this.sourceUnit.parse( command, {
+                immediateStatements(statements){                    
+                    imStmts = statements
+                }
+            })
             this.rebuildVm()
             if( this.ui.parseError ){
                 this.ui.parseError.innerHTML = ''
                 this.ui.parseError.style.display = 'none'
+            }
+            for( let imSt of imStmts ){
+                this.vm.evalStatement( imSt )
             }
         } catch ( err ){
             if( this.ui.parseError ){
@@ -193,7 +202,7 @@ class GWBASICApp {
             txt.addEventListener('keydown',(e)=>{
                 if( e.keyCode==13 && e.ctrlKey ){
                     this.parseBasic(txt.value)
-                }else if( e.code=='ArrowRight' && e.ctrlKey ){
+                }else if( e.code=='KeyN' && e.altKey ){
                     this.goNext()
                 }else{
                     //console.log('keydown',e)

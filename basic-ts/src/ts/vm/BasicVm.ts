@@ -6,6 +6,8 @@ import { Memo } from "./Memo";
 import { asInt } from "../Num";
 import { RemStatement } from "../ast/RemStatement";
 import { RunStatement } from "../ast/RunStatement";
+import { GotoStatement } from "../ast/GotoStatement";
+import { IfStatement } from "../ast/IfStatement";
 
 export class BasicVm {    
     /**
@@ -121,6 +123,23 @@ export class BasicVm {
         }
         if( st instanceof RunStatement ){
             return
+        }
+        if( st instanceof GotoStatement ){
+            const found = this.source.find(st.gotoLine.value)
+            if( found ){
+                this.ip = found.index
+            }else{
+                throw new Error(`source line ${st.gotoLine.value} not found`)
+            }
+            return
+        }
+        if( st instanceof IfStatement ){
+            const bval = this.evalExpression( st.boolExp )
+            if( bval ){
+                this.evalStatement( st.trueStatement )
+            }else if( st.falseStatement ){
+                this.evalStatement( st.falseStatement )
+            }
         }
     }
 

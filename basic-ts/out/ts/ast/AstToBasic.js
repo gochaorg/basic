@@ -6,6 +6,8 @@ var RemStatement_1 = require("./RemStatement");
 var RunStatement_1 = require("./RunStatement");
 var Statements_1 = require("./Statements");
 var SourceUnit_1 = require("../vm/SourceUnit");
+var GotoStatement_1 = require("./GotoStatement");
+var IfStatement_1 = require("./IfStatement");
 /**
  * Генератор из AST в BASIC
  */
@@ -122,6 +124,36 @@ function astToBasic(root, opts) {
         code += "RUN";
         if (root.runLine != undefined) {
             code += " " + root.runLine;
+        }
+        return code;
+    }
+    //#endregion
+    //#region GOTO
+    if (root instanceof GotoStatement_1.GotoStatement) {
+        var code = '';
+        if (root.sourceLine != undefined && opts.sourceLineNumber) {
+            code = root.sourceLine + " ";
+        }
+        code += "GOTO";
+        if (root.gotoLine != undefined) {
+            code += " " + root.gotoLine.value;
+        }
+        return code;
+    }
+    //#endregion
+    //#region IF
+    if (root instanceof IfStatement_1.IfStatement) {
+        var code = '';
+        if (root.sourceLine != undefined && opts.sourceLineNumber) {
+            code = root.sourceLine + " ";
+        }
+        code += "IF ";
+        code += astToBasic(root.boolExp, opts);
+        code += " THEN ";
+        code += astToBasic(root.trueStatement, { sourceLineNumber: false });
+        if (root.falseStatement) {
+            code += " ELSE ";
+            code += astToBasic(root.falseStatement, { sourceLineNumber: false });
         }
         return code;
     }

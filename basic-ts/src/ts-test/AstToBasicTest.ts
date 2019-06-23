@@ -8,6 +8,7 @@ console.log( "======================" )
 su1 = su1.parse( 
     '10 REM cmnt\n'+
     '20 LET b = 10*2+7\n'+
+    '22 GOTO 10'+
     'RUN 10',
     {
         immediateStatements(commands){
@@ -17,4 +18,4 @@ su1 = su1.parse(
     }
 )
 
-console.log( astToBasic(su1.line(20).statement) )
+console.log( astToBasic(su1.line(22).statement) )

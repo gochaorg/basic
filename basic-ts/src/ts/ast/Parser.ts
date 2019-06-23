@@ -346,7 +346,7 @@ export class Parser {
             return null
         }
         if( opts.tryLineNum ){
-            return this.matchLine(prod)
+            return this.matchLine(prod) || prod()
         }else{
             return prod()
         }
@@ -362,10 +362,11 @@ export class Parser {
     ifStatement(opts?:Options):Statement|null {
         if( !opts ){ opts = this.options }
         if( this.ptr.eof )return null
-        this.log('gotoStatement() ptr=',this.ptr.gets(3))
+        this.log('ifStatement() ptr=',this.ptr.gets(3))
 
         const prod = ( linf?:{line:number,lex:Lex} ) => {
             let ifLx = this.ptr.get()
+            console.log("ifLx ",ifLx)
             if( !ifLx )return null
             if( !(ifLx instanceof StatementLex) )return null
             if( !(ifLx.IF) )return null
@@ -429,7 +430,7 @@ export class Parser {
         }
         
         if( opts.tryLineNum ){
-            return this.matchLine(prod)
+            return this.matchLine(prod) || prod()
         }else{
             return prod()
         }

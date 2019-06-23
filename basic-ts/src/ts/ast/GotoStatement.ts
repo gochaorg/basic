@@ -5,9 +5,9 @@ import { Expression } from './OperatorExp';
 export class GotoStatement extends Statement {
     readonly begin:Lex
     readonly end:Lex
-    readonly gotoLine?:NumberLex
+    readonly gotoLine:NumberLex
     readonly kind:string
-    constructor(begin:Lex, end:Lex, line?:NumberLex){
+    constructor(begin:Lex, end:Lex, line:NumberLex){
         super()
         this.begin = begin
         this.end = end

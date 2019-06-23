@@ -315,7 +315,7 @@ var Parser = /** @class */ (function () {
             return null;
         };
         if (opts.tryLineNum) {
-            return this.matchLine(prod);
+            return this.matchLine(prod) || prod();
         }
         else {
             return prod();
@@ -335,9 +335,10 @@ var Parser = /** @class */ (function () {
         }
         if (this.ptr.eof)
             return null;
-        this.log('gotoStatement() ptr=', this.ptr.gets(3));
+        this.log('ifStatement() ptr=', this.ptr.gets(3));
         var prod = function (linf) {
             var ifLx = _this.ptr.get();
+            console.log("ifLx ", ifLx);
             if (!ifLx)
                 return null;
             if (!(ifLx instanceof Lexer_1.StatementLex))
@@ -383,7 +384,7 @@ var Parser = /** @class */ (function () {
             return new IfStatement_1.IfStatement(linf ? linf.lex : ifLx, trueSt.end, exp, trueSt);
         };
         if (opts.tryLineNum) {
-            return this.matchLine(prod);
+            return this.matchLine(prod) || prod();
         }
         else {
             return prod();

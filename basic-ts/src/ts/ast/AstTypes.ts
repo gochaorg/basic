@@ -10,6 +10,8 @@ import { RemStatement } from './RemStatement';
 import { RunStatement } from './RunStatement';
 import { Statements } from './Statements';
 import { Statement } from './Statement';
+import { IfStatement } from './IfStatement';
+import { GotoStatement } from './GotoStatement';
 
 /**
  * Тип объектов в AST
@@ -24,4 +26,6 @@ export type ValidAstType =
     LetStatement |
     RemStatement |
     RunStatement |
+    IfStatement |
+    GotoStatement |
     Statements ;

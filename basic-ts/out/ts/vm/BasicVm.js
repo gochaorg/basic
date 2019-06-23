@@ -6,6 +6,8 @@ var Memo_1 = require("./Memo");
 var Num_1 = require("../Num");
 var RemStatement_1 = require("../ast/RemStatement");
 var RunStatement_1 = require("../ast/RunStatement");
+var GotoStatement_1 = require("../ast/GotoStatement");
+var IfStatement_1 = require("../ast/IfStatement");
 var BasicVm = /** @class */ (function () {
     function BasicVm(source, memo) {
         /**
@@ -124,6 +126,25 @@ var BasicVm = /** @class */ (function () {
         }
         if (st instanceof RunStatement_1.RunStatement) {
             return;
+        }
+        if (st instanceof GotoStatement_1.GotoStatement) {
+            var found = this.source.find(st.gotoLine.value);
+            if (found) {
+                this.ip = found.index;
+            }
+            else {
+                throw new Error("source line " + st.gotoLine.value + " not found");
+            }
+            return;
+        }
+        if (st instanceof IfStatement_1.IfStatement) {
+            var bval = this.evalExpression(st.boolExp);
+            if (bval) {
+                this.evalStatement(st.trueStatement);
+            }
+            else if (st.falseStatement) {
+                this.evalStatement(st.falseStatement);
+            }
         }
     };
     /**

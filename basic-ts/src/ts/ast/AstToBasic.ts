@@ -7,6 +7,8 @@ import { RunStatement } from './RunStatement';
 import { Statements } from './Statements';
 import { Statement } from './Statement';
 import { SourceUnit } from '../vm/SourceUnit';
+import { GotoStatement } from './GotoStatement';
+import { IfStatement } from './IfStatement';
 
 /**
  * Генератор из AST в BASIC
@@ -120,6 +122,36 @@ export function astToBasic(
         code += "RUN"
         if( root.runLine != undefined ){
             code += ` ${root.runLine}`
+        }
+        return code
+    }
+    //#endregion
+    //#region GOTO
+    if( root instanceof GotoStatement ){
+        let code = ''
+        if( root.sourceLine!=undefined && opts.sourceLineNumber ){
+            code = `${root.sourceLine} `
+        }
+        code += "GOTO"
+        if( root.gotoLine != undefined ){
+            code += ` ${root.gotoLine.value}`
+        }
+        return code
+    }
+    //#endregion
+    //#region IF
+    if( root instanceof IfStatement ){
+        let code = ''
+        if( root.sourceLine!=undefined && opts.sourceLineNumber ){
+            code = `${root.sourceLine} `
+        }
+        code += "IF "
+        code += astToBasic(root.boolExp, opts)
+        code += " THEN "
+        code += astToBasic(root.trueStatement, {sourceLineNumber:false})
+        if( root.falseStatement ){
+            code += " ELSE "
+            code += astToBasic(root.falseStatement, {sourceLineNumber:false})
         }
         return code
     }

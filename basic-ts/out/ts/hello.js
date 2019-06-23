@@ -62,11 +62,20 @@ var GWBASICApp = /** @class */ (function () {
     });
     GWBASICApp.prototype.parseBasic = function (command) {
         try {
-            this.sourceUnit = this.sourceUnit.parse(command);
+            var imStmts_2 = [];
+            this.sourceUnit = this.sourceUnit.parse(command, {
+                immediateStatements: function (statements) {
+                    imStmts_2 = statements;
+                }
+            });
             this.rebuildVm();
             if (this.ui.parseError) {
                 this.ui.parseError.innerHTML = '';
                 this.ui.parseError.style.display = 'none';
+            }
+            for (var _i = 0, imStmts_1 = imStmts_2; _i < imStmts_1.length; _i++) {
+                var imSt = imStmts_1[_i];
+                this.vm.evalStatement(imSt);
             }
         }
         catch (err) {
@@ -221,7 +230,7 @@ var GWBASICApp = /** @class */ (function () {
                 if (e.keyCode == 13 && e.ctrlKey) {
                     _this.parseBasic(txt_1.value);
                 }
-                else if (e.code == 'ArrowRight' && e.ctrlKey) {
+                else if (e.code == 'KeyN' && e.altKey) {
                     _this.goNext();
                 }
                 else {

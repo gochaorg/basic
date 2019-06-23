@@ -12,7 +12,8 @@ console.log('== Basic parser ==');
 var testExpressions = [
     //{ statement: '10 + 8*3', parseFn: (p)=>p.expression() },
     //{ code: '10 GOTO 20', parseFn: (p)=>p.statement(), json:true, debug:false },
-    { code: '10 IF a>1 THEN GOTO 20 ELSE GOTO 22', parseFn: function (p) { return p.statement(); }, json: true, debug: false },
+    //{ code: '10 IF a>1 THEN GOTO 20 ELSE GOTO 22', parseFn: (p)=>p.statement(), json:true, debug:false },
+    { code: 'IF a>1 THEN GOTO 20 ELSE GOTO 22', parseFn: function (p) { return p.statement(); }, json: true, debug: false },
 ];
 console.log("== parse statements ============");
 testExpressions.forEach(function (texp) {
