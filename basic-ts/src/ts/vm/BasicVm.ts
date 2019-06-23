@@ -53,7 +53,7 @@ export class BasicVm {
             if( exp.operator.minus ) return ( this.evalExpression(exp.left) - this.evalExpression(exp.right) )
             if( exp.operator.mult ) return ( this.evalExpression(exp.left) * this.evalExpression(exp.right) )
             if( exp.operator.div ) return ( this.evalExpression(exp.left) / this.evalExpression(exp.right) )
-            if( exp.operator.idiv ) return asInt( this.evalExpression(exp.left) / this.evalExpression(exp.right) )            
+            if( exp.operator.idiv ) return asInt( this.evalExpression(exp.left) / asInt(this.evalExpression(exp.right)) )            
             if( exp.operator.mod ) return asInt( this.evalExpression(exp.left) % this.evalExpression(exp.right) )
             //#endregion
             //#region logic

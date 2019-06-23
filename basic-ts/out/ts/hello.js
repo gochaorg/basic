@@ -185,6 +185,7 @@ var GWBASICApp = /** @class */ (function () {
         this.renderIp();
     };
     //#endregion
+    //#region goto/renderIp
     GWBASICApp.prototype.goto = function (ip) {
         var _this = this;
         console.log("goto ip=" + ip);
@@ -200,6 +201,8 @@ var GWBASICApp = /** @class */ (function () {
             lineDiv.classList.add('active');
         }
     };
+    //#endregion
+    //#region goNext
     GWBASICApp.prototype.goNext = function () {
         console.log('goNext() clicked');
         if (this.vm.hasNext()) {
@@ -207,6 +210,7 @@ var GWBASICApp = /** @class */ (function () {
             this.renderIp();
         }
     };
+    //#endregion
     GWBASICApp.prototype.init = function () {
         var _this = this;
         if (this.ui.parseSourceCode && this.ui.sourceCode) {
@@ -216,6 +220,12 @@ var GWBASICApp = /** @class */ (function () {
             txt_1.addEventListener('keydown', function (e) {
                 if (e.keyCode == 13 && e.ctrlKey) {
                     _this.parseBasic(txt_1.value);
+                }
+                else if (e.code == 'ArrowRight' && e.ctrlKey) {
+                    _this.goNext();
+                }
+                else {
+                    //console.log('keydown',e)
                 }
             });
         }

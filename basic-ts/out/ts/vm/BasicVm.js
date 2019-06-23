@@ -54,7 +54,7 @@ var BasicVm = /** @class */ (function () {
             if (exp.operator.div)
                 return (this.evalExpression(exp.left) / this.evalExpression(exp.right));
             if (exp.operator.idiv)
-                return Num_1.asInt(this.evalExpression(exp.left) / this.evalExpression(exp.right));
+                return Num_1.asInt(this.evalExpression(exp.left) / Num_1.asInt(this.evalExpression(exp.right)));
             if (exp.operator.mod)
                 return Num_1.asInt(this.evalExpression(exp.left) % this.evalExpression(exp.right));
             //#endregion

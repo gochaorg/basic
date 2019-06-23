@@ -7,6 +7,32 @@ var Statements_1 = require("./Statements");
 var OperatorExp_1 = require("./OperatorExp");
 var LetStatement_1 = require("./LetStatement");
 var RunStatement_1 = require("./RunStatement");
+var GotoStatement_1 = require("./GotoStatement");
+var IfStatement_1 = require("./IfStatement");
+/**
+ * Опции парсера
+ */
+var Options = /** @class */ (function () {
+    function Options() {
+        /**
+         * парсинг statement с учетом номера строки
+         */
+        this.tryLineNum = true;
+    }
+    /**
+     * Клонирование
+     */
+    Options.prototype.clone = function (conf) {
+        var c = new Options();
+        c.tryLineNum = this.tryLineNum;
+        if (conf) {
+            conf(c);
+        }
+        return c;
+    };
+    return Options;
+}());
+exports.Options = Options;
 /**
  * Парсинг BASIC
  */
@@ -17,6 +43,10 @@ var Parser = /** @class */ (function () {
      */
     function Parser(lexs) {
         this.debug = false;
+        /**
+         * Опции
+         */
+        this.options = new Options();
         this.ptr = new Pointer_1.Pointer(lexs);
     }
     /**
@@ -79,17 +109,58 @@ var Parser = /** @class */ (function () {
      *             | letStatement
      *             | runStatement
      */
-    Parser.prototype.statement = function () {
+    Parser.prototype.statement = function (opts) {
+        if (!opts) {
+            opts = this.options;
+        }
         this.log('statement() ptr=', this.ptr.gets(3));
-        var remStmt = this.remStatement();
+        var remStmt = this.remStatement(opts);
         if (remStmt)
             return remStmt;
-        var letStmt = this.letStatement();
+        var letStmt = this.letStatement(opts);
         if (letStmt)
             return letStmt;
-        var runStmt = this.runStatement();
+        var runStmt = this.runStatement(opts);
         if (runStmt)
             return runStmt;
+        var gotoStmt = this.gotoStatement(opts);
+        if (gotoStmt)
+            return gotoStmt;
+        var ifStmt = this.ifStatement(opts);
+        if (ifStmt)
+            return ifStmt;
+        return null;
+    };
+    /**
+     * Проверка если текущая лексема обозначает начало нумерованной строки,
+     * то лексема и номер строки передается в функцию,
+     * а указатель смещается к след лексеме.
+     *
+     * Функция модет вернуть null, тогда будет восстановлена позиция
+     * @param proc функция принимающая номер строки
+     */
+    Parser.prototype.matchLine = function (proc) {
+        var lineNum = undefined;
+        var lineNumLex = this.ptr.get(0);
+        if ((lineNumLex instanceof Lexer_1.SourceLineBeginLex
+            || lineNumLex instanceof Lexer_1.NumberLex)) {
+            if (lineNumLex instanceof Lexer_1.SourceLineBeginLex) {
+                lineNum = lineNumLex.line;
+            }
+            if (lineNumLex instanceof Lexer_1.NumberLex) {
+                lineNum = lineNumLex.value;
+            }
+            if (lineNum) {
+                this.ptr.push();
+                this.ptr.move(1);
+                var res = proc({ line: lineNum, lex: lineNumLex });
+                if (res) {
+                    this.ptr.drop();
+                    return res;
+                }
+                this.ptr.pop();
+            }
+        }
         return null;
     };
     /**
@@ -97,15 +168,18 @@ var Parser = /** @class */ (function () {
      *                | NumberLex RemLex
      *                | RemLex
      */
-    Parser.prototype.remStatement = function () {
+    Parser.prototype.remStatement = function (opts) {
+        if (!opts) {
+            opts = this.options;
+        }
         if (this.ptr.eof)
             return null;
         var _a = this.ptr.gets(2), lex1 = _a[0], lex2 = _a[1];
-        if (lex1 instanceof Lexer_1.SourceLineBeginLex && lex2 instanceof Lexer_1.RemLex) {
+        if (lex1 instanceof Lexer_1.SourceLineBeginLex && lex2 instanceof Lexer_1.RemLex && opts.tryLineNum) {
             this.ptr.move(2);
             return new RemStatement_1.RemStatement(lex1, lex2, lex2);
         }
-        if (lex1 instanceof Lexer_1.NumberLex && lex2 instanceof Lexer_1.RemLex) {
+        if (lex1 instanceof Lexer_1.NumberLex && lex2 instanceof Lexer_1.RemLex && opts.tryLineNum) {
             this.ptr.move(2);
             return new RemStatement_1.RemStatement(lex1.asSourceLine, lex2, lex2);
         }
@@ -119,14 +193,18 @@ var Parser = /** @class */ (function () {
      * letStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                  StatementLex(LET) IDLex OperatorLex(=) expression
      */
-    Parser.prototype.letStatement = function () {
+    Parser.prototype.letStatement = function (opts) {
+        if (!opts) {
+            opts = this.options;
+        }
         if (this.ptr.eof)
             return null;
         var lineNum = undefined;
         var lineNumLex = this.ptr.get(0);
         var off = 0;
-        if (lineNumLex instanceof Lexer_1.SourceLineBeginLex
-            || lineNumLex instanceof Lexer_1.NumberLex) {
+        if (opts.tryLineNum &&
+            (lineNumLex instanceof Lexer_1.SourceLineBeginLex
+                || lineNumLex instanceof Lexer_1.NumberLex)) {
             if (lineNumLex instanceof Lexer_1.SourceLineBeginLex) {
                 lineNum = lineNumLex.line;
             }
@@ -173,15 +251,19 @@ var Parser = /** @class */ (function () {
      * runStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                  StatementLex(RUN) [lineNumber : NumberLex]
      */
-    Parser.prototype.runStatement = function () {
+    Parser.prototype.runStatement = function (opts) {
+        if (!opts) {
+            opts = this.options;
+        }
         if (this.ptr.eof)
             return null;
         this.log('runStatement() ptr=', this.ptr.gets(3));
         var lineNum = undefined;
         var lineNumLex = this.ptr.get(0);
         var off = 0;
-        if (lineNumLex instanceof Lexer_1.SourceLineBeginLex
-            || lineNumLex instanceof Lexer_1.NumberLex) {
+        if (opts.tryLineNum &&
+            (lineNumLex instanceof Lexer_1.SourceLineBeginLex
+                || lineNumLex instanceof Lexer_1.NumberLex)) {
             if (lineNumLex instanceof Lexer_1.SourceLineBeginLex) {
                 lineNum = lineNumLex.line;
             }
@@ -192,7 +274,7 @@ var Parser = /** @class */ (function () {
         }
         var runLex = this.ptr.get(off);
         if (runLex instanceof Lexer_1.StatementLex &&
-            runLex.keyWord == 'RUN') {
+            runLex.RUN) {
             this.log('runStatement() RUN');
             var runLineLex = this.ptr.get(off + 1);
             if (runLineLex instanceof Lexer_1.NumberLex) {
@@ -208,6 +290,104 @@ var Parser = /** @class */ (function () {
             return new RunStatement_1.RunStatement(lineNumLex || runLex, runLex);
         }
         return null;
+    };
+    /**
+     * gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                   StatementLex(GOTO) lineNumber:NumberLex
+     * @param opts опции компилятора
+     */
+    Parser.prototype.gotoStatement = function (opts) {
+        var _this = this;
+        if (!opts) {
+            opts = this.options;
+        }
+        if (this.ptr.eof)
+            return null;
+        this.log('gotoStatement() ptr=', this.ptr.gets(3));
+        var prod = function (linf) {
+            var _a = _this.ptr.gets(2), gtLex = _a[0], gtLine = _a[1];
+            if (gtLex instanceof Lexer_1.StatementLex
+                && gtLex.GOTO
+                && gtLine instanceof Lexer_1.NumberLex) {
+                _this.ptr.move(2);
+                return new GotoStatement_1.GotoStatement(linf ? linf.lex : gtLex, gtLine, gtLine);
+            }
+            return null;
+        };
+        if (opts.tryLineNum) {
+            return this.matchLine(prod);
+        }
+        else {
+            return prod();
+        }
+    };
+    /**
+     * ifStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                 StatementLex(IF) expression
+     *                 StatementLex(THEN) statement
+     *                 [StatementLex(ELSE) statement]
+     * @param opts опции компилятора
+     */
+    Parser.prototype.ifStatement = function (opts) {
+        var _this = this;
+        if (!opts) {
+            opts = this.options;
+        }
+        if (this.ptr.eof)
+            return null;
+        this.log('gotoStatement() ptr=', this.ptr.gets(3));
+        var prod = function (linf) {
+            var ifLx = _this.ptr.get();
+            if (!ifLx)
+                return null;
+            if (!(ifLx instanceof Lexer_1.StatementLex))
+                return null;
+            if (!(ifLx.IF))
+                return null;
+            _this.ptr.push();
+            _this.ptr.move(1);
+            var exp = _this.expression();
+            if (!exp) {
+                _this.ptr.pop();
+                return null;
+            }
+            var thenLx = _this.ptr.get();
+            if (thenLx instanceof Lexer_1.StatementLex && !thenLx.THEN) {
+                _this.ptr.pop();
+                return null;
+            }
+            _this.ptr.move(1);
+            var conf = function (op) { op.tryLineNum = false; };
+            var trueSt = _this.statement(opts ? opts.clone(conf) : _this.options.clone(conf));
+            if (trueSt == null) {
+                _this.ptr.pop();
+                return null;
+            }
+            var elseLx = _this.ptr.get();
+            var falseSt = null;
+            if (elseLx instanceof Lexer_1.StatementLex && elseLx.ELSE) {
+                _this.ptr.push();
+                _this.ptr.move(1);
+                falseSt = _this.statement(opts ? opts.clone(conf) : _this.options.clone(conf));
+                if (falseSt) {
+                    _this.ptr.drop();
+                }
+                else {
+                    _this.ptr.pop();
+                }
+            }
+            _this.ptr.drop();
+            if (falseSt) {
+                return new IfStatement_1.IfStatement(linf ? linf.lex : ifLx, falseSt ? falseSt.end : trueSt.end, exp, trueSt, falseSt);
+            }
+            return new IfStatement_1.IfStatement(linf ? linf.lex : ifLx, trueSt.end, exp, trueSt);
+        };
+        if (opts.tryLineNum) {
+            return this.matchLine(prod);
+        }
+        else {
+            return prod();
+        }
     };
     /**
      * expression ::= impExpression | bracketExpression
@@ -245,6 +425,19 @@ var Parser = /** @class */ (function () {
         }
         return null;
     };
+    /**
+     * Парсинг циклической конструкции:
+     * leftOp { operator rightExp }
+     *
+     * Проверяет что текущая лексема (operator) соответ указанной (accpetOperator),
+     * и если это так, то производит анализ правого операнда (rightExp)
+     * В результате создает последовательность (дерево растет в лево)
+     * бинарных операторов
+     * @param ruleName имя правила
+     * @param leftOp левый уже вычесленный операнд
+     * @param rightExp вычисление правого операнда
+     * @param accpetOperator проверка оператора
+     */
     Parser.prototype.binaryRepeatExpression = function (ruleName, leftOp, rightExp, accpetOperator) {
         var res = leftOp;
         while (true) {

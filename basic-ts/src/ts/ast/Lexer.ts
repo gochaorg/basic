@@ -297,13 +297,26 @@ export class StatementLex extends KeyWordLex {
     }
     get LET() { return this.keyWord.toUpperCase()=='LET' }
     get RUN() { return this.keyWord.toUpperCase()=='RUN' }
-    get LIST() { return this.keyWord.toUpperCase()=='LIST' }
+    get GOTO() { 
+        if( this.keyWord.toUpperCase()=='GOTO' ) return true
+        if( this.keyWord.toUpperCase()=='GO TO' ) return true
+        return false
+    }
+    get IF() { return this.keyWord.toUpperCase()=='IF' }
+    get THEN() { return this.keyWord.toUpperCase()=='THEN' }
+    get ELSE() { return this.keyWord.toUpperCase()=='ELSE' }
+    //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     static parse = KeyWordLex.parser(
         true,
         [                
-            'LET', // Оператор присвоения значения переменной
-            'RUN', 
-            'LIST', 
+            'LET',  // Действие присвоения значения переменной
+            'RUN',  // Действие начала выполнения программы
+            'GOTO', // Действие перехода к определенному учатску программы
+            'GO TO', // Действие перехода к определенному учатску программы
+            'IF',    // Действие проверки булево условия
+            'THEN',    // Действие проверки булево условия
+            'ELSE',    // Действие проверки булево условия
+            //'LIST', 
         ], 
         (kw,begin,end)=>{return new StatementLex(kw,begin,end)}
         )

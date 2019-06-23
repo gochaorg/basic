@@ -156,6 +156,7 @@ class GWBASICApp {
     }
     //#endregion
 
+    //#region goto/renderIp
     goto(ip:number){
         console.log(`goto ip=${ip}`)
         this.vm.ip = ip
@@ -171,6 +172,9 @@ class GWBASICApp {
             lineDiv.classList.add('active')
         }
     }
+    //#endregion
+
+    //#region goNext
     goNext(){
         console.log('goNext() clicked')
         if( this.vm.hasNext() ){
@@ -178,6 +182,7 @@ class GWBASICApp {
             this.renderIp()
         }
     }
+    //#endregion
 
     init(){
         if( this.ui.parseSourceCode && this.ui.sourceCode ){
@@ -188,6 +193,10 @@ class GWBASICApp {
             txt.addEventListener('keydown',(e)=>{
                 if( e.keyCode==13 && e.ctrlKey ){
                     this.parseBasic(txt.value)
+                }else if( e.code=='ArrowRight' && e.ctrlKey ){
+                    this.goNext()
+                }else{
+                    //console.log('keydown',e)
                 }
             })
         }

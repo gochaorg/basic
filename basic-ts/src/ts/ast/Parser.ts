@@ -15,6 +15,30 @@ import { Statements } from './Statements';
 import { LiteralExpression, Expression, BinaryOpExpression, UnaryOpExpression, VarRefExpression } from './OperatorExp';
 import { LetStatement } from './LetStatement';
 import { RunStatement } from './RunStatement';
+import { GotoStatement } from './GotoStatement';
+import { IfStatement } from './IfStatement';
+
+/**
+ * Опции парсера
+ */
+export class Options {
+    /**
+     * парсинг statement с учетом номера строки
+     */
+    tryLineNum:boolean = true
+
+    /**
+     * Клонирование
+     */
+    clone(conf?:(cloned:Options)=>any):Options {
+        const c = new Options()
+        c.tryLineNum = this.tryLineNum
+        if( conf ){
+            conf(c)
+        }
+        return c
+    }
+}
 
 /**
  * Парсинг BASIC
@@ -44,6 +68,11 @@ export class Parser {
             console.log( ...args )
         }
     }
+
+    /**
+     * Опции
+     */
+    readonly options = new Options()
 
     /**
      * statements ::= { statement }
@@ -97,18 +126,60 @@ export class Parser {
      *             | letStatement
      *             | runStatement
      */
-    statement():Statement|null {
+    statement(opts?:Options):Statement|null {
+        if( !opts ){ opts = this.options }
         this.log('statement() ptr=',this.ptr.gets(3))
 
-        const remStmt = this.remStatement()
+        const remStmt = this.remStatement(opts)
         if( remStmt )return remStmt
 
-        const letStmt = this.letStatement()
+        const letStmt = this.letStatement(opts)
         if( letStmt )return letStmt
 
-        const runStmt = this.runStatement()
+        const runStmt = this.runStatement(opts)
         if( runStmt )return runStmt
 
+        const gotoStmt = this.gotoStatement(opts)
+        if( gotoStmt )return gotoStmt
+
+        const ifStmt = this.ifStatement(opts)
+        if( ifStmt )return ifStmt
+
+        return null
+    }
+
+    /**
+     * Проверка если текущая лексема обозначает начало нумерованной строки, 
+     * то лексема и номер строки передается в функцию, 
+     * а указатель смещается к след лексеме.
+     * 
+     * Функция модет вернуть null, тогда будет восстановлена позиция
+     * @param proc функция принимающая номер строки
+     */
+    matchLine<T extends Statement>( proc:(arg:{line:number,lex:Lex})=>T|null ):T|null{
+        let lineNum : number | undefined = undefined
+        let lineNumLex = this.ptr.get(0)
+        if( (  lineNumLex instanceof SourceLineBeginLex 
+            || lineNumLex instanceof NumberLex 
+            )
+        ){
+            if( lineNumLex instanceof SourceLineBeginLex ){
+                lineNum = lineNumLex.line
+            }
+            if( lineNumLex instanceof NumberLex ){
+                lineNum = lineNumLex.value
+            }
+            if( lineNum ){
+                this.ptr.push()
+                this.ptr.move(1)
+                let res:T|null = proc({line:lineNum, lex:lineNumLex})
+                if( res ){
+                    this.ptr.drop()
+                    return res
+                }
+                this.ptr.pop()
+            }
+        }
         return null
     }
 
@@ -117,15 +188,16 @@ export class Parser {
      *                | NumberLex RemLex
      *                | RemLex
      */
-    remStatement():RemStatement|null {
+    remStatement(opts?:Options):RemStatement|null {
+        if( !opts ){ opts = this.options }
         if( this.ptr.eof )return null
         
         let [lex1, lex2] = this.ptr.gets(2)
-        if( lex1 instanceof SourceLineBeginLex && lex2 instanceof RemLex ){
+        if( lex1 instanceof SourceLineBeginLex && lex2 instanceof RemLex && opts.tryLineNum ){
             this.ptr.move(2)
             return new RemStatement(lex1,lex2,lex2)
         }
-        if( lex1 instanceof NumberLex && lex2 instanceof RemLex ){
+        if( lex1 instanceof NumberLex && lex2 instanceof RemLex && opts.tryLineNum ){
             this.ptr.move(2)
             return new RemStatement(lex1.asSourceLine,lex2,lex2)
         }
@@ -141,14 +213,17 @@ export class Parser {
      * letStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                  StatementLex(LET) IDLex OperatorLex(=) expression
      */
-    letStatement():LetStatement|null {
+    letStatement(opts?:Options):LetStatement|null {
+        if( !opts ){ opts = this.options }
         if( this.ptr.eof )return null
 
         let lineNum : number | undefined = undefined
         let lineNumLex = this.ptr.get(0)
         let off = 0
-        if( lineNumLex instanceof SourceLineBeginLex 
+        if( opts.tryLineNum && 
+            (  lineNumLex instanceof SourceLineBeginLex 
             || lineNumLex instanceof NumberLex 
+            )
         ){
             if( lineNumLex instanceof SourceLineBeginLex ){
                 lineNum = lineNumLex.line
@@ -199,15 +274,18 @@ export class Parser {
      * runStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                  StatementLex(RUN) [lineNumber : NumberLex]
      */
-    runStatement():RunStatement|null {
+    runStatement(opts?:Options):RunStatement|null {
+        if( !opts ){ opts = this.options }
         if( this.ptr.eof )return null
         this.log('runStatement() ptr=',this.ptr.gets(3))
 
         let lineNum : number | undefined = undefined
         let lineNumLex = this.ptr.get(0)
         let off = 0
-        if( lineNumLex instanceof SourceLineBeginLex 
+        if( opts.tryLineNum &&
+            (  lineNumLex instanceof SourceLineBeginLex 
             || lineNumLex instanceof NumberLex 
+            )
         ){
             if( lineNumLex instanceof SourceLineBeginLex ){
                 lineNum = lineNumLex.line
@@ -220,7 +298,7 @@ export class Parser {
 
         let runLex = this.ptr.get(off)
         if( runLex instanceof StatementLex && 
-            runLex.keyWord == 'RUN'
+            runLex.RUN
         ){
             this.log('runStatement() RUN')
 
@@ -244,6 +322,117 @@ export class Parser {
         }
 
         return null
+    }
+
+    /**
+     * gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                   StatementLex(GOTO) lineNumber:NumberLex
+     * @param opts опции компилятора
+     */
+    gotoStatement(opts?:Options):Statement|null {
+        if( !opts ){ opts = this.options }
+        if( this.ptr.eof )return null
+        this.log('gotoStatement() ptr=',this.ptr.gets(3))
+
+        const prod = ( linf?:{line:number,lex:Lex} ) => {
+            let [gtLex,gtLine] = this.ptr.gets(2)
+            if( gtLex instanceof StatementLex 
+            &&  gtLex.GOTO
+            &&  gtLine instanceof NumberLex 
+            ){
+                this.ptr.move(2)
+                return new GotoStatement(linf ? linf.lex : gtLex, gtLine, gtLine )
+            }
+            return null
+        }
+        if( opts.tryLineNum ){
+            return this.matchLine(prod)
+        }else{
+            return prod()
+        }
+    }
+
+    /**
+     * ifStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                 StatementLex(IF) expression 
+     *                 StatementLex(THEN) statement
+     *                 [StatementLex(ELSE) statement]
+     * @param opts опции компилятора
+     */
+    ifStatement(opts?:Options):Statement|null {
+        if( !opts ){ opts = this.options }
+        if( this.ptr.eof )return null
+        this.log('gotoStatement() ptr=',this.ptr.gets(3))
+
+        const prod = ( linf?:{line:number,lex:Lex} ) => {
+            let ifLx = this.ptr.get()
+            if( !ifLx )return null
+            if( !(ifLx instanceof StatementLex) )return null
+            if( !(ifLx.IF) )return null
+
+            this.ptr.push()
+            this.ptr.move(1)
+            let exp = this.expression()
+            if( !exp ){
+                this.ptr.pop()
+                return null
+            }
+
+            let thenLx = this.ptr.get()
+            if( thenLx instanceof StatementLex && !thenLx.THEN ){
+                this.ptr.pop()
+                return null
+            }
+            this.ptr.move(1)
+
+            const conf = (op:Options)=>{op.tryLineNum = false}
+            let trueSt : Statement|null = this.statement(
+                opts ? opts.clone(conf) : this.options.clone(conf)
+            )            
+            if( trueSt==null ){
+                this.ptr.pop()
+                return null
+            }
+
+            let elseLx = this.ptr.get()
+            let falseSt : Statement | null = null
+            if( elseLx instanceof StatementLex && elseLx.ELSE ){
+                this.ptr.push()
+                this.ptr.move(1)
+                falseSt = this.statement(
+                    opts ? opts.clone(conf) : this.options.clone(conf)
+                )
+                if( falseSt ){
+                    this.ptr.drop()
+                }else{
+                    this.ptr.pop()
+                }
+            }
+            this.ptr.drop()
+
+            if( falseSt ){
+                return new IfStatement(
+                    linf ? linf.lex : ifLx,
+                    falseSt ? falseSt.end : trueSt.end,
+                    exp,
+                    trueSt,
+                    falseSt
+                )
+            }
+
+            return new IfStatement(
+                linf ? linf.lex : ifLx,
+                trueSt.end,
+                exp,
+                trueSt
+            )        
+        }
+        
+        if( opts.tryLineNum ){
+            return this.matchLine(prod)
+        }else{
+            return prod()
+        }
     }
 
     /**
@@ -287,6 +476,19 @@ export class Parser {
         return null
     }
 
+    /**
+     * Парсинг циклической конструкции:
+     * leftOp { operator rightExp }
+     * 
+     * Проверяет что текущая лексема (operator) соответ указанной (accpetOperator), 
+     * и если это так, то производит анализ правого операнда (rightExp)
+     * В результате создает последовательность (дерево растет в лево)
+     * бинарных операторов
+     * @param ruleName имя правила
+     * @param leftOp левый уже вычесленный операнд
+     * @param rightExp вычисление правого операнда
+     * @param accpetOperator проверка оператора
+     */
     binaryRepeatExpression(
         ruleName:string,
         leftOp:Expression,

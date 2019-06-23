@@ -444,15 +444,41 @@ var StatementLex = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(StatementLex.prototype, "LIST", {
-        get: function () { return this.keyWord.toUpperCase() == 'LIST'; },
+    Object.defineProperty(StatementLex.prototype, "GOTO", {
+        get: function () {
+            if (this.keyWord.toUpperCase() == 'GOTO')
+                return true;
+            if (this.keyWord.toUpperCase() == 'GO TO')
+                return true;
+            return false;
+        },
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(StatementLex.prototype, "IF", {
+        get: function () { return this.keyWord.toUpperCase() == 'IF'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StatementLex.prototype, "THEN", {
+        get: function () { return this.keyWord.toUpperCase() == 'THEN'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StatementLex.prototype, "ELSE", {
+        get: function () { return this.keyWord.toUpperCase() == 'ELSE'; },
+        enumerable: true,
+        configurable: true
+    });
+    //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     StatementLex.parse = KeyWordLex.parser(true, [
         'LET',
         'RUN',
-        'LIST',
+        'GOTO',
+        'GO TO',
+        'IF',
+        'THEN',
+        'ELSE',
     ], function (kw, begin, end) { return new StatementLex(kw, begin, end); });
     return StatementLex;
 }(KeyWordLex));
