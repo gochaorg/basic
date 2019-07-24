@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>BASIC-TS HELP</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        function escapeHtml(text) {
+            let map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+            };
+
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        leftTrimAlign = function(text) {
+            const lines = text.split( /\r\n|\n\r|\n/ )
+            const minTrim = lines.filter( (x)=>x.trim().length>0 ).
+                map( (str)=>str.match( /^(\s*)(.*)$/ )[1].length ).
+                reduce( (a,b)=>Math.min(a,b) )
+            return lines.map( x=>x.substring(minTrim) ).join("\n")
+        }
+
+        anchors = function(){
+            let m = {}
+            document.querySelectorAll('a[name]').forEach( (a)=>{ m[a.name] = a; } )
+            return m;
+        }
+
+        window.addEventListener('load',(ev)=>{
+            document.querySelectorAll('.syntax').forEach( (el)=>{
+                if( el.innerText ){
+                    const txt = leftTrimAlign(el.innerText)
+                    const html = escapeHtml(txt)
+                    const anchrs = anchors()
+                    //console.log(Object.keys(anchrs))
+                    const rx = '\\b('+Object.keys(anchrs).join('|')+')\\b'
+                    const rhtml = html.replace( 
+                        new RegExp(rx,'g'), '<a href="#$1">$1</a>' 
+                    )
+                    //console.log({'html':html, rhtml:rhtml})
+                    el.innerHTML = rhtml
+                }
+            })
+        })
+    </script>
+</head>
+<body>
+    <h1>Справка по BASIC</h1>
+    <h2>Синтаксис</h2>
+    
+    <pre class="syntax">
+        statements ::= { statement }
+    </pre>
+
+    <a name="statement"></a>
+    <pre class="syntax">
+        statement  ::= remStatement
+                   | letStatement
+                   | runStatement
+                   | gotoStatement
+                   | ifStatement
+    </pre>
+
+    <a name="remStatement"></a>
+    <pre class="syntax">
+        remStatement ::= SourceLineBeginLex RemLex
+                     | NumberLex RemLex
+                     | RemLex
+    </pre>
+
+    <a name="letStatement"></a>
+    <pre class="syntax">
+        letStatement ::= [ SourceLineBeginLex | NumberLex ]
+                         StatementLex(LET) IDLex OperatorLex(=) expression
+    </pre>
+
+    <a name="runStatement"></a>
+    <pre class="syntax">
+        runStatement ::= [ SourceLineBeginLex | NumberLex ]
+                         StatementLex(RUN) [lineNumber : NumberLex]
+    </pre>
+
+    <a name="gotoStatement"></a>
+    <pre class="syntax">
+        gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
+                          StatementLex(GOTO) lineNumber:NumberLex
+    </pre>
+
+    <a name="ifStatement"></a>
+    <pre class="syntax">
+        ifStatement ::= [ SourceLineBeginLex | NumberLex ]
+                        StatementLex(IF) expression 
+                        StatementLex(THEN) statement
+                        [StatementLex(ELSE) statement]
+    </pre>
+
+    <a name="expression"></a>
+    <pre class="syntax">
+        expression ::= impExpression | bracketExpression
+        bracketExpression ::= '(' expression ')'
+        impExpression ::= eqvExpression [ { 'IMP' eqvExpression } ]
+        eqvExpression ::= xorExpression [ 'EQV' xorExpression ]
+        xorExpression ::= orExpression [ { 'XOR' orExpression } ]
+        orExpression ::= andExpression [ { 'OR' andExpression } ]
+        andExpression ::= notExpression [ { 'AND' notExpression } ]
+        notExpression ::= ['NOT'] relationExpression
+        relationExpression ::= plusExpression [ 
+            ('=' | '&lt;>' | '>&lt;' | '&lt;' | '>' | '>=' | '&lt;=' | '=>' | '=&lt;') 
+            plusExpression 
+        ]
+        plusExpression ::= modExpression [ { ('+' | '-') modExpression } ]
+        modExpression ::= intDivExpression [ { 'MOD' intDivExpression } ]
+        intDivExpression ::= mulExpression [ { '\' mulExpression } ]
+        mulExpression ::= powExpression [ { ( '*' | '/' ) powExpression } ]
+        powExpression ::= signedAtom [ { '^' signedAtom } ]
+        signedAtom ::= [ '+' | '-' ] atom
+        atom ::= '(' expression ')'
+               | baseValueExpression
+        baseValueExpression ::= constExpression 
+                              | varRefExpression '(' expression [{ ',' expression }] ')'
+                              | varRefExpression
+        constExpression ::= NumberLex | StringLex
+        varRefExpression ::= IDLex
+    </pre>
+</body>
+</html>

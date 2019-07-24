@@ -29,7 +29,8 @@ module.exports = {
             template: './src/index.html'
         }),
         new CopyPlugin([
-            { from: 'src/**/*.css', to: '', flatten:true, ignore:['**/node_modules/**/*.css'] }
-        ])
+            { from: 'src/**/*.css', to: '', flatten:true, ignore:['**/node_modules/**/*.css'] },
+            { from: 'src/help*.html', to:'', flatten:true }
+        ]),
     ]
   };
