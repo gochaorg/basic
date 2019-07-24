@@ -9,7 +9,7 @@ import { RunStatement } from "../ast/RunStatement";
 import { GotoStatement } from "../ast/GotoStatement";
 import { IfStatement } from "../ast/IfStatement";
 
-export class BasicVm {    
+export class BasicVm {
     /**
      * Набор исходников для исполнения
      */

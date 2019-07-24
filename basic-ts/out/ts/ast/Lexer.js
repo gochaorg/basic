@@ -400,6 +400,21 @@ var OperatorLex = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(OperatorLex.prototype, "arrBrOpen", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == '('; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "arrBrClose", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == ')'; },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(OperatorLex.prototype, "argDelim", {
+        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == ','; },
+        enumerable: true,
+        configurable: true
+    });
     OperatorLex.parse = KeyWordLex.parser(true, [
         '(', ')',
         // математические операции в порядке уменьшения приоритета
@@ -423,6 +438,11 @@ var OperatorLex = /** @class */ (function (_super) {
         // 0 EQV 1 = 0
         // 0 EQV 0 = 1
         'IMP',
+        // 0 IMP 0 = 1
+        // 0 IMP 1 = 1
+        // 1 IMP 0 = 0
+        // 1 IMP 1 = 1
+        ','
     ], function (kw, begin, end) { return new OperatorLex(kw, begin, end); });
     return OperatorLex;
 }(KeyWordLex));

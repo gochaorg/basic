@@ -111,6 +111,19 @@ var VarRefExpression = /** @class */ (function (_super) {
 }(AExpression));
 exports.VarRefExpression = VarRefExpression;
 /**
+ * Ссылка на значение массива
+ */
+var VarArrIndexRef = /** @class */ (function (_super) {
+    __extends(VarArrIndexRef, _super);
+    function VarArrIndexRef(lex, indexes) {
+        var _this = _super.call(this, lex) || this;
+        _this.indexes = indexes;
+        return _this;
+    }
+    return VarArrIndexRef;
+}(VarRefExpression));
+exports.VarArrIndexRef = VarArrIndexRef;
+/**
  * Бинарная операция
  */
 var BinaryOpExpression = /** @class */ (function (_super) {

@@ -12,7 +12,7 @@ import {
 import { RemStatement } from './RemStatement';
 import { Statement } from './Statement';
 import { Statements } from './Statements';
-import { LiteralExpression, Expression, BinaryOpExpression, UnaryOpExpression, VarRefExpression } from './OperatorExp';
+import { LiteralExpression, Expression, BinaryOpExpression, UnaryOpExpression, VarRefExpression, VarArrIndexRef } from './OperatorExp';
 import { LetStatement } from './LetStatement';
 import { RunStatement } from './RunStatement';
 import { GotoStatement } from './GotoStatement';
@@ -125,6 +125,8 @@ export class Parser {
      * statement ::= remStatement 
      *             | letStatement
      *             | runStatement
+     *             | gotoStatement
+     *             | ifStatement
      */
     statement(opts?:Options):Statement|null {
         if( !opts ){ opts = this.options }
@@ -217,57 +219,93 @@ export class Parser {
         if( !opts ){ opts = this.options }
         if( this.ptr.eof )return null
 
-        let lineNum : number | undefined = undefined
-        let lineNumLex = this.ptr.get(0)
-        let off = 0
-        if( opts.tryLineNum && 
-            (  lineNumLex instanceof SourceLineBeginLex 
-            || lineNumLex instanceof NumberLex 
-            )
-        ){
-            if( lineNumLex instanceof SourceLineBeginLex ){
-                lineNum = lineNumLex.line
-            }
-            if( lineNumLex instanceof NumberLex ){
-                lineNum = lineNumLex.value
-            }
-            off = 1
-        }
+        // let lineNum : number | undefined = undefined
+        // let lineNumLex = this.ptr.get(0)
+        // let off = 0
+        // if( opts.tryLineNum && 
+        //     (  lineNumLex instanceof SourceLineBeginLex 
+        //     || lineNumLex instanceof NumberLex 
+        //     )
+        // ){
+        //     if( lineNumLex instanceof SourceLineBeginLex ){
+        //         lineNum = lineNumLex.line
+        //     }
+        //     if( lineNumLex instanceof NumberLex ){
+        //         lineNum = lineNumLex.value
+        //     }
+        //     off = 1
+        // }
 
-        let lexLet = this.ptr.get(off)
-        if( lexLet instanceof StatementLex && 
-            lexLet.LET
-        ){
-            let [ lexId, lexAssign ] = this.ptr.fetch(off+1,2)
-            if( lexAssign instanceof OperatorLex && lexAssign.keyWord == '=' 
-            &&  lexId instanceof IDLex
-            ){
-                // parsing...
-                this.ptr.push()
-                let begin = this.ptr.get() || lexLet
-
-                this.ptr.move(off+3)
-                let exp = this.expression()
-                if( exp ){
-                    this.ptr.drop()
-                    let end = exp.rightTreeLex || begin
-                    if( lineNum ){
-                        return new LetStatement(begin,end,lexId,exp)
-                    }else{
-                        return new LetStatement(begin,end,lexId,exp)
-                    }
-                }else{
-                    // syntax error
-                    this.ptr.pop()
-                    return null
-                }
+        const prod = (arg?:{line:number,lex:Lex}) => {
+            this.ptr.push()
+            let lexLet = this.ptr.get()
+            if( lexLet instanceof StatementLex && lexLet.LET ){
+                this.ptr.move(1)
             }else{
-                // syntax error
+                this.ptr.pop()
                 return null
             }
+
+            const lexId = this.ptr.get()
+            if( lexId instanceof IDLex ){
+                const lxNext = this.ptr.get(1)
+                if( lxNext instanceof OperatorLex && lxNext.keyWord == '=' ){
+                    this.ptr.move(2)
+                    const exp = this.expression()
+                    if( exp ){
+                        const begin = arg ? arg.lex : lexLet
+                        let end = exp.rightTreeLex || begin
+                        this.ptr.drop()
+                        return new LetStatement(begin,end,lexId,exp)
+                    }
+                }
+
+                // if( lxNext instanceof OperatorLex && lxNext.arrBrOpen ){
+                //     this.ptr.move(2)
+                //     //let exp
+                // }
+            }
+
+            this.ptr.pop()
+            return null
         }
 
-        return null
+        if( opts.tryLineNum ){
+            return this.matchLine(prod) || prod()
+        }else{
+            return prod()
+        }
+
+        // let lexLet = this.ptr.get(off)
+        // if( lexLet instanceof StatementLex && 
+        //     lexLet.LET
+        // ){
+        //     let [ lexId, lxNext ] = this.ptr.fetch(off+1,2)
+        //     if( lxNext instanceof OperatorLex && lxNext.keyWord == '=' 
+        //     &&  lexId instanceof IDLex
+        //     ){
+        //         // parsing...
+        //         this.ptr.push()
+        //         let begin = this.ptr.get() || lexLet
+
+        //         this.ptr.move(off+3)
+        //         let exp = this.expression()
+        //         if( exp ){
+        //             this.ptr.drop()
+        //             let end = exp.rightTreeLex || begin
+        //             return new LetStatement(begin,end,lexId,exp)
+        //         }else{
+        //             // syntax error
+        //             this.ptr.pop()
+        //             return null
+        //         }
+        //     }else{
+        //         // syntax error
+        //         return null
+        //     }
+        // }
+
+        // return null
     }
 
     /**
@@ -854,7 +892,9 @@ export class Parser {
     }
 
     /**
-     * baseValueExpression ::= constExpression | varRefExpression
+     * baseValueExpression ::= constExpression 
+     *                       | varRefExpression '(' expression [{ ',' expression }] ')'
+     *                       | varRefExpression
      */
     baseValueExpression():Expression|null {
         this.log('baseValueExpression() ptr=', this.ptr.gets(3))
@@ -873,6 +913,37 @@ export class Parser {
         this.log( 'baseValueExpression() vrefExp=',vrefExp )
         if( vrefExp ){
             this.log('baseValueExpression() res=', vrefExp)
+            const brOpen = this.ptr.get()
+            if( brOpen instanceof OperatorLex && brOpen.arrBrOpen ){
+                let parseArrSucc = true
+                const indexExpression:Expression[] = []
+                this.ptr.push()
+                this.ptr.move(1)
+                while(true){
+                    const idxExp = this.expression()
+                    if( idxExp ){
+                        indexExpression.push(idxExp)                        
+                    }else{
+                        this.ptr.pop()
+                        parseArrSucc = false
+                        break
+                    }
+                    const lxNext = this.ptr.get()
+                    if( lxNext instanceof OperatorLex ){
+                        if( lxNext.argDelim ){
+                            this.ptr.move(1)
+                            continue
+                        }else if( lxNext.arrBrClose ){
+                            this.ptr.move(1)
+                            break
+                        }
+                    }
+                }
+                if( parseArrSucc ){
+                    this.ptr.drop()
+                    return new VarArrIndexRef(vrefExp.id, indexExpression)
+                }
+            }
             return vrefExp
         }
 

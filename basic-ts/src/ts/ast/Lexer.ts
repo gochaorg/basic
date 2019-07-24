@@ -264,6 +264,7 @@ export class OperatorLex extends KeyWordLex {
                             // 0 IMP 1 = 1
                             // 1 IMP 0 = 0
                             // 1 IMP 1 = 1
+            ','
         ], 
         (kw,begin,end)=>{return new OperatorLex(kw,begin,end)}
         );
@@ -287,6 +288,9 @@ export class OperatorLex extends KeyWordLex {
     get xor(){ return this.keyWord!=null && this.keyWord.toUpperCase()=='XOR' }
     get eqv(){ return this.keyWord!=null && this.keyWord.toUpperCase()=='EQV' }
     get imp(){ return this.keyWord!=null && this.keyWord.toUpperCase()=='IMP' }
+    get arrBrOpen(){ return this.keyWord!=null && this.keyWord.toUpperCase()=='(' }
+    get arrBrClose(){ return this.keyWord!=null && this.keyWord.toUpperCase()==')' }
+    get argDelim(){ return this.keyWord!=null && this.keyWord.toUpperCase()==',' }
 }
 
 export class StatementLex extends KeyWordLex {

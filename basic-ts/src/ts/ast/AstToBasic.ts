@@ -1,6 +1,6 @@
 import * as Ast from './AstVisitor'
 import { ValidAstType } from './AstTypes'
-import { LiteralExpression, VarRefExpression, UnaryOpExpression, BinaryOpExpression, Expression } from './OperatorExp';
+import { LiteralExpression, VarRefExpression, UnaryOpExpression, BinaryOpExpression, Expression, VarArrIndexRef } from './OperatorExp';
 import { LetStatement } from './LetStatement';
 import { RemStatement } from './RemStatement';
 import { RunStatement } from './RunStatement';
@@ -60,6 +60,21 @@ export function astToBasic(
         }else{
             throw new Error(`unknow Literal value type = ${typeof(root.value)}`)
         }
+    }
+    //#endregion
+    //#region var ref
+    if( root instanceof VarArrIndexRef ){
+        let code = ''
+        code += root.varname 
+        code += '('
+        let idx = -1
+        for( let aidx of root.indexes ){
+            idx++
+            if( idx>0 ) code += ','
+            code += astToBasic(aidx, opts)
+        }
+        code += ')'
+        return code
     }
     //#endregion
     //#region var ref

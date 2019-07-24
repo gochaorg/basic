@@ -67,6 +67,23 @@ function astToBasic(root, opts) {
     }
     //#endregion
     //#region var ref
+    if (root instanceof OperatorExp_1.VarArrIndexRef) {
+        var code = '';
+        code += root.varname;
+        code += '(';
+        var idx = -1;
+        for (var _i = 0, _a = root.indexes; _i < _a.length; _i++) {
+            var aidx = _a[_i];
+            idx++;
+            if (idx > 0)
+                code += ',';
+            code += astToBasic(aidx, opts);
+        }
+        code += ')';
+        return code;
+    }
+    //#endregion
+    //#region var ref
     if (root instanceof OperatorExp_1.VarRefExpression) {
         return root.varname;
     }

@@ -108,6 +108,8 @@ var Parser = /** @class */ (function () {
      * statement ::= remStatement
      *             | letStatement
      *             | runStatement
+     *             | gotoStatement
+     *             | ifStatement
      */
     Parser.prototype.statement = function (opts) {
         if (!opts) {
@@ -194,58 +196,93 @@ var Parser = /** @class */ (function () {
      *                  StatementLex(LET) IDLex OperatorLex(=) expression
      */
     Parser.prototype.letStatement = function (opts) {
+        var _this = this;
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
-        var lineNum = undefined;
-        var lineNumLex = this.ptr.get(0);
-        var off = 0;
-        if (opts.tryLineNum &&
-            (lineNumLex instanceof Lexer_1.SourceLineBeginLex
-                || lineNumLex instanceof Lexer_1.NumberLex)) {
-            if (lineNumLex instanceof Lexer_1.SourceLineBeginLex) {
-                lineNum = lineNumLex.line;
-            }
-            if (lineNumLex instanceof Lexer_1.NumberLex) {
-                lineNum = lineNumLex.value;
-            }
-            off = 1;
-        }
-        var lexLet = this.ptr.get(off);
-        if (lexLet instanceof Lexer_1.StatementLex &&
-            lexLet.LET) {
-            var _a = this.ptr.fetch(off + 1, 2), lexId = _a[0], lexAssign = _a[1];
-            if (lexAssign instanceof Lexer_1.OperatorLex && lexAssign.keyWord == '='
-                && lexId instanceof Lexer_1.IDLex) {
-                // parsing...
-                this.ptr.push();
-                var begin = this.ptr.get() || lexLet;
-                this.ptr.move(off + 3);
-                var exp = this.expression();
-                if (exp) {
-                    this.ptr.drop();
-                    var end = exp.rightTreeLex || begin;
-                    if (lineNum) {
-                        return new LetStatement_1.LetStatement(begin, end, lexId, exp);
-                    }
-                    else {
-                        return new LetStatement_1.LetStatement(begin, end, lexId, exp);
-                    }
-                }
-                else {
-                    // syntax error
-                    this.ptr.pop();
-                    return null;
-                }
+        // let lineNum : number | undefined = undefined
+        // let lineNumLex = this.ptr.get(0)
+        // let off = 0
+        // if( opts.tryLineNum && 
+        //     (  lineNumLex instanceof SourceLineBeginLex 
+        //     || lineNumLex instanceof NumberLex 
+        //     )
+        // ){
+        //     if( lineNumLex instanceof SourceLineBeginLex ){
+        //         lineNum = lineNumLex.line
+        //     }
+        //     if( lineNumLex instanceof NumberLex ){
+        //         lineNum = lineNumLex.value
+        //     }
+        //     off = 1
+        // }
+        var prod = function (arg) {
+            _this.ptr.push();
+            var lexLet = _this.ptr.get();
+            if (lexLet instanceof Lexer_1.StatementLex && lexLet.LET) {
+                _this.ptr.move(1);
             }
             else {
-                // syntax error
+                _this.ptr.pop();
                 return null;
             }
+            var lexId = _this.ptr.get();
+            if (lexId instanceof Lexer_1.IDLex) {
+                var lxNext = _this.ptr.get(1);
+                if (lxNext instanceof Lexer_1.OperatorLex && lxNext.keyWord == '=') {
+                    _this.ptr.move(2);
+                    var exp = _this.expression();
+                    if (exp) {
+                        var begin = arg ? arg.lex : lexLet;
+                        var end = exp.rightTreeLex || begin;
+                        _this.ptr.drop();
+                        return new LetStatement_1.LetStatement(begin, end, lexId, exp);
+                    }
+                }
+                // if( lxNext instanceof OperatorLex && lxNext.arrBrOpen ){
+                //     this.ptr.move(2)
+                //     //let exp
+                // }
+            }
+            _this.ptr.pop();
+            return null;
+        };
+        if (opts.tryLineNum) {
+            return this.matchLine(prod) || prod();
         }
-        return null;
+        else {
+            return prod();
+        }
+        // let lexLet = this.ptr.get(off)
+        // if( lexLet instanceof StatementLex && 
+        //     lexLet.LET
+        // ){
+        //     let [ lexId, lxNext ] = this.ptr.fetch(off+1,2)
+        //     if( lxNext instanceof OperatorLex && lxNext.keyWord == '=' 
+        //     &&  lexId instanceof IDLex
+        //     ){
+        //         // parsing...
+        //         this.ptr.push()
+        //         let begin = this.ptr.get() || lexLet
+        //         this.ptr.move(off+3)
+        //         let exp = this.expression()
+        //         if( exp ){
+        //             this.ptr.drop()
+        //             let end = exp.rightTreeLex || begin
+        //             return new LetStatement(begin,end,lexId,exp)
+        //         }else{
+        //             // syntax error
+        //             this.ptr.pop()
+        //             return null
+        //         }
+        //     }else{
+        //         // syntax error
+        //         return null
+        //     }
+        // }
+        // return null
     };
     /**
      * runStatement ::= [ SourceLineBeginLex | NumberLex ]
@@ -729,7 +766,9 @@ var Parser = /** @class */ (function () {
         return this.baseValueExpression();
     };
     /**
-     * baseValueExpression ::= constExpression | varRefExpression
+     * baseValueExpression ::= constExpression
+     *                       | varRefExpression '(' expression [{ ',' expression }] ')'
+     *                       | varRefExpression
      */
     Parser.prototype.baseValueExpression = function () {
         this.log('baseValueExpression() ptr=', this.ptr.gets(3));
@@ -745,6 +784,39 @@ var Parser = /** @class */ (function () {
         this.log('baseValueExpression() vrefExp=', vrefExp);
         if (vrefExp) {
             this.log('baseValueExpression() res=', vrefExp);
+            var brOpen = this.ptr.get();
+            if (brOpen instanceof Lexer_1.OperatorLex && brOpen.arrBrOpen) {
+                var parseArrSucc = true;
+                var indexExpression = [];
+                this.ptr.push();
+                this.ptr.move(1);
+                while (true) {
+                    var idxExp = this.expression();
+                    if (idxExp) {
+                        indexExpression.push(idxExp);
+                    }
+                    else {
+                        this.ptr.pop();
+                        parseArrSucc = false;
+                        break;
+                    }
+                    var lxNext = this.ptr.get();
+                    if (lxNext instanceof Lexer_1.OperatorLex) {
+                        if (lxNext.argDelim) {
+                            this.ptr.move(1);
+                            continue;
+                        }
+                        else if (lxNext.arrBrClose) {
+                            this.ptr.move(1);
+                            break;
+                        }
+                    }
+                }
+                if (parseArrSucc) {
+                    this.ptr.drop();
+                    return new OperatorExp_1.VarArrIndexRef(vrefExp.id, indexExpression);
+                }
+            }
             return vrefExp;
         }
         return null;

@@ -94,6 +94,9 @@ export class LiteralExpression extends AExpression implements Expression {
  * Ссылка на переменную
  */
 export class VarRefExpression extends AExpression implements Expression {
+    /**
+     * Идентификатор переменной (имя)
+     */
     readonly id:IDLex
     readonly lexems:ReadonlyArray<Lex>
     readonly children:ReadonlyArray<Expression>
@@ -106,6 +109,17 @@ export class VarRefExpression extends AExpression implements Expression {
         this.kind = 'VarRef'
     }
     get varname() { return this.id.id }
+}
+
+/**
+ * Ссылка на значение массива
+ */
+export class VarArrIndexRef extends VarRefExpression {
+    readonly indexes:Expression[]
+    constructor(lex:IDLex, indexes:Expression[]){
+        super(lex)
+        this.indexes = indexes
+    }
 }
 
 /**
