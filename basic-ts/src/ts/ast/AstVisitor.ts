@@ -9,6 +9,9 @@ import { LetStatement } from "./LetStatement";
 import { RunStatement } from "./RunStatement";
 import { BinaryOpExpression, UnaryOpExpression, LiteralExpression, VarRefExpression } from "./OperatorExp";
 import { TreeStep } from "../TreeIt";
+import { GotoStatement } from "./GotoStatement";
+import { ReturnStatement } from "./ReturnStatement";
+import { GoSubStatement } from "./GoSubStatement";
 
 /**
 Шаг при обходе дерева
@@ -26,6 +29,9 @@ export interface AstVisitor {
     rem?: AstBeginEnd<RemStatement>
     let?: AstBeginEnd<LetStatement>
     run?: AstBeginEnd<RunStatement>
+    goto?: AstBeginEnd<GotoStatement>
+    gosub?: AstBeginEnd<GoSubStatement>
+    return?: AstBeginEnd<ReturnStatement>
     operator?: {
         binary?: AstBeginEnd<BinaryOpExpression>
         unary?: AstBeginEnd<UnaryOpExpression>
@@ -86,6 +92,36 @@ export function walk( ts:AstTreeStep, visitor:AstVisitor ){
         }
         if( visitor.run && visitor.run.end ){
             visitor.run.end( ts.value, ts )
+        }
+    }
+    //#endregion
+    //#region GotoStatement
+    if( ts.value instanceof GotoStatement ){
+        if( visitor.goto && visitor.goto.begin ){
+            visitor.goto.begin( ts.value, ts )
+        }
+        if( visitor.goto && visitor.goto.end ){
+            visitor.goto.end( ts.value, ts )
+        }
+    }
+    //#endregion
+    //#region GosubStatement
+    if( ts.value instanceof GoSubStatement ){
+        if( visitor.gosub && visitor.gosub.begin ){
+            visitor.gosub.begin( ts.value, ts )
+        }
+        if( visitor.gosub && visitor.gosub.end ){
+            visitor.gosub.end( ts.value, ts )
+        }
+    }
+    //#endregion
+    //#region GosubStatement
+    if( ts.value instanceof ReturnStatement ){
+        if( visitor.return && visitor.return.begin ){
+            visitor.return.begin( ts.value, ts )
+        }
+        if( visitor.return && visitor.return.end ){
+            visitor.return.end( ts.value, ts )
         }
     }
     //#endregion

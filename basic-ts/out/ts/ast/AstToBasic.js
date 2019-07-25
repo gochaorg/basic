@@ -8,6 +8,8 @@ var Statements_1 = require("./Statements");
 var SourceUnit_1 = require("../vm/SourceUnit");
 var GotoStatement_1 = require("./GotoStatement");
 var IfStatement_1 = require("./IfStatement");
+var GoSubStatement_1 = require("./GoSubStatement");
+var ReturnStatement_1 = require("./ReturnStatement");
 /**
  * Генератор из AST в BASIC
  */
@@ -152,6 +154,32 @@ function astToBasic(root, opts) {
             code = root.sourceLine + " ";
         }
         code += "GOTO";
+        if (root.gotoLine != undefined) {
+            code += " " + root.gotoLine.value;
+        }
+        return code;
+    }
+    //#endregion
+    //#region GOSUB
+    if (root instanceof GoSubStatement_1.GoSubStatement) {
+        var code = '';
+        if (root.sourceLine != undefined && opts.sourceLineNumber) {
+            code = root.sourceLine + " ";
+        }
+        code += "GOSUB";
+        if (root.gotoLine != undefined) {
+            code += " " + root.gotoLine.value;
+        }
+        return code;
+    }
+    //#endregion
+    //#region RETURN
+    if (root instanceof ReturnStatement_1.ReturnStatement) {
+        var code = '';
+        if (root.sourceLine != undefined && opts.sourceLineNumber) {
+            code = root.sourceLine + " ";
+        }
+        code += "RETURN";
         if (root.gotoLine != undefined) {
             code += " " + root.gotoLine.value;
         }

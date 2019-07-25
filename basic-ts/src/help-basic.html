@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>BASIC-TS HELP</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="help.css">
     <script>
         function escapeHtml(text) {
             let map = {
@@ -16,7 +17,7 @@
             };
 
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
+        }        
 
         leftTrimAlign = function(text) {
             const lines = text.split( /\r\n|\n\r|\n/ )
@@ -32,19 +33,40 @@
             return m;
         }
 
+        lexemsHightlight = function(text){
+            const rx = new RegExp(
+                '('+
+                    '('+
+                    '&#039;'+
+                    '('+
+                        'IMP|EQV|XOR|OR|AND|NOT|MOD'+
+                        '|=|&lt;|&gt;|&lt;&gt;|&gt;&lt;'+
+                        '|&lt;=|&gt;=|=&lt;|=&gt;'+
+                        '|\\^|\\*|\\/|\\+|\\-'+
+                        '|\\(|\\)'+
+                        '|\\,'+
+                    ')'+
+                    '&#039;'+
+                ')'+
+                '|(Statement|Operator)Lex\\([^\\)]+\\)'+
+                //'|(Rem|Number|ID|String)Lex'+
+                ')',
+                'g');
+            const res = text.replace(rx,'<span class="lex text">$1</span>');
+            return res;
+        }
+
         window.addEventListener('load',(ev)=>{
             document.querySelectorAll('.syntax').forEach( (el)=>{
                 if( el.innerText ){
                     const txt = leftTrimAlign(el.innerText)
                     const html = escapeHtml(txt)
                     const anchrs = anchors()
-                    //console.log(Object.keys(anchrs))
                     const rx = '\\b('+Object.keys(anchrs).join('|')+')\\b'
                     const rhtml = html.replace( 
                         new RegExp(rx,'g'), '<a href="#$1">$1</a>' 
                     )
-                    //console.log({'html':html, rhtml:rhtml})
-                    el.innerHTML = rhtml
+                    el.innerHTML = lexemsHightlight(rhtml)
                 }
             })
         })
@@ -52,33 +74,163 @@
 </head>
 <body>
     <h1>Справка по BASIC</h1>
-    <h2>Синтаксис</h2>
+
+    <div>
+        <h2>Синтаксис / Parser</h2>
+        <p>
+            Сама процедура парсинга - анализа исходного текста состоит в том, 
+            что бы создать корректное AST дерево.
+        </p>
+
+        <p>
+            Процедура парсинга определеяется грамматикой языка.
+        </p>
+
+        <p>
+            Грамматика языка - это очень широкое понятие, 
+            которое включает не только AST дерево, но так же и поведение системы в целом.
+        </p>
+
+        <p>
+            В понятие грамматики языка входит часть называющаяся синтаксисом языка - 
+            эта часть определяет как то или иное высказывание на языке описывается буквами.
+        </p>
+
+        <p>
+            Синтаксис языка делеться на два крупных блока (две крупных задачи):
+            <ul>
+                <li>Лексический анализ</li>
+                <li>Синтаксический анализ</li>
+            </ul>
+
+            В задачах лексического анализа входит:
+            <ul>
+                <li>Из потока символов выделить слова - 
+                    преобразовать поток символов, в поток слов</li>
+                <li>
+                    Удалить опциональные слова из потока, 
+                    например пробельные символы
+                </li>
+            </ul>
+
+            В задачах синтаксического анализа входит:
+            <ul>
+                <li>Из потока слов создать AST-дерево выражений</li>
+            </ul>
+        </p>
+    </div>
+
+    <div>
+        <h2>Нотация описания синтаксиса</h2>
+        Ниже синтаксис будет описан в виде набора правил
+        в виде 
+        <a href="https://ru.wikipedia.org/wiki/%D0%A0%D0%B0%D1%81%D1%88%D0%B8%D1%80%D0%B5%D0%BD%D0%BD%D0%B0%D1%8F_%D1%84%D0%BE%D1%80%D0%BC%D0%B0_%D0%91%D1%8D%D0%BA%D1%83%D1%81%D0%B0_%E2%80%94_%D0%9D%D0%B0%D1%83%D1%80%D0%B0">
+            Расширенной формы Бэкуса — Наура
+        </a>
+
+        Общая суть такая:
+        <ul>
+            <li>Каждое правило состоит из двух частей: левой и правой 
+                разделенных символом ::=
+            </li>
+            <li>
+                В левой части техническое название правила,
+                в правой ее описание
+            </li>
+            <li>
+                В правой части могут быть ссылки на другие правила (Нетерминальные символы), 
+                а так же специальные символы которые определяют как интерпретировать 
+                описание правила
+            </li>
+            <li>
+                Терминальные символы — это минимальные элементы грамматики, 
+                не имеющие собственной грамматической структуры. 
+                В РБНФ терминальные символы — это либо предопределённые идентификаторы 
+                (имена, считающиеся заданными для данного описания грамматики), 
+                либо цепочки — последовательности символов в кавычках или апострофах.
+            </li>
+            <li>
+                Нетерминальные символы — это элементы грамматики, 
+                имеющие собственные имена и структуру. 
+                Каждый нетерминальный символ состоит из одного или более терминальных 
+                и/или нетерминальных символов, 
+                сочетание которых определяется правилами грамматики. 
+                В РБНФ каждый нетерминальный символ имеет имя, 
+                которое представляет собой строку символов.
+            </li>
+            <li>
+                В правой части используются следующие специальные символы
+                <ul>
+                    <li><b>A B</b> — элемент A, за которым следует элемент B (конкатенация)</li>
+                    <li><b>A | B</b> — либо элемент A либо B (выбор)</li>
+                    <li><b>[A]</b> — элемент A входит или не входит (условное вхождение)</li>
+                    <li><b>{A}</b> — ноль или более элементов A (повторение)</li>
+                    <li><b>(A B)</b> — группировка элементов</li>
+                    <li><b>x:A</b> — где x - описание (не)терминала, 
+                        а A - его тип - т.е. ссылка на (не)терминал
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <h2>Синтаксический анализ</h2>
+
+    <p>
+        В синтаксисе будут будут ссылки на лексемы такого вида:
+        <ul>
+            <li>
+                <code>StatementLex(<b>IF</b>)</code>
+                В данном случаи это обозначет ссылку на ключевое слово <code>IF</code>.
+            </li>
+            <li>
+                <code>OperatorLex(<b>=</b>)</code>
+                В данном случаи это обозначет ссылку на оператор <code>=</code>.
+            </li>
+        </ul>
+    </p>
     
-    <pre class="syntax">
-        statements ::= { statement }
-    </pre>
+    <div>
+        <a name="statements"><h3>statements</h3></a>
+        <pre class="syntax">
+            statements ::= { statement }
+        </pre>
+        Это верхнего уровня правило, оно обозначает что программа 
+        может содержать 0 и более утверждений (statement)
+    </div>
 
-    <a name="statement"></a>
-    <pre class="syntax">
-        statement  ::= remStatement
-                   | letStatement
-                   | runStatement
-                   | gotoStatement
-                   | ifStatement
-    </pre>
+    <div>
+        <a name="statement"><h3>statement</h3></a>
+        <pre class="syntax">
+            statement  ::= remStatement
+                    | letStatement
+                    | runStatement
+                    | gotoStatement
+                    | ifStatement
+        </pre>
+        Утверждение - это блок кода который может выполнять одно из указанных действий
+    </div>
 
-    <a name="remStatement"></a>
-    <pre class="syntax">
-        remStatement ::= SourceLineBeginLex RemLex
-                     | NumberLex RemLex
-                     | RemLex
-    </pre>
+    <div>
+        <a name="remStatement"><h3>remStatement</h3></a>
+        <pre class="syntax">
+            remStatement ::= SourceLineBeginLex RemLex
+                        | NumberLex RemLex
+                        | RemLex
+        </pre>
+        Это комментарий в коде
+    </div>
 
-    <a name="letStatement"></a>
-    <pre class="syntax">
-        letStatement ::= [ SourceLineBeginLex | NumberLex ]
-                         StatementLex(LET) IDLex OperatorLex(=) expression
-    </pre>
+    <div>
+        <a name="letStatement"><h3>letStatement</h3></a>
+        <pre class="syntax">
+            letStatement ::= [ SourceLineBeginLex | NumberLex ]
+                            StatementLex(LET) IDLex OperatorLex(=) expression
+        </pre>
+        Операция присвоения значения переменной.
+        Вычисляет значение (expression) и 
+        присваивает вычисленное значение переменной указанной в лексеме IDLex
+    </div>
 
     <a name="runStatement"></a>
     <pre class="syntax">
@@ -103,30 +255,158 @@
     <a name="expression"></a>
     <pre class="syntax">
         expression ::= impExpression | bracketExpression
+    </pre>
+
+    <a name="bracketExpression"></a>
+    <pre class="syntax">
         bracketExpression ::= '(' expression ')'
+    </pre>
+
+    <a name="impExpression"></a>
+    <pre class="syntax">
         impExpression ::= eqvExpression [ { 'IMP' eqvExpression } ]
+    </pre>
+
+    <a name="eqvExpression"></a>
+    <pre class="syntax">
         eqvExpression ::= xorExpression [ 'EQV' xorExpression ]
+    </pre>
+
+    <a name="xorExpression"></a>
+    <pre class="syntax">
         xorExpression ::= orExpression [ { 'XOR' orExpression } ]
+    </pre>
+
+    <a name="orExpression"></a>
+    <pre class="syntax">
         orExpression ::= andExpression [ { 'OR' andExpression } ]
+    </pre>
+
+    <a name="andExpression"></a>
+    <pre class="syntax">
         andExpression ::= notExpression [ { 'AND' notExpression } ]
+    </pre>
+
+    <a name="notExpression"></a>
+    <pre class="syntax">
         notExpression ::= ['NOT'] relationExpression
+    </pre>
+
+    <a name="relationExpression"></a>
+    <pre class="syntax">
         relationExpression ::= plusExpression [ 
             ('=' | '&lt;>' | '>&lt;' | '&lt;' | '>' | '>=' | '&lt;=' | '=>' | '=&lt;') 
             plusExpression 
         ]
+    </pre>
+
+    <a name="plusExpression"></a>
+    <pre class="syntax">
         plusExpression ::= modExpression [ { ('+' | '-') modExpression } ]
+    </pre>
+
+    <a name="modExpression"></a>
+    <pre class="syntax">
         modExpression ::= intDivExpression [ { 'MOD' intDivExpression } ]
+    </pre>
+
+    <a name="intDivExpression"></a>
+    <pre class="syntax">
         intDivExpression ::= mulExpression [ { '\' mulExpression } ]
+    </pre>
+
+    <a name="mulExpression"></a>
+    <pre class="syntax">
         mulExpression ::= powExpression [ { ( '*' | '/' ) powExpression } ]
+    </pre>
+
+    <a name="powExpression"></a>
+    <pre class="syntax">
         powExpression ::= signedAtom [ { '^' signedAtom } ]
+    </pre>
+
+    <a name="signedAtom"></a>
+    <pre class="syntax">
         signedAtom ::= [ '+' | '-' ] atom
+    </pre>
+
+    <a name="atom"></a>
+    <pre class="syntax">
         atom ::= '(' expression ')'
                | baseValueExpression
+    </pre>
+
+    <a name="baseValueExpression"></a>
+    <pre class="syntax">
         baseValueExpression ::= constExpression 
                               | varRefExpression '(' expression [{ ',' expression }] ')'
                               | varRefExpression
+    </pre>
+
+    <a name="constExpression"></a>
+    <pre class="syntax">
         constExpression ::= NumberLex | StringLex
+
+    </pre>
+
+    <a name="varRefExpression"></a>
+    <pre class="syntax">
         varRefExpression ::= IDLex
     </pre>
+
+    <div>
+        <h2>Лексический анализ</h2>
+        Лексический анализатор пораждает набор лексем, 
+        некоторые лексемы задаются грамматикой, 
+        некоторые идут уже предустановленными и 
+        в грамматике на них даются просто ссылки.
+
+        <a name="SourceLineBeginLex">
+            <h3>SourceLineBeginLex</h3>
+        </a>
+        <p>Лексема обозначающая начало строки.</p>
+
+        <p>
+            Когда получен список всех лексем он обрабатывается 
+            и происходит замена оной последовательности лексем на другую.            
+        </p>
+
+        Правило замены лексем
+        <pre class="syntax">
+            NumberLex StatementLex => SourceLineBeginLex StatementLex
+            NumberLex RemLex  => SourceLineBeginLex RemLex
+        </pre>
+
+        <a name="NumberLex">
+            <h3>NumberLex</h3>            
+        </a>
+
+        Лексема - Число
+
+        <pre class="syntax">
+            NumberLex ::= OctNumbexLex 
+                        | HexNumberLex
+                        | DecNumberLex
+            
+            OctNumberLex ::= ( '&o' | '&O' ) OctDigit { OctDigit }
+            OctDigit = '0' ... '7'
+
+            HexNumberLex ::= ( '&h' | '&H' ) HexDigit { HexDigit }
+            HexDigit = '0' ... '9' | 'a' ... 'f' | 'A' ... 'F'
+
+            // Определяется след регулярным выражением
+            DecNumberLex ::= /^([+\-]?\d+)((\.\d+)(([eEdD])([+\-]?\d+))?)?([%\#!])?/            
+        </pre>
+
+        <a name="StringLex">
+            <h3>StringLex</h3>
+        </a>
+
+        Строка символов
+    
+        <pre class="syntax">            
+            StringLex ::= '"' символы_за_искл_кавычки '"'
+        </pre>
+    </div>
 </body>
 </html>

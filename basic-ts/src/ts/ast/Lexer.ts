@@ -309,6 +309,14 @@ export class StatementLex extends KeyWordLex {
     get IF() { return this.keyWord.toUpperCase()=='IF' }
     get THEN() { return this.keyWord.toUpperCase()=='THEN' }
     get ELSE() { return this.keyWord.toUpperCase()=='ELSE' }
+
+    get GOSUB() { 
+        if( this.keyWord.toUpperCase()=='GO SUB' ) return true
+        if( this.keyWord.toUpperCase()=='GOSUB' ) return true
+        return false
+    }
+    get RETURN() { return this.keyWord.toUpperCase()=='RETURN' }
+
     //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     static parse = KeyWordLex.parser(
         true,
@@ -320,7 +328,9 @@ export class StatementLex extends KeyWordLex {
             'IF',    // Действие проверки булево условия
             'THEN',    // Действие проверки булево условия
             'ELSE',    // Действие проверки булево условия
-            //'LIST', 
+            'GO SUB',  // Переход к подпрограмме
+            'GOSUB',   // Переход к подпрограмме
+            'RETURN'   // Возврат из подпрограммы
         ], 
         (kw,begin,end)=>{return new StatementLex(kw,begin,end)}
         )

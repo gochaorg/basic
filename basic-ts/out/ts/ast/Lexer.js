@@ -490,6 +490,22 @@ var StatementLex = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(StatementLex.prototype, "GOSUB", {
+        get: function () {
+            if (this.keyWord.toUpperCase() == 'GO SUB')
+                return true;
+            if (this.keyWord.toUpperCase() == 'GOSUB')
+                return true;
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(StatementLex.prototype, "RETURN", {
+        get: function () { return this.keyWord.toUpperCase() == 'RETURN'; },
+        enumerable: true,
+        configurable: true
+    });
     //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     StatementLex.parse = KeyWordLex.parser(true, [
         'LET',
@@ -499,6 +515,9 @@ var StatementLex = /** @class */ (function (_super) {
         'IF',
         'THEN',
         'ELSE',
+        'GO SUB',
+        'GOSUB',
+        'RETURN' // Возврат из подпрограммы
     ], function (kw, begin, end) { return new StatementLex(kw, begin, end); });
     return StatementLex;
 }(KeyWordLex));

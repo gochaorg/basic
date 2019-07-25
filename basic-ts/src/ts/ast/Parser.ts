@@ -17,6 +17,8 @@ import { LetStatement } from './LetStatement';
 import { RunStatement } from './RunStatement';
 import { GotoStatement } from './GotoStatement';
 import { IfStatement } from './IfStatement';
+import { GoSubStatement } from './GoSubStatement';
+import { ReturnStatement } from './ReturnStatement';
 
 /**
  * Опции парсера
@@ -127,6 +129,8 @@ export class Parser {
      *             | runStatement
      *             | gotoStatement
      *             | ifStatement
+     *             | gosubStatement
+     *             | returnStatement
      */
     statement(opts?:Options):Statement|null {
         if( !opts ){ opts = this.options }
@@ -146,6 +150,12 @@ export class Parser {
 
         const ifStmt = this.ifStatement(opts)
         if( ifStmt )return ifStmt
+
+        const gosubStmt = this.gosubStatement(opts)
+        if( gosubStmt )return gosubStmt
+
+        const returnStmt = this.returnStatement(opts)
+        if( returnStmt )return returnStmt
 
         return null
     }
@@ -380,6 +390,67 @@ export class Parser {
             ){
                 this.ptr.move(2)
                 return new GotoStatement(linf ? linf.lex : gtLex, gtLine, gtLine )
+            }
+            return null
+        }
+        if( opts.tryLineNum ){
+            return this.matchLine(prod) || prod()
+        }else{
+            return prod()
+        }
+    }
+
+    /**
+     * gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                   StatementLex(GOSUB) lineNumber:NumberLex
+     * @param opts опции компилятора
+     */
+    gosubStatement(opts?:Options):Statement|null {
+        if( !opts ){ opts = this.options }
+        if( this.ptr.eof )return null
+        this.log('gosubStatement() ptr=',this.ptr.gets(3))
+
+        const prod = ( linf?:{line:number,lex:Lex} ) => {
+            let [gtLex,gtLine] = this.ptr.gets(2)
+            if( gtLex instanceof StatementLex 
+            &&  gtLex.GOSUB
+            &&  gtLine instanceof NumberLex 
+            ){
+                this.ptr.move(2)
+                return new GoSubStatement(linf ? linf.lex : gtLex, gtLine, gtLine )
+            }
+            return null
+        }
+        if( opts.tryLineNum ){
+            return this.matchLine(prod) || prod()
+        }else{
+            return prod()
+        }
+    }
+
+    /**
+     * returnStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                   StatementLex(RETURN) [lineNumber:NumberLex]
+     * @param opts опции компилятора
+     */
+    returnStatement(opts?:Options):Statement|null {
+        if( !opts ){ opts = this.options }
+        if( this.ptr.eof )return null
+        this.log('returnStatement() ptr=',this.ptr.gets(3))
+
+        const prod = ( linf?:{line:number,lex:Lex} ) => {
+            let [gtLex] = this.ptr.gets(1)
+            if( gtLex instanceof StatementLex 
+            &&  gtLex.RETURN            
+            ){
+                this.ptr.move(1)
+                let [gtLine] = this.ptr.fetch(0,1)
+                if( gtLine instanceof NumberLex ){
+                    this.ptr.move(1)
+                    return new ReturnStatement(linf ? linf.lex : gtLex, gtLine, gtLine )
+                }else{
+                    return new ReturnStatement(linf ? linf.lex : gtLex, gtLine )
+                }
             }
             return null
         }

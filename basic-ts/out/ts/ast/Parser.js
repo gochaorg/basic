@@ -9,6 +9,8 @@ var LetStatement_1 = require("./LetStatement");
 var RunStatement_1 = require("./RunStatement");
 var GotoStatement_1 = require("./GotoStatement");
 var IfStatement_1 = require("./IfStatement");
+var GoSubStatement_1 = require("./GoSubStatement");
+var ReturnStatement_1 = require("./ReturnStatement");
 /**
  * Опции парсера
  */
@@ -110,6 +112,8 @@ var Parser = /** @class */ (function () {
      *             | runStatement
      *             | gotoStatement
      *             | ifStatement
+     *             | gosubStatement
+     *             | returnStatement
      */
     Parser.prototype.statement = function (opts) {
         if (!opts) {
@@ -131,6 +135,12 @@ var Parser = /** @class */ (function () {
         var ifStmt = this.ifStatement(opts);
         if (ifStmt)
             return ifStmt;
+        var gosubStmt = this.gosubStatement(opts);
+        if (gosubStmt)
+            return gosubStmt;
+        var returnStmt = this.returnStatement(opts);
+        if (returnStmt)
+            return returnStmt;
         return null;
     };
     /**
@@ -348,6 +358,72 @@ var Parser = /** @class */ (function () {
                 && gtLine instanceof Lexer_1.NumberLex) {
                 _this.ptr.move(2);
                 return new GotoStatement_1.GotoStatement(linf ? linf.lex : gtLex, gtLine, gtLine);
+            }
+            return null;
+        };
+        if (opts.tryLineNum) {
+            return this.matchLine(prod) || prod();
+        }
+        else {
+            return prod();
+        }
+    };
+    /**
+     * gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                   StatementLex(GOSUB) lineNumber:NumberLex
+     * @param opts опции компилятора
+     */
+    Parser.prototype.gosubStatement = function (opts) {
+        var _this = this;
+        if (!opts) {
+            opts = this.options;
+        }
+        if (this.ptr.eof)
+            return null;
+        this.log('gosubStatement() ptr=', this.ptr.gets(3));
+        var prod = function (linf) {
+            var _a = _this.ptr.gets(2), gtLex = _a[0], gtLine = _a[1];
+            if (gtLex instanceof Lexer_1.StatementLex
+                && gtLex.GOSUB
+                && gtLine instanceof Lexer_1.NumberLex) {
+                _this.ptr.move(2);
+                return new GoSubStatement_1.GoSubStatement(linf ? linf.lex : gtLex, gtLine, gtLine);
+            }
+            return null;
+        };
+        if (opts.tryLineNum) {
+            return this.matchLine(prod) || prod();
+        }
+        else {
+            return prod();
+        }
+    };
+    /**
+     * returnStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                   StatementLex(RETURN) [lineNumber:NumberLex]
+     * @param opts опции компилятора
+     */
+    Parser.prototype.returnStatement = function (opts) {
+        var _this = this;
+        if (!opts) {
+            opts = this.options;
+        }
+        if (this.ptr.eof)
+            return null;
+        this.log('returnStatement() ptr=', this.ptr.gets(3));
+        var prod = function (linf) {
+            var gtLex = _this.ptr.gets(1)[0];
+            if (gtLex instanceof Lexer_1.StatementLex
+                && gtLex.RETURN) {
+                _this.ptr.move(1);
+                var gtLine = _this.ptr.fetch(0, 1)[0];
+                if (gtLine instanceof Lexer_1.NumberLex) {
+                    _this.ptr.move(1);
+                    return new ReturnStatement_1.ReturnStatement(linf ? linf.lex : gtLex, gtLine, gtLine);
+                }
+                else {
+                    return new ReturnStatement_1.ReturnStatement(linf ? linf.lex : gtLex, gtLine);
+                }
             }
             return null;
         };

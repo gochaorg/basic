@@ -22,6 +22,9 @@ var LetStatement_1 = require("./LetStatement");
 var RunStatement_1 = require("./RunStatement");
 var OperatorExp_1 = require("./OperatorExp");
 var TreeIt_1 = require("../TreeIt");
+var GotoStatement_1 = require("./GotoStatement");
+var ReturnStatement_1 = require("./ReturnStatement");
+var GoSubStatement_1 = require("./GoSubStatement");
 /**
 Шаг при обходе дерева
 */
@@ -84,6 +87,36 @@ function walk(ts, visitor) {
         }
         if (visitor.run && visitor.run.end) {
             visitor.run.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region GotoStatement
+    if (ts.value instanceof GotoStatement_1.GotoStatement) {
+        if (visitor.goto && visitor.goto.begin) {
+            visitor.goto.begin(ts.value, ts);
+        }
+        if (visitor.goto && visitor.goto.end) {
+            visitor.goto.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region GosubStatement
+    if (ts.value instanceof GoSubStatement_1.GoSubStatement) {
+        if (visitor.gosub && visitor.gosub.begin) {
+            visitor.gosub.begin(ts.value, ts);
+        }
+        if (visitor.gosub && visitor.gosub.end) {
+            visitor.gosub.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region GosubStatement
+    if (ts.value instanceof ReturnStatement_1.ReturnStatement) {
+        if (visitor.return && visitor.return.begin) {
+            visitor.return.begin(ts.value, ts);
+        }
+        if (visitor.return && visitor.return.end) {
+            visitor.return.end(ts.value, ts);
         }
     }
     //#endregion

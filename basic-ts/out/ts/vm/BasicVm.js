@@ -8,8 +8,14 @@ var RemStatement_1 = require("../ast/RemStatement");
 var RunStatement_1 = require("../ast/RunStatement");
 var GotoStatement_1 = require("../ast/GotoStatement");
 var IfStatement_1 = require("../ast/IfStatement");
+var GoSubStatement_1 = require("../ast/GoSubStatement");
+var ReturnStatement_1 = require("../ast/ReturnStatement");
 var BasicVm = /** @class */ (function () {
     function BasicVm(source, memo) {
+        /**
+         * Стек вызовов GoSub
+         */
+        this.ipStack = [];
         /**
          * Регистр IP (Instruction Pointer)
          */
@@ -137,6 +143,43 @@ var BasicVm = /** @class */ (function () {
             }
             return;
         }
+        if (st instanceof GoSubStatement_1.GoSubStatement) {
+            var found = this.source.find(st.gotoLine.value);
+            if (found) {
+                //console.log("gosub ",found)
+                this.ipStack.push(this.ip);
+                this.ip = found.index;
+            }
+            else {
+                throw new Error("source line " + st.gotoLine.value + " not found");
+            }
+        }
+        if (st instanceof ReturnStatement_1.ReturnStatement) {
+            if (st.gotoLine) {
+                var found = this.source.find(st.gotoLine.value);
+                if (found) {
+                    this.ipStack.pop();
+                    this.ip = found.index;
+                }
+                else {
+                    throw new Error("source line " + st.gotoLine.value + " not found");
+                }
+            }
+            else {
+                if (this.ipStack.length > 0) {
+                    var targetIp = this.ipStack.pop();
+                    if (targetIp !== undefined) {
+                        this.ip = targetIp + 1;
+                    }
+                    else {
+                        throw new Error("gosub stack return undefined");
+                    }
+                }
+                else {
+                    throw new Error("gosub stack is empty");
+                }
+            }
+        }
         if (st instanceof IfStatement_1.IfStatement) {
             var bval = this.evalExpression(st.boolExp);
             if (bval) {
@@ -174,7 +217,7 @@ var BasicVm = /** @class */ (function () {
         if (afterIp == beforeIp) {
             this.ip++;
         }
-        return false;
+        return true;
     };
     return BasicVm;
 }());

@@ -8,6 +8,8 @@ import { RemStatement } from "../ast/RemStatement";
 import { RunStatement } from "../ast/RunStatement";
 import { GotoStatement } from "../ast/GotoStatement";
 import { IfStatement } from "../ast/IfStatement";
+import { GoSubStatement } from "../ast/GoSubStatement";
+import { ReturnStatement } from "../ast/ReturnStatement";
 
 export class BasicVm {
     /**
@@ -133,6 +135,38 @@ export class BasicVm {
             }
             return
         }
+        if( st instanceof GoSubStatement ){
+            const found = this.source.find(st.gotoLine.value)
+            if( found ){
+                //console.log("gosub ",found)
+                this.ipStack.push(this.ip)
+                this.ip = found.index
+            }else{
+                throw new Error(`source line ${st.gotoLine.value} not found`)
+            }
+        }
+        if( st instanceof ReturnStatement ){
+            if( st.gotoLine ){
+                const found = this.source.find(st.gotoLine.value)
+                if( found ){
+                    this.ipStack.pop()
+                    this.ip = found.index
+                }else{
+                    throw new Error(`source line ${st.gotoLine.value} not found`)
+                }
+            }else{
+                if( this.ipStack.length>0 ){
+                    const targetIp = this.ipStack.pop()
+                    if( targetIp!==undefined ){
+                        this.ip = targetIp+1
+                    }else{
+                        throw new Error(`gosub stack return undefined`)
+                    }
+                }else{
+                    throw new Error(`gosub stack is empty`)
+                }
+            }
+        }
         if( st instanceof IfStatement ){
             const bval = this.evalExpression( st.boolExp )
             if( bval ){
@@ -142,6 +176,11 @@ export class BasicVm {
             }
         }
     }
+
+    /**
+     * Стек вызовов GoSub
+     */
+    ipStack:number[] = []
 
     /**
      * Регистр IP (Instruction Pointer)
@@ -176,6 +215,6 @@ export class BasicVm {
             this.ip++
         }
 
-        return false
+        return true
     }
 }

@@ -9,6 +9,8 @@ import { Statement } from './Statement';
 import { SourceUnit } from '../vm/SourceUnit';
 import { GotoStatement } from './GotoStatement';
 import { IfStatement } from './IfStatement';
+import { GoSubStatement } from './GoSubStatement';
+import { ReturnStatement } from './ReturnStatement';
 
 /**
  * Генератор из AST в BASIC
@@ -148,6 +150,32 @@ export function astToBasic(
             code = `${root.sourceLine} `
         }
         code += "GOTO"
+        if( root.gotoLine != undefined ){
+            code += ` ${root.gotoLine.value}`
+        }
+        return code
+    }
+    //#endregion
+    //#region GOSUB
+    if( root instanceof GoSubStatement ){
+        let code = ''
+        if( root.sourceLine!=undefined && opts.sourceLineNumber ){
+            code = `${root.sourceLine} `
+        }
+        code += "GOSUB"
+        if( root.gotoLine != undefined ){
+            code += ` ${root.gotoLine.value}`
+        }
+        return code
+    }
+    //#endregion
+    //#region RETURN
+    if( root instanceof ReturnStatement ){
+        let code = ''
+        if( root.sourceLine!=undefined && opts.sourceLineNumber ){
+            code = `${root.sourceLine} `
+        }
+        code += "RETURN"
         if( root.gotoLine != undefined ){
             code += ` ${root.gotoLine.value}`
         }
