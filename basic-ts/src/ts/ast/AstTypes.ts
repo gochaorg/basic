@@ -14,6 +14,7 @@ import { IfStatement } from './IfStatement';
 import { GotoStatement } from './GotoStatement';
 import { GoSubStatement } from './GoSubStatement';
 import { ReturnStatement } from './ReturnStatement';
+import { PrintStatement } from './PrintStatement';
 
 /**
  * Тип объектов в AST
@@ -32,4 +33,5 @@ export type ValidAstType =
     GotoStatement |
     GoSubStatement |
     ReturnStatement |
+    PrintStatement |
     Statements ;

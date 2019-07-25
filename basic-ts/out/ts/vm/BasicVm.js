@@ -10,8 +10,11 @@ var GotoStatement_1 = require("../ast/GotoStatement");
 var IfStatement_1 = require("../ast/IfStatement");
 var GoSubStatement_1 = require("../ast/GoSubStatement");
 var ReturnStatement_1 = require("../ast/ReturnStatement");
+var PrintStatement_1 = require("../ast/PrintStatement");
+var Printer_1 = require("./Printer");
 var BasicVm = /** @class */ (function () {
     function BasicVm(source, memo) {
+        this._printer = this.defaultPrinter;
         /**
          * Стек вызовов GoSub
          */
@@ -117,11 +120,40 @@ var BasicVm = /** @class */ (function () {
         }
         throw new Error("undefined expression " + exp);
     };
+    Object.defineProperty(BasicVm.prototype, "defaultPrinter", {
+        get: function () {
+            return Printer_1.printers.console.clone().configure(function (c) {
+                c.prefix = "BASIC> ";
+            });
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(BasicVm.prototype, "printer", {
+        get: function () { return this._printer; },
+        set: function (x) {
+            if (x) {
+                this._printer = x;
+            }
+            else {
+                this._printer = this.defaultPrinter;
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
+    BasicVm.prototype.print = function (v) {
+        this.printer.print(v);
+    };
+    BasicVm.prototype.println = function () {
+        this.printer.println();
+    };
     /**
      * Выполняет выражение (statement)
      * @param st выражение
      */
     BasicVm.prototype.evalStatement = function (st) {
+        var _this = this;
         if (st instanceof RemStatement_1.RemStatement) {
             return;
         }
@@ -188,6 +220,13 @@ var BasicVm = /** @class */ (function () {
             else if (st.falseStatement) {
                 this.evalStatement(st.falseStatement);
             }
+        }
+        if (st instanceof PrintStatement_1.PrintStatement) {
+            st.args.forEach(function (exp) {
+                var v = _this.evalExpression(exp);
+                _this.print(v);
+            });
+            this.println();
         }
     };
     /**

@@ -27,7 +27,8 @@ const src2 =
     '30 GOTO 200\n'+
     '100 LET a = 2\n'+
     '109 RETURN\n'+
-    '200 LET b = 3\n'
+    '200 LET b = 3\n'+
+    '202 PRINT a,b'
 const su2 = su.parse(src2)
 console.log(su2)
 

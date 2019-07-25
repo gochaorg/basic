@@ -25,6 +25,7 @@ var TreeIt_1 = require("../TreeIt");
 var GotoStatement_1 = require("./GotoStatement");
 var ReturnStatement_1 = require("./ReturnStatement");
 var GoSubStatement_1 = require("./GoSubStatement");
+var PrintStatement_1 = require("./PrintStatement");
 /**
 Шаг при обходе дерева
 */
@@ -77,6 +78,19 @@ function walk(ts, visitor) {
         walk(ts.follow(ts.value.value), visitor);
         if (visitor.let && visitor.let.end) {
             visitor.let.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region PrintStatement
+    if (ts.value instanceof PrintStatement_1.PrintStatement) {
+        if (visitor.print && visitor.print.begin) {
+            visitor.print.begin(ts.value, ts);
+        }
+        ts.value.args.forEach(function (e) {
+            walk(ts.follow(e), visitor);
+        });
+        if (visitor.print && visitor.print.end) {
+            visitor.print.end(ts.value, ts);
         }
     }
     //#endregion

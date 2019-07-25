@@ -12,6 +12,7 @@ import { TreeStep } from "../TreeIt";
 import { GotoStatement } from "./GotoStatement";
 import { ReturnStatement } from "./ReturnStatement";
 import { GoSubStatement } from "./GoSubStatement";
+import { PrintStatement } from "./PrintStatement";
 
 /**
 Шаг при обходе дерева
@@ -32,6 +33,7 @@ export interface AstVisitor {
     goto?: AstBeginEnd<GotoStatement>
     gosub?: AstBeginEnd<GoSubStatement>
     return?: AstBeginEnd<ReturnStatement>
+    print?: AstBeginEnd<PrintStatement>
     operator?: {
         binary?: AstBeginEnd<BinaryOpExpression>
         unary?: AstBeginEnd<UnaryOpExpression>
@@ -82,6 +84,19 @@ export function walk( ts:AstTreeStep, visitor:AstVisitor ){
         walk( ts.follow( ts.value.value ), visitor )
         if( visitor.let && visitor.let.end ){
             visitor.let.end( ts.value, ts )
+        }
+    }
+    //#endregion
+    //#region PrintStatement
+    if( ts.value instanceof PrintStatement ){
+        if( visitor.print && visitor.print.begin ){
+            visitor.print.begin( ts.value, ts )
+        }
+        ts.value.args.forEach( (e)=>{
+            walk( ts.follow(e), visitor )
+        })
+        if( visitor.print && visitor.print.end ){
+            visitor.print.end( ts.value, ts )
         }
     }
     //#endregion

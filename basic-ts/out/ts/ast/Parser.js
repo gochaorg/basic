@@ -11,6 +11,7 @@ var GotoStatement_1 = require("./GotoStatement");
 var IfStatement_1 = require("./IfStatement");
 var GoSubStatement_1 = require("./GoSubStatement");
 var ReturnStatement_1 = require("./ReturnStatement");
+var PrintStatement_1 = require("./PrintStatement");
 /**
  * Опции парсера
  */
@@ -141,6 +142,9 @@ var Parser = /** @class */ (function () {
         var returnStmt = this.returnStatement(opts);
         if (returnStmt)
             return returnStmt;
+        var printStmt = this.printStatement(opts);
+        if (printStmt)
+            return printStmt;
         return null;
     };
     /**
@@ -495,6 +499,63 @@ var Parser = /** @class */ (function () {
                 return new IfStatement_1.IfStatement(linf ? linf.lex : ifLx, falseSt ? falseSt.end : trueSt.end, exp, trueSt, falseSt);
             }
             return new IfStatement_1.IfStatement(linf ? linf.lex : ifLx, trueSt.end, exp, trueSt);
+        };
+        if (opts.tryLineNum) {
+            return this.matchLine(prod) || prod();
+        }
+        else {
+            return prod();
+        }
+    };
+    /**
+     * printStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                    StatementLex(PRINT) [expression {',' expression}]
+     * @param opts опции компилятора
+     */
+    Parser.prototype.printStatement = function (opts) {
+        var _this = this;
+        if (!opts) {
+            opts = this.options;
+        }
+        if (this.ptr.eof)
+            return null;
+        this.log('printStatement() ptr=', this.ptr.gets(3));
+        var prod = function (linf) {
+            var gtLex = _this.ptr.gets(1)[0];
+            if (gtLex instanceof Lexer_1.StatementLex
+                && gtLex.PRINT) {
+                _this.ptr.move(1);
+                var exps = [];
+                var lastLex = gtLex;
+                while (true) {
+                    if (exps.length > 0) {
+                        var lNext = _this.ptr.get();
+                        if (!(lNext && lNext instanceof Lexer_1.OperatorLex && lNext.argDelim)) {
+                            break;
+                        }
+                        else {
+                            _this.ptr.move(1);
+                        }
+                    }
+                    _this.ptr.push();
+                    var exp = _this.expression();
+                    if (exp) {
+                        exps.push(exp);
+                        if (exp.rightTreeLex) {
+                            lastLex = exp.rightTreeLex;
+                        }
+                    }
+                    else {
+                        _this.ptr.pop();
+                        if (exps.length > 0) {
+                            //TODO here error report
+                        }
+                        break;
+                    }
+                }
+                return new PrintStatement_1.PrintStatement(linf ? linf.lex : gtLex, lastLex, gtLex, exps);
+            }
+            return null;
         };
         if (opts.tryLineNum) {
             return this.matchLine(prod) || prod();

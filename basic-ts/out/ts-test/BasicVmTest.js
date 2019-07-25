@@ -28,7 +28,8 @@ var src2 = '10 LET a = 1\n' +
     '30 GOTO 200\n' +
     '100 LET a = 2\n' +
     '109 RETURN\n' +
-    '200 LET b = 3\n';
+    '200 LET b = 3\n' +
+    '202 PRINT a,b';
 var su2 = su.parse(src2);
 console.log(su2);
 var vm2 = new BasicVm_1.BasicVm(su2);

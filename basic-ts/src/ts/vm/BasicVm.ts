@@ -10,6 +10,8 @@ import { GotoStatement } from "../ast/GotoStatement";
 import { IfStatement } from "../ast/IfStatement";
 import { GoSubStatement } from "../ast/GoSubStatement";
 import { ReturnStatement } from "../ast/ReturnStatement";
+import { PrintStatement } from "../ast/PrintStatement";
+import { Printer,printers } from "./Printer";
 
 export class BasicVm {
     /**
@@ -110,6 +112,28 @@ export class BasicVm {
         throw new Error("undefined expression "+exp)
     }
 
+    private get defaultPrinter() {
+        return printers.console.clone().configure(c => {
+            c.prefix = "BASIC> "
+        })
+    }
+    private _printer:Printer = this.defaultPrinter
+    get printer():Printer { return this._printer }
+    set printer(x:Printer) {
+        if( x ){
+            this._printer = x
+        }else{
+            this._printer = this.defaultPrinter
+        }
+    }
+
+    private print(v:any){
+        this.printer.print(v)
+    }
+    private println(){
+        this.printer.println()
+    }
+
     /**
      * Выполняет выражение (statement)
      * @param st выражение
@@ -174,6 +198,13 @@ export class BasicVm {
             }else if( st.falseStatement ){
                 this.evalStatement( st.falseStatement )
             }
+        }
+        if( st instanceof PrintStatement ){
+            st.args.forEach( (exp)=>{
+                const v = this.evalExpression(exp)
+                this.print(v)
+            })
+            this.println()
         }
     }
 

@@ -506,6 +506,11 @@ var StatementLex = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(StatementLex.prototype, "PRINT", {
+        get: function () { return this.keyWord.toUpperCase() == 'PRINT'; },
+        enumerable: true,
+        configurable: true
+    });
     //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     StatementLex.parse = KeyWordLex.parser(true, [
         'LET',
@@ -517,7 +522,8 @@ var StatementLex = /** @class */ (function (_super) {
         'ELSE',
         'GO SUB',
         'GOSUB',
-        'RETURN' // Возврат из подпрограммы
+        'RETURN',
+        'PRINT',
     ], function (kw, begin, end) { return new StatementLex(kw, begin, end); });
     return StatementLex;
 }(KeyWordLex));

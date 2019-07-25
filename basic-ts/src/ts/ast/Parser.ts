@@ -19,6 +19,7 @@ import { GotoStatement } from './GotoStatement';
 import { IfStatement } from './IfStatement';
 import { GoSubStatement } from './GoSubStatement';
 import { ReturnStatement } from './ReturnStatement';
+import { PrintStatement } from './PrintStatement';
 
 /**
  * Опции парсера
@@ -156,6 +157,9 @@ export class Parser {
 
         const returnStmt = this.returnStatement(opts)
         if( returnStmt )return returnStmt
+
+        const printStmt = this.printStatement(opts)
+        if( printStmt )return printStmt
 
         return null
     }
@@ -538,6 +542,63 @@ export class Parser {
             )        
         }
         
+        if( opts.tryLineNum ){
+            return this.matchLine(prod) || prod()
+        }else{
+            return prod()
+        }
+    }
+
+    /**
+     * printStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                    StatementLex(PRINT) [expression {',' expression}]
+     * @param opts опции компилятора
+     */
+    printStatement(opts?:Options):Statement|null {
+        if( !opts ){ opts = this.options }
+        if( this.ptr.eof )return null
+        this.log('printStatement() ptr=',this.ptr.gets(3))
+
+        const prod = ( linf?:{line:number,lex:Lex} ) => {
+            let [gtLex] = this.ptr.gets(1)
+            if( gtLex instanceof StatementLex 
+            &&  gtLex.PRINT            
+            ){
+                this.ptr.move(1)
+                const exps:Expression[] = []
+                let lastLex:Lex = gtLex
+                while(true){
+                    if( exps.length>0 ){
+                        const lNext = this.ptr.get()
+                        if( !(lNext && lNext instanceof OperatorLex && lNext.argDelim) ){                            
+                            break
+                        }else{
+                            this.ptr.move(1)
+                        }
+                    }
+                    this.ptr.push()
+                    const exp = this.expression()
+                    if( exp ){
+                        exps.push(exp)
+                        if( exp.rightTreeLex ){
+                            lastLex = exp.rightTreeLex
+                        }
+                    }else{
+                        this.ptr.pop()
+                        if( exps.length>0 ){
+                            //TODO here error report
+                        }
+                        break
+                    }
+                }
+                return new PrintStatement(
+                    linf ? linf.lex : gtLex, 
+                    lastLex, 
+                    gtLex,
+                    exps )
+            }
+            return null
+        }
         if( opts.tryLineNum ){
             return this.matchLine(prod) || prod()
         }else{

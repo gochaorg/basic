@@ -316,21 +316,23 @@ export class StatementLex extends KeyWordLex {
         return false
     }
     get RETURN() { return this.keyWord.toUpperCase()=='RETURN' }
+    get PRINT() { return this.keyWord.toUpperCase()=='PRINT' }
 
     //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     static parse = KeyWordLex.parser(
         true,
         [                
-            'LET',  // Действие присвоения значения переменной
-            'RUN',  // Действие начала выполнения программы
-            'GOTO', // Действие перехода к определенному учатску программы
-            'GO TO', // Действие перехода к определенному учатску программы
-            'IF',    // Действие проверки булево условия
+            'LET',     // Действие присвоения значения переменной
+            'RUN',     // Действие начала выполнения программы
+            'GOTO',    // Действие перехода к определенному учатску программы
+            'GO TO',   // Действие перехода к определенному учатску программы
+            'IF',      // Действие проверки булево условия
             'THEN',    // Действие проверки булево условия
             'ELSE',    // Действие проверки булево условия
             'GO SUB',  // Переход к подпрограмме
             'GOSUB',   // Переход к подпрограмме
-            'RETURN'   // Возврат из подпрограммы
+            'RETURN',  // Возврат из подпрограммы
+            'PRINT',   // Вывод значения переменной
         ], 
         (kw,begin,end)=>{return new StatementLex(kw,begin,end)}
         )
