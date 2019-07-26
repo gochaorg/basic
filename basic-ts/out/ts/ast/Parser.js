@@ -115,6 +115,7 @@ var Parser = /** @class */ (function () {
      *             | ifStatement
      *             | gosubStatement
      *             | returnStatement
+     *             | printStatement
      */
     Parser.prototype.statement = function (opts) {
         if (!opts) {
@@ -373,7 +374,7 @@ var Parser = /** @class */ (function () {
         }
     };
     /**
-     * gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
+     * gosubStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                   StatementLex(GOSUB) lineNumber:NumberLex
      * @param opts опции компилятора
      */

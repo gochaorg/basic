@@ -207,6 +207,9 @@
                     | runStatement
                     | gotoStatement
                     | ifStatement
+                    | gosubStatement
+                    | returnStatement
+                    | printStatement
         </pre>
         Утверждение - это блок кода который может выполнять одно из указанных действий
     </div>
@@ -232,127 +235,194 @@
         присваивает вычисленное значение переменной указанной в лексеме IDLex
     </div>
 
-    <a name="runStatement"></a>
-    <pre class="syntax">
-        runStatement ::= [ SourceLineBeginLex | NumberLex ]
-                         StatementLex(RUN) [lineNumber : NumberLex]
-    </pre>
+    <div>
+        <a name="runStatement"><h3>runStatement</h3></a>
+        <pre class="syntax">
+            runStatement ::= [ SourceLineBeginLex | NumberLex ]
+                            StatementLex(RUN) [lineNumber : NumberLex]
+        </pre>
+    </div>
 
-    <a name="gotoStatement"></a>
-    <pre class="syntax">
-        gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
-                          StatementLex(GOTO) lineNumber:NumberLex
-    </pre>
+    <div>
+        <a name="gotoStatement"><h3>gotoStatement</h3></a>
+        <pre class="syntax">
+            gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
+                            StatementLex(GOTO) lineNumber:NumberLex
+        </pre>
+    </div>
 
-    <a name="ifStatement"></a>
-    <pre class="syntax">
-        ifStatement ::= [ SourceLineBeginLex | NumberLex ]
-                        StatementLex(IF) expression 
-                        StatementLex(THEN) statement
-                        [StatementLex(ELSE) statement]
-    </pre>
+    <div>
+        <a name="ifStatement"><h3>ifStatement</h3></a>
+        <pre class="syntax">
+            ifStatement ::= [ SourceLineBeginLex | NumberLex ]
+                            StatementLex(IF) expression 
+                            StatementLex(THEN) statement
+                            [StatementLex(ELSE) statement]
+        </pre>
+    </div>
 
-    <a name="expression"></a>
-    <pre class="syntax">
-        expression ::= impExpression | bracketExpression
-    </pre>
+    <div>
+        <a name="gosubStatement"><h3>gosubStatement</h3></a>
+        <pre class="syntax">
+                gosubStatement ::=  [ SourceLineBeginLex | NumberLex ]
+                                    StatementLex(GOSUB) lineNumber:NumberLex
+        </pre>
+    </div>
 
-    <a name="bracketExpression"></a>
-    <pre class="syntax">
-        bracketExpression ::= '(' expression ')'
-    </pre>
+    <div>
+        <a name="returnStatement"><h3>returnStatement</h3></a>
+        <pre class="syntax">
+            returnStatement ::= [ SourceLineBeginLex | NumberLex ]
+                                StatementLex(RETURN) [lineNumber:NumberLex]
+        </pre>
+    </div>
 
-    <a name="impExpression"></a>
-    <pre class="syntax">
-        impExpression ::= eqvExpression [ { 'IMP' eqvExpression } ]
-    </pre>
+    <div>
+        <a name="printStatement"><h3>printStatement</h3></a>
+        <pre class="syntax">
+            printStatement ::= [ SourceLineBeginLex | NumberLex ]
+                                StatementLex(PRINT) [expression {',' expression}]
+        </pre>
+    </div>
 
-    <a name="eqvExpression"></a>
-    <pre class="syntax">
-        eqvExpression ::= xorExpression [ 'EQV' xorExpression ]
-    </pre>
+    <div>
+        <a name="expression"><h3>expression</h3></a>
+        <pre class="syntax">
+            expression ::= impExpression | bracketExpression
+        </pre>
+    </div>
 
-    <a name="xorExpression"></a>
-    <pre class="syntax">
-        xorExpression ::= orExpression [ { 'XOR' orExpression } ]
-    </pre>
+    <div>
+        <a name="bracketExpression"><h3>bracketExpression</h3></a>
+        <pre class="syntax">
+            bracketExpression ::= '(' expression ')'
+        </pre>
+    </div>
 
-    <a name="orExpression"></a>
-    <pre class="syntax">
-        orExpression ::= andExpression [ { 'OR' andExpression } ]
-    </pre>
+    <div>
+        <a name="impExpression"><h3>impExpression</h3></a>
+        <pre class="syntax">
+            impExpression ::= eqvExpression [ { 'IMP' eqvExpression } ]
+        </pre>
+    </div>
 
-    <a name="andExpression"></a>
-    <pre class="syntax">
-        andExpression ::= notExpression [ { 'AND' notExpression } ]
-    </pre>
+    <div>
+        <a name="eqvExpression"><h3>eqvExpression</h3></a>
+        <pre class="syntax">
+            eqvExpression ::= xorExpression [ 'EQV' xorExpression ]
+        </pre>
+    </div>
 
-    <a name="notExpression"></a>
-    <pre class="syntax">
-        notExpression ::= ['NOT'] relationExpression
-    </pre>
+    <div>
+        <a name="xorExpression"><h3>xorExpression</h3></a>
+        <pre class="syntax">
+            xorExpression ::= orExpression [ { 'XOR' orExpression } ]
+        </pre>
+    </div>
 
-    <a name="relationExpression"></a>
-    <pre class="syntax">
-        relationExpression ::= plusExpression [ 
-            ('=' | '&lt;>' | '>&lt;' | '&lt;' | '>' | '>=' | '&lt;=' | '=>' | '=&lt;') 
-            plusExpression 
-        ]
-    </pre>
+    <div>
+        <a name="orExpression"><h3>orExpression</h3></a>
+        <pre class="syntax">
+            orExpression ::= andExpression [ { 'OR' andExpression } ]
+        </pre>
+    </div>
 
-    <a name="plusExpression"></a>
-    <pre class="syntax">
-        plusExpression ::= modExpression [ { ('+' | '-') modExpression } ]
-    </pre>
+    <div>
+        <a name="andExpression"><h3>andExpression</h3></a>
+        <pre class="syntax">
+            andExpression ::= notExpression [ { 'AND' notExpression } ]
+        </pre>
+    </div>
 
-    <a name="modExpression"></a>
-    <pre class="syntax">
-        modExpression ::= intDivExpression [ { 'MOD' intDivExpression } ]
-    </pre>
+    <div>
+        <a name="notExpression"><h3>notExpression</h3></a>
+        <pre class="syntax">
+            notExpression ::= ['NOT'] relationExpression
+        </pre>
+    </div>
 
-    <a name="intDivExpression"></a>
-    <pre class="syntax">
-        intDivExpression ::= mulExpression [ { '\' mulExpression } ]
-    </pre>
+    <div>
+        <a name="relationExpression"><h3>relationExpression</h3></a>
+        <pre class="syntax">
+            relationExpression ::= plusExpression [ 
+                ('=' | '&lt;>' | '>&lt;' | '&lt;' | '>' | '>=' | '&lt;=' | '=>' | '=&lt;') 
+                plusExpression 
+            ]
+        </pre>
+    </div>
 
-    <a name="mulExpression"></a>
-    <pre class="syntax">
-        mulExpression ::= powExpression [ { ( '*' | '/' ) powExpression } ]
-    </pre>
+    <div>
+        <a name="plusExpression"><h3>plusExpression</h3></a>
+        <pre class="syntax">
+            plusExpression ::= modExpression [ { ('+' | '-') modExpression } ]
+        </pre>
+    </div>
 
-    <a name="powExpression"></a>
-    <pre class="syntax">
-        powExpression ::= signedAtom [ { '^' signedAtom } ]
-    </pre>
+    <div>
+        <a name="modExpression"><h3>modExpression</h3></a>
+        <pre class="syntax">
+            modExpression ::= intDivExpression [ { 'MOD' intDivExpression } ]
+        </pre>
+    </div>
 
-    <a name="signedAtom"></a>
-    <pre class="syntax">
-        signedAtom ::= [ '+' | '-' ] atom
-    </pre>
+    <div>
+        <a name="intDivExpression"><h3>intDivExpression</h3></a>
+        <pre class="syntax">
+            intDivExpression ::= mulExpression [ { '\' mulExpression } ]
+        </pre>
+    </div>
 
-    <a name="atom"></a>
-    <pre class="syntax">
-        atom ::= '(' expression ')'
-               | baseValueExpression
-    </pre>
+    <div>
+        <a name="mulExpression"><h3>mulExpression</h3></a>
+        <pre class="syntax">
+            mulExpression ::= powExpression [ { ( '*' | '/' ) powExpression } ]
+        </pre>
+    </div>
 
-    <a name="baseValueExpression"></a>
-    <pre class="syntax">
-        baseValueExpression ::= constExpression 
-                              | varRefExpression '(' expression [{ ',' expression }] ')'
-                              | varRefExpression
-    </pre>
+    <div>
+        <a name="powExpression"><h3>powExpression</h3></a>
+        <pre class="syntax">
+            powExpression ::= signedAtom [ { '^' signedAtom } ]
+        </pre>
+    </div>
 
-    <a name="constExpression"></a>
-    <pre class="syntax">
-        constExpression ::= NumberLex | StringLex
+    <div>
+        <a name="signedAtom"><h3>signedAtom</h3></a>
+        <pre class="syntax">
+            signedAtom ::= [ '+' | '-' ] atom
+        </pre>
+    </div>
 
-    </pre>
+    <div>
+        <a name="atom"><h3>atom</h3></a>
+        <pre class="syntax">
+            atom ::= '(' expression ')'
+                | baseValueExpression
+        </pre>
+    </div>
 
-    <a name="varRefExpression"></a>
-    <pre class="syntax">
-        varRefExpression ::= IDLex
-    </pre>
+    <div>
+        <a name="baseValueExpression"><h3>baseValueExpression</h3></a>
+        <pre class="syntax">
+            baseValueExpression ::= constExpression 
+                                | varRefExpression '(' expression [{ ',' expression }] ')'
+                                | varRefExpression
+        </pre>
+    </div>
+
+    <div>
+        <a name="constExpression"><h3>constExpression</h3></a>
+        <pre class="syntax">
+            constExpression ::= NumberLex | StringLex
+        </pre>
+    </div>
+
+    <div>
+        <a name="varRefExpression"><h3>varRefExpression</h3></a>
+        <pre class="syntax">
+            varRefExpression ::= IDLex
+        </pre>
+    </div>
 
     <div>
         <h2>Лексический анализ</h2>

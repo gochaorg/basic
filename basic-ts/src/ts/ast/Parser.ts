@@ -132,6 +132,7 @@ export class Parser {
      *             | ifStatement
      *             | gosubStatement
      *             | returnStatement
+     *             | printStatement
      */
     statement(opts?:Options):Statement|null {
         if( !opts ){ opts = this.options }
@@ -405,7 +406,7 @@ export class Parser {
     }
 
     /**
-     * gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
+     * gosubStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                   StatementLex(GOSUB) lineNumber:NumberLex
      * @param opts опции компилятора
      */
