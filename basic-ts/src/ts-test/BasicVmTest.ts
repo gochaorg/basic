@@ -38,13 +38,8 @@ vm2.ip = 0
 for( let i=0; i<100; i++ ){
     if( vm2.hasNext() ){
         const r = vm2.next()
-        //if( r ){
-            console.log(`${i} executed`)
-            console.log(vm2.memo)
-        // }else{
-        //     console.log("finish 2")
-        //     break
-        // }
+        console.log(`${i} executed ${r}`)
+        console.log(vm2.memo)
     }else{
         console.log("finish 1")
         break

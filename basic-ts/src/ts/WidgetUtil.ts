@@ -70,4 +70,19 @@ export function a( attribs?: {[index:string]:any} ) : HtmlElementBuilder<HTMLAnc
     return el( 'a', attribs )
 }
 
+export function toHtml(text:string) {
+    const map = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+    };
+
+    return text.replace(/[&<>"']/g, (m) => { 
+        const n = (map as any)[m as any];
+        return n as string; 
+    });
+} 
+
 //createEL( 'aa', {a:1,b:2} )

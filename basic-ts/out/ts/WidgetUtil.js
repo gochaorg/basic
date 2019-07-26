@@ -79,5 +79,19 @@ function a(attribs) {
     return el('a', attribs);
 }
 exports.a = a;
+function toHtml(text) {
+    var map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function (m) {
+        var n = map[m];
+        return n;
+    });
+}
+exports.toHtml = toHtml;
 //createEL( 'aa', {a:1,b:2} )
 //# sourceMappingURL=WidgetUtil.js.map

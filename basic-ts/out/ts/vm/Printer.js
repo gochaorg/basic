@@ -30,6 +30,9 @@ var CustomPrinter = /** @class */ (function () {
         this.printfn = printfn;
         this.printlnfn = printlnfn;
     }
+    CustomPrinter.prototype.clone = function () {
+        return new CustomPrinter(this.printfn, this.printlnfn);
+    };
     CustomPrinter.prototype.print = function (value) {
         this.printfn(value);
     };
@@ -44,6 +47,11 @@ var SingleFnPrinter = /** @class */ (function () {
         this.args = [];
         this.printfn = printfn;
     }
+    SingleFnPrinter.prototype.clone = function () {
+        var c = new SingleFnPrinter(this.printfn);
+        this.args.forEach(function (x) { return c.args.push(x); });
+        return c;
+    };
     SingleFnPrinter.prototype.print = function (value) {
         this.args.push(value);
     };

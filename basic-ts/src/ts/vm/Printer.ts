@@ -41,6 +41,10 @@ export class CustomPrinter implements Printer {
         this.printlnfn = printlnfn
     }
 
+    clone():CustomPrinter {
+        return new CustomPrinter(this.printfn, this.printlnfn)
+    }
+
     print(value:any):void {
         this.printfn(value)
     }
@@ -53,8 +57,15 @@ export class CustomPrinter implements Printer {
 export class SingleFnPrinter implements Printer {
     private args : any[] = [];
     readonly printfn:(value:any[])=>any
+
     constructor(printfn:(value:any[])=>any ){
         this.printfn = printfn
+    }
+
+    clone():SingleFnPrinter {
+        const c = new SingleFnPrinter(this.printfn)
+        this.args.forEach( x => c.args.push(x))
+        return c
     }
 
     print(value:any):void {

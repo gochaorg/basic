@@ -4,6 +4,7 @@ import { astToBasic } from './ast/AstToBasic';
 import { Memo } from './vm/Memo';
 import { BasicVm } from './vm/BasicVm';
 import { Statement } from './ast/Statement';
+import { printers, Printer } from './vm/Printer';
 
 type MemVarUI = {
     container:HTMLDivElement
@@ -34,6 +35,10 @@ class GWBASICApp {
             get helpContent() { return document.querySelector('#helpContent') as HTMLDivElement },
             get showHelp() { return document.querySelector('#showHelp') as HTMLElement },
             get closeHelp() { return document.querySelector('#closeHelp') as HTMLElement },
+            get output() { return  document.querySelector('#output') as HTMLDivElement },
+            get clearOutput() { 
+                return document.querySelector('#clearOutput') as HTMLButtonElement
+            }
         }
     }
     //#endregion
@@ -145,10 +150,21 @@ class GWBASICApp {
     //#endregion
 
     //#region vm
+    private get vmPrinter():Printer{
+        if( this.ui.output ){
+            return printers.sprint( (args:any[])=>{
+                let txt = args.map(x=>""+x).join("")
+                this.ui.output.innerHTML += wu.toHtml(txt)+"<br/>"
+            })
+        }else{
+            return printers.console.clone().configure(c=>{c.prefix="BASIC> "})
+        }
+    }
     private vmInstance?:BasicVm
     get vm():BasicVm{ 
         if( this.vmInstance )return this.vmInstance
         this.vmInstance = new BasicVm(this.sourceUnit, this.memo)
+        this.vmInstance.printer = this.vmPrinter
         setTimeout(()=>{this.renderVm()},1)
         return this.vmInstance
     }
@@ -158,6 +174,7 @@ class GWBASICApp {
     }
     rebuildVm() {
         this.vmInstance = new BasicVm(this.sourceUnit, this.memo)
+        this.vmInstance.printer = this.vmPrinter
         setTimeout(()=>{this.renderVm()},1)
         return this.vmInstance
     }
@@ -233,6 +250,13 @@ class GWBASICApp {
                 if( this.ui.helpContent ){
                     this.ui.helpContent.classList.remove('active')
                     console.log("clicked 2")
+                }
+            })
+        }
+        if( this.ui.clearOutput ){
+            this.ui.clearOutput.addEventListener('click',e=>{
+                if( this.ui.output ){
+                    this.ui.output.innerHTML = ""
                 }
             })
         }

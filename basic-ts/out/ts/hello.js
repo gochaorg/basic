@@ -12,6 +12,7 @@ var SourceUnit_1 = require("./vm/SourceUnit");
 var AstToBasic_1 = require("./ast/AstToBasic");
 var Memo_1 = require("./vm/Memo");
 var BasicVm_1 = require("./vm/BasicVm");
+var Printer_1 = require("./vm/Printer");
 var GWBASICApp = /** @class */ (function () {
     function GWBASICApp() {
         //#endregion
@@ -46,6 +47,10 @@ var GWBASICApp = /** @class */ (function () {
                 get helpContent() { return document.querySelector('#helpContent'); },
                 get showHelp() { return document.querySelector('#showHelp'); },
                 get closeHelp() { return document.querySelector('#closeHelp'); },
+                get output() { return document.querySelector('#output'); },
+                get clearOutput() {
+                    return document.querySelector('#clearOutput');
+                }
             };
         },
         enumerable: true,
@@ -168,12 +173,31 @@ var GWBASICApp = /** @class */ (function () {
             }
         }
     };
+    Object.defineProperty(GWBASICApp.prototype, "vmPrinter", {
+        //#endregion
+        //#region vm
+        get: function () {
+            var _this = this;
+            if (this.ui.output) {
+                return Printer_1.printers.sprint(function (args) {
+                    var txt = args.map(function (x) { return "" + x; }).join("");
+                    _this.ui.output.innerHTML += wu.toHtml(txt) + "<br/>";
+                });
+            }
+            else {
+                return Printer_1.printers.console.clone().configure(function (c) { c.prefix = "BASIC> "; });
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(GWBASICApp.prototype, "vm", {
         get: function () {
             var _this = this;
             if (this.vmInstance)
                 return this.vmInstance;
             this.vmInstance = new BasicVm_1.BasicVm(this.sourceUnit, this.memo);
+            this.vmInstance.printer = this.vmPrinter;
             setTimeout(function () { _this.renderVm(); }, 1);
             return this.vmInstance;
         },
@@ -188,6 +212,7 @@ var GWBASICApp = /** @class */ (function () {
     GWBASICApp.prototype.rebuildVm = function () {
         var _this = this;
         this.vmInstance = new BasicVm_1.BasicVm(this.sourceUnit, this.memo);
+        this.vmInstance.printer = this.vmPrinter;
         setTimeout(function () { _this.renderVm(); }, 1);
         return this.vmInstance;
     };
@@ -259,6 +284,13 @@ var GWBASICApp = /** @class */ (function () {
                 if (_this.ui.helpContent) {
                     _this.ui.helpContent.classList.remove('active');
                     console.log("clicked 2");
+                }
+            });
+        }
+        if (this.ui.clearOutput) {
+            this.ui.clearOutput.addEventListener('click', function (e) {
+                if (_this.ui.output) {
+                    _this.ui.output.innerHTML = "";
                 }
             });
         }
