@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Num_1 = require("../Num");
+var Num_1 = require("../common/Num");
 /**
  * Перемещаемый указатель по массиву
  */

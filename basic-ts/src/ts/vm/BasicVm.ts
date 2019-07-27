@@ -3,7 +3,7 @@ import { Statement } from "../ast/Statement";
 import { LetStatement } from "../ast/LetStatement";
 import { Expression, BinaryOpExpression, LiteralExpression, VarRefExpression, UnaryOpExpression } from "../ast/OperatorExp";
 import { Memo } from "./Memo";
-import { asInt } from "../Num";
+import { asInt } from "../common/Num";
 import { RemStatement } from "../ast/RemStatement";
 import { RunStatement } from "../ast/RunStatement";
 import { GotoStatement } from "../ast/GotoStatement";

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var LetStatement_1 = require("../ast/LetStatement");
 var OperatorExp_1 = require("../ast/OperatorExp");
 var Memo_1 = require("./Memo");
-var Num_1 = require("../Num");
+var Num_1 = require("../common/Num");
 var RemStatement_1 = require("../ast/RemStatement");
 var RunStatement_1 = require("../ast/RunStatement");
 var GotoStatement_1 = require("../ast/GotoStatement");

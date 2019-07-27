@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var TreeIt_1 = require("../ts/TreeIt");
+var TreeIt_1 = require("../ts/common/TreeIt");
 var treedata = {
     // parent -> children
     "a": ["b", "c"],

@@ -480,7 +480,7 @@ export class Parser {
 
         const prod = ( linf?:{line:number,lex:Lex} ) => {
             let ifLx = this.ptr.get()
-            console.log("ifLx ",ifLx)
+            this.log("ifLx ",ifLx)
             if( !ifLx )return null
             if( !(ifLx instanceof StatementLex) )return null
             if( !(ifLx.IF) )return null

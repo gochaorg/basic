@@ -1,7 +1,7 @@
 import {
     Lex, OperatorLex, IDLex
 } from './Lexer'
-import { TreeIt, TreeStep } from '../TreeIt';
+import { TreeIt, TreeStep } from '../common/TreeIt';
 
 /**
  * Описывает некое мат-выражение

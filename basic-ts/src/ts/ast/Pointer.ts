@@ -1,4 +1,4 @@
-import { asInt } from '../Num'
+import { asInt } from '../common/Num'
 
 /**
  * Перемещаемый указатель по массиву

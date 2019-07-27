@@ -1,4 +1,4 @@
-import * as wu from './WidgetUtil'
+import * as wu from './ui/WidgetUtil'
 import { SourceUnit, ParseResult } from './vm/SourceUnit';
 import { astToBasic } from './ast/AstToBasic';
 import { Memo } from './vm/Memo';

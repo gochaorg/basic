@@ -18,6 +18,11 @@ export class Memo {
     readonly listeners: MemoListener[] = []
 
     /**
+     * Выводить на консоль изменения памяти
+     */
+    debug:boolean = false
+
+    /**
      * Чтение значения
      * @param varname имя переменной
      */
@@ -36,7 +41,7 @@ export class Memo {
                     break
                 }
             }
-            console.log(`debug read var ${varname}[${arr}] = ${v}`)
+            if( this.debug )console.log(`debug read var ${varname}[${arr}] = ${v}`)
             return v
         }
         return v
@@ -59,10 +64,10 @@ export class Memo {
             ||  this.values[varname] instanceof Object 
             ){
                 arr = this.values[varname]
-                console.log(`resolved ${varname} as []`)
+                if( this.debug )console.log(`resolved ${varname} as []`)
             }else{
                 this.values[varname] = arr
-                console.log(`assign ${varname} = []`)
+                if( this.debug )console.log(`assign ${varname} = []`)
             }
 
             while( indexes.length>1 ){
@@ -71,11 +76,11 @@ export class Memo {
 
                 if( arr[idx] instanceof Object || arr[idx] instanceof Array ){
                     arr = arr[idx]
-                    console.log(`resolved [${idx}] as ${typeof(arr)}`)
+                    if( this.debug )console.log(`resolved [${idx}] as ${typeof(arr)}`)
                 }else{
                     arr[idx] = []
                     arr = arr[idx]
-                    console.log(`assign [${idx}] = []`)
+                    if( this.debug )console.log(`assign [${idx}] = []`)
                 }
             }
 
@@ -84,7 +89,7 @@ export class Memo {
                 const idx = indexes[0]
                 old = arr[idx]
                 arr[idx] = value
-                console.log(`assign [${idx}] = ${value}`)                
+                if( this.debug )console.log(`assign [${idx}] = ${value}`)                
             }
 
             for( let ls of this.listeners ){
@@ -94,7 +99,7 @@ export class Memo {
             return
         }
 
-        console.log(`debug write var ${varname} = ${value}`)
+        if( this.debug )console.log(`debug write var ${varname} = ${value}`)
         const old = this.values[varname]
         this.values[varname] = value
         for( let ls of this.listeners ){

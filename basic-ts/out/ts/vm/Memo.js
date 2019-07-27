@@ -13,6 +13,10 @@ var Memo = /** @class */ (function () {
          * Подписчики на изменения значений памяти VM
          */
         this.listeners = [];
+        /**
+         * Выводить на консоль изменения памяти
+         */
+        this.debug = false;
     }
     /**
      * Чтение значения
@@ -37,7 +41,8 @@ var Memo = /** @class */ (function () {
                     break;
                 }
             }
-            console.log("debug read var " + varname + "[" + arr + "] = " + v);
+            if (this.debug)
+                console.log("debug read var " + varname + "[" + arr + "] = " + v);
             return v;
         }
         return v;
@@ -60,23 +65,27 @@ var Memo = /** @class */ (function () {
             if (this.values[varname] instanceof Array
                 || this.values[varname] instanceof Object) {
                 arr = this.values[varname];
-                console.log("resolved " + varname + " as []");
+                if (this.debug)
+                    console.log("resolved " + varname + " as []");
             }
             else {
                 this.values[varname] = arr;
-                console.log("assign " + varname + " = []");
+                if (this.debug)
+                    console.log("assign " + varname + " = []");
             }
             while (indexes.length > 1) {
                 var idx = indexes[0];
                 indexes.splice(0, 1);
                 if (arr[idx] instanceof Object || arr[idx] instanceof Array) {
                     arr = arr[idx];
-                    console.log("resolved [" + idx + "] as " + typeof (arr));
+                    if (this.debug)
+                        console.log("resolved [" + idx + "] as " + typeof (arr));
                 }
                 else {
                     arr[idx] = [];
                     arr = arr[idx];
-                    console.log("assign [" + idx + "] = []");
+                    if (this.debug)
+                        console.log("assign [" + idx + "] = []");
                 }
             }
             var old_1 = undefined;
@@ -84,7 +93,8 @@ var Memo = /** @class */ (function () {
                 var idx = indexes[0];
                 old_1 = arr[idx];
                 arr[idx] = value;
-                console.log("assign [" + idx + "] = " + value);
+                if (this.debug)
+                    console.log("assign [" + idx + "] = " + value);
             }
             for (var _a = 0, _b = this.listeners; _a < _b.length; _a++) {
                 var ls = _b[_a];
@@ -92,7 +102,8 @@ var Memo = /** @class */ (function () {
             }
             return;
         }
-        console.log("debug write var " + varname + " = " + value);
+        if (this.debug)
+            console.log("debug write var " + varname + " = " + value);
         var old = this.values[varname];
         this.values[varname] = value;
         for (var _c = 0, _d = this.listeners; _c < _d.length; _c++) {

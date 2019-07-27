@@ -13,7 +13,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var TreeIt_1 = require("../TreeIt");
+var TreeIt_1 = require("../common/TreeIt");
 var AExpression = /** @class */ (function () {
     function AExpression() {
     }

@@ -8,7 +8,7 @@ import { Statements } from "./Statements";
 import { LetStatement } from "./LetStatement";
 import { RunStatement } from "./RunStatement";
 import { BinaryOpExpression, UnaryOpExpression, LiteralExpression, VarRefExpression } from "./OperatorExp";
-import { TreeStep } from "../TreeIt";
+import { TreeStep } from "../common/TreeIt";
 import { GotoStatement } from "./GotoStatement";
 import { ReturnStatement } from "./ReturnStatement";
 import { GoSubStatement } from "./GoSubStatement";

@@ -7,7 +7,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var bfind = __importStar(require("../ts/Finds"));
+var bfind = __importStar(require("../ts/common/Finds"));
 var arr1 = ['a', 'b', 'r', 'r', 'c', 'c', 'd', 'f', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'r', 'e', 'z', 'aa', 'ab'];
 var srtFn = function (a, b) { return a.localeCompare(b); };
 arr1 = arr1.sort(srtFn);

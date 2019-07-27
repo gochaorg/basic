@@ -456,7 +456,7 @@ var Parser = /** @class */ (function () {
         this.log('ifStatement() ptr=', this.ptr.gets(3));
         var prod = function (linf) {
             var ifLx = _this.ptr.get();
-            console.log("ifLx ", ifLx);
+            _this.log("ifLx ", ifLx);
             if (!ifLx)
                 return null;
             if (!(ifLx instanceof Lexer_1.StatementLex))

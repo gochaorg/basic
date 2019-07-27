@@ -7,7 +7,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var wu = __importStar(require("./WidgetUtil"));
+var wu = __importStar(require("./ui/WidgetUtil"));
 var SourceUnit_1 = require("./vm/SourceUnit");
 var AstToBasic_1 = require("./ast/AstToBasic");
 var Memo_1 = require("./vm/Memo");
