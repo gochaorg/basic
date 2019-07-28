@@ -7,7 +7,7 @@ module.exports = {
     entry: './out/ts/hello.js',
     output: {
       filename: 'bundle.js',
-      path: path.resolve(__dirname, 'dist')
+      path: path.resolve(__dirname, 'dist/html')
     },
     module:{
         rules:[{
@@ -23,7 +23,7 @@ module.exports = {
         ]
     },
     plugins: [
-        new WebpackCleanPlugin(['dist']),
+        new WebpackCleanPlugin(['dist/html']),
         new HtmlWebpackPlugin({
             title: 'Like GW BASIC',
             template: './src/index.html'
