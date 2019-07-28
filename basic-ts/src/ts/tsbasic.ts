@@ -3,8 +3,24 @@ import fs from 'fs';
 import { SourceUnit } from "./vm/SourceUnit";
 import { BasicVm } from "./vm/BasicVm";
 
+/**
+ * Аргументы командной строки
+ */
 class Args {
-    readonly commands:(()=>any)[] = []
+    /**
+     * Последовательно выполняемые команды
+     */
+    readonly commands:((args:Args)=>any)[] = []
+
+    /**
+     * Путь к node.exe
+     */
+    nodeExe?:string
+
+    /**
+     * Выполняемый js файл
+     */
+    startupJs?:string
 }
 
 interface cmdProc {
@@ -18,12 +34,23 @@ interface cmdProc {
 function processArgs(commandLineArgs:string[]) {
     const res:Args = new Args()
 
-    let stop : cmdProc = (r,a) => {return stop}
+    const argz:string[] = [...commandLineArgs]
+    if( argz.length>0 ){
+        res.nodeExe = argz.shift()
+    }
+    if( argz.length>0 ){
+        res.startupJs = argz.shift()
+    }
 
+    if( argz.length==0 ){
+        res.commands.push((a)=>{showHelp(a)})
+    }
+
+    let stop : cmdProc = (r,a) => {return stop}
     let parseArgs : cmdProc = (q,args) => {
         if( /(\-|\-\-|\/)(\?|help)/.test(args[0]) ){
             args.shift()
-            q.commands.push( ()=>{showHelp()} )
+            q.commands.push( (a)=>{showHelp(a)} )
             return init
         }
 
@@ -38,9 +65,10 @@ function processArgs(commandLineArgs:string[]) {
         args.shift()
         return parseArgs
     }
-    
     let init : cmdProc = (q,args) => {
-        if(args.length<1)return stop
+        if(args.length<1){
+            return stop
+        }
         
         if( args.length==1 ){
             const tryFilename = args[0]
@@ -57,7 +85,6 @@ function processArgs(commandLineArgs:string[]) {
         return parseArgs
     }
 
-    const argz:string[] = [...commandLineArgs]
     let parse : cmdProc = init
 
     while(argz.length>0){
@@ -89,8 +116,10 @@ function runFile(filename:string) {
 /**
  * Отобразить справку
  */
-function showHelp(){
-    console.log("show help")
+function showHelp(a:Args){
+    console.log("tsbasic")
+    console.log(a)
 }
 
-processArgs(process.argv).commands.forEach( a => a() )
+const tsArgs = processArgs(process.argv)
+tsArgs.commands.forEach( a => a(tsArgs) )

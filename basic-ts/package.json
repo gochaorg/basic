@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "gwbasic interpert",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
+    "pkg": "^4.4.0",
     "@babel/cli": "^7.4.4",
     "@babel/core": "^7.4.5",
     "@babel/preset-env": "^7.4.5",
@@ -28,5 +30,9 @@
     "dev": "webpack --mode development"
   },
   "author": "nt.gocha@gmail.com",
-  "license": "MIT"
+  "license": "MIT",
+  "pkg": {
+    "scripts": "out/**/*.js",
+    "assets": [ "src/**/*.html", "src/**/*.css" ]
+  }
 }

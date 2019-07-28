@@ -7,8 +7,14 @@ var process = require("process");
 var fs_1 = __importDefault(require("fs"));
 var SourceUnit_1 = require("./vm/SourceUnit");
 var BasicVm_1 = require("./vm/BasicVm");
+/**
+ * Аргументы командной строки
+ */
 var Args = /** @class */ (function () {
     function Args() {
+        /**
+         * Последовательно выполняемые команды
+         */
         this.commands = [];
     }
     return Args;
@@ -19,11 +25,21 @@ var Args = /** @class */ (function () {
  */
 function processArgs(commandLineArgs) {
     var res = new Args();
+    var argz = commandLineArgs.slice();
+    if (argz.length > 0) {
+        res.nodeExe = argz.shift();
+    }
+    if (argz.length > 0) {
+        res.startupJs = argz.shift();
+    }
+    if (argz.length == 0) {
+        res.commands.push(function (a) { showHelp(a); });
+    }
     var stop = function (r, a) { return stop; };
     var parseArgs = function (q, args) {
         if (/(\-|\-\-|\/)(\?|help)/.test(args[0])) {
             args.shift();
-            q.commands.push(function () { showHelp(); });
+            q.commands.push(function (a) { showHelp(a); });
             return init;
         }
         if (args.length > 1 && (args[0] == '-r' || args[0] == '--run')) {
@@ -37,8 +53,9 @@ function processArgs(commandLineArgs) {
         return parseArgs;
     };
     var init = function (q, args) {
-        if (args.length < 1)
+        if (args.length < 1) {
             return stop;
+        }
         if (args.length == 1) {
             var tryFilename_1 = args[0];
             var tryFileSt = fs_1.default.statSync(tryFilename_1);
@@ -52,7 +69,6 @@ function processArgs(commandLineArgs) {
         }
         return parseArgs;
     };
-    var argz = commandLineArgs.slice();
     var parse = init;
     while (argz.length > 0) {
         var r = parse(res, argz);
@@ -80,8 +96,10 @@ function runFile(filename) {
 /**
  * Отобразить справку
  */
-function showHelp() {
-    console.log("show help");
+function showHelp(a) {
+    console.log("tsbasic");
+    console.log(a);
 }
-processArgs(process.argv).commands.forEach(function (a) { return a(); });
+var tsArgs = processArgs(process.argv);
+tsArgs.commands.forEach(function (a) { return a(tsArgs); });
 //# sourceMappingURL=tsbasic.js.map
