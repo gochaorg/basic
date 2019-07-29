@@ -11,6 +11,7 @@ var IfStatement_1 = require("./IfStatement");
 var GoSubStatement_1 = require("./GoSubStatement");
 var ReturnStatement_1 = require("./ReturnStatement");
 var PrintStatement_1 = require("./PrintStatement");
+var CallStatement_1 = require("./CallStatement");
 /**
  * Генератор из AST в BASIC
  */
@@ -224,28 +225,49 @@ function astToBasic(root, opts) {
         return code_1;
     }
     //#endregion
-    //#region Statements
-    if (root instanceof Statements_1.Statements) {
+    //#region CallStatement
+    if (root instanceof CallStatement_1.CallStatement) {
         var code_2 = '';
-        root.statements.forEach(function (st) {
-            if (code_2.length > 0) {
-                code_2 += "\n";
+        if (root.sourceLine != undefined && opts.sourceLineNumber) {
+            code_2 = root.sourceLine + " ";
+        }
+        code_2 += "CALL ";
+        code_2 += root.name.id;
+        if (root.args.length > 0)
+            code_2 += " ";
+        var argi_2 = -1;
+        root.args.forEach(function (arg) {
+            argi_2++;
+            if (argi_2 > 0) {
+                code_2 += ",";
             }
-            code_2 += astToBasic(st, opts);
+            code_2 += astToBasic(arg, opts);
         });
         return code_2;
     }
     //#endregion
-    //#region SourceUnit
-    if (root instanceof SourceUnit_1.SourceUnit) {
+    //#region Statements
+    if (root instanceof Statements_1.Statements) {
         var code_3 = '';
-        root.lines.forEach(function (line) {
+        root.statements.forEach(function (st) {
             if (code_3.length > 0) {
                 code_3 += "\n";
             }
-            code_3 += astToBasic(line.statement, opts);
+            code_3 += astToBasic(st, opts);
         });
         return code_3;
+    }
+    //#endregion
+    //#region SourceUnit
+    if (root instanceof SourceUnit_1.SourceUnit) {
+        var code_4 = '';
+        root.lines.forEach(function (line) {
+            if (code_4.length > 0) {
+                code_4 += "\n";
+            }
+            code_4 += astToBasic(line.statement, opts);
+        });
+        return code_4;
     }
     //#endregion
     throw new Error("unknow argument type " + root + ":" + Object.getPrototypeOf(root));

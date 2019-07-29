@@ -306,6 +306,7 @@ export class StatementLex extends KeyWordLex {
     }
     get RETURN() { return this.keyWord.toUpperCase()=='RETURN' }
     get PRINT() { return this.keyWord.toUpperCase()=='PRINT' }
+    get CALL() { return this.keyWord.toUpperCase()=='CALL' }
 
     //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     static parse = KeyWordLex.parser(
@@ -322,6 +323,7 @@ export class StatementLex extends KeyWordLex {
             'GOSUB',   // Переход к подпрограмме
             'RETURN',  // Возврат из подпрограммы
             'PRINT',   // Вывод значения переменной
+            'CALL',    // Вызов процедуры
         ], 
         (kw,begin,end)=>{return new StatementLex(kw,begin,end)}
         )

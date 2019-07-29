@@ -12,6 +12,7 @@ import { IfStatement } from './IfStatement';
 import { GoSubStatement } from './GoSubStatement';
 import { ReturnStatement } from './ReturnStatement';
 import { PrintStatement } from './PrintStatement';
+import { CallStatement } from './CallStatement';
 
 /**
  * Генератор из AST в BASIC
@@ -207,6 +208,27 @@ export function astToBasic(
             code = `${root.sourceLine} `
         }
         code += "PRINT"
+        
+        if( root.args.length>0 ) code += " "
+        let argi = -1
+        root.args.forEach( arg => {
+            argi++
+            if( argi>0 ){
+                code += ","
+            }
+            code += astToBasic(arg,opts)
+        })
+        return code
+    }
+    //#endregion
+    //#region CallStatement
+    if( root instanceof CallStatement ){
+        let code = ''
+        if( root.sourceLine!=undefined && opts.sourceLineNumber ){
+            code = `${root.sourceLine} `
+        }
+        code += "CALL "
+        code += root.name.id
         
         if( root.args.length>0 ) code += " "
         let argi = -1

@@ -12,6 +12,7 @@ var IfStatement_1 = require("./IfStatement");
 var GoSubStatement_1 = require("./GoSubStatement");
 var ReturnStatement_1 = require("./ReturnStatement");
 var PrintStatement_1 = require("./PrintStatement");
+var CallStatement_1 = require("./CallStatement");
 /**
  * Опции парсера
  */
@@ -146,6 +147,9 @@ var Parser = /** @class */ (function () {
         var printStmt = this.printStatement(opts);
         if (printStmt)
             return printStmt;
+        var callStmt = this.callStatement(opts);
+        if (callStmt)
+            return callStmt;
         return null;
     };
     /**
@@ -555,6 +559,64 @@ var Parser = /** @class */ (function () {
                     }
                 }
                 return new PrintStatement_1.PrintStatement(linf ? linf.lex : gtLex, lastLex, gtLex, exps);
+            }
+            return null;
+        };
+        if (opts.tryLineNum) {
+            return this.matchLine(prod) || prod();
+        }
+        else {
+            return prod();
+        }
+    };
+    /**
+     * callStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                    StatementLex(CALL) IDLex [expression {',' expression}]
+     * @param opts опции компилятора
+     */
+    Parser.prototype.callStatement = function (opts) {
+        var _this = this;
+        if (!opts) {
+            opts = this.options;
+        }
+        if (this.ptr.eof)
+            return null;
+        this.log('callStatement() ptr=', this.ptr.gets(3));
+        var prod = function (linf) {
+            var _a = _this.ptr.gets(2), callLex = _a[0], idLex = _a[1];
+            if (callLex instanceof Lexer_1.StatementLex
+                && callLex.CALL
+                && idLex instanceof Lexer_1.IDLex) {
+                _this.ptr.move(2);
+                var exps = [];
+                var lastLex = callLex;
+                while (true) {
+                    if (exps.length > 0) {
+                        var lNext = _this.ptr.get();
+                        if (!(lNext && lNext instanceof Lexer_1.OperatorLex && lNext.argDelim)) {
+                            break;
+                        }
+                        else {
+                            _this.ptr.move(1);
+                        }
+                    }
+                    _this.ptr.push();
+                    var exp = _this.expression();
+                    if (exp) {
+                        exps.push(exp);
+                        if (exp.rightTreeLex) {
+                            lastLex = exp.rightTreeLex;
+                        }
+                    }
+                    else {
+                        _this.ptr.pop();
+                        if (exps.length > 0) {
+                            //TODO here error report
+                        }
+                        break;
+                    }
+                }
+                return new CallStatement_1.CallStatement(linf ? linf.lex : callLex, lastLex, callLex, idLex, exps);
             }
             return null;
         };

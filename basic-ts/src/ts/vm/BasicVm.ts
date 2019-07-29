@@ -12,6 +12,8 @@ import { GoSubStatement } from "../ast/GoSubStatement";
 import { ReturnStatement } from "../ast/ReturnStatement";
 import { PrintStatement } from "../ast/PrintStatement";
 import { Printer,printers } from "./Printer";
+import { CallStatement } from "../ast/CallStatement";
+import { ExtFun, CallCtx } from "./ExtFun";
 
 export class BasicVm {
     /**
@@ -112,6 +114,7 @@ export class BasicVm {
         throw new Error("undefined expression "+exp)
     }
 
+    //#region Printing
     private get defaultPrinter() {
         return printers.console.clone().configure(c => {
             c.prefix = "BASIC> "
@@ -126,12 +129,30 @@ export class BasicVm {
             this._printer = this.defaultPrinter
         }
     }
-
+    
     private print(v:any){
         this.printer.print(v)
     }
     private println(){
         this.printer.println()
+    }
+    //#endregion
+
+    private callProcudure(name:string, args:any[], callst:CallStatement){
+        const fnInst = this.memo.read(name)
+        if( typeof(fnInst)=='object' && fnInst instanceof ExtFun ){
+            const fn = fnInst as ExtFun
+            const ctx = new CallCtx()
+            ctx.procedure = {
+                name: name
+            }
+            fn.apply(ctx, args)
+        }else if( typeof(fnInst)=='function' ){
+            const fn = fnInst as Function
+            fn.apply( {}, args )
+        }else{
+            throw new Error(`can't call procedure ${name}, procedure not found`)
+        }
     }
 
     /**
@@ -205,6 +226,14 @@ export class BasicVm {
                 this.print(v)
             })
             this.println()
+        }
+        if( st instanceof CallStatement ){
+            const callArgs:any[] = []
+            st.args.forEach( (exp)=>{
+                const v = this.evalExpression(exp)
+                callArgs.push(v)
+            })
+            this.callProcudure(st.name.id,callArgs, st)
         }
     }
 

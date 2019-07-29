@@ -26,6 +26,7 @@ var GotoStatement_1 = require("./GotoStatement");
 var ReturnStatement_1 = require("./ReturnStatement");
 var GoSubStatement_1 = require("./GoSubStatement");
 var PrintStatement_1 = require("./PrintStatement");
+var CallStatement_1 = require("./CallStatement");
 /**
 Шаг при обходе дерева
 */
@@ -91,6 +92,19 @@ function walk(ts, visitor) {
         });
         if (visitor.print && visitor.print.end) {
             visitor.print.end(ts.value, ts);
+        }
+    }
+    //#endregion
+    //#region CallStatement
+    if (ts.value instanceof CallStatement_1.CallStatement) {
+        if (visitor.call && visitor.call.begin) {
+            visitor.call.begin(ts.value, ts);
+        }
+        ts.value.args.forEach(function (e) {
+            walk(ts.follow(e), visitor);
+        });
+        if (visitor.call && visitor.call.end) {
+            visitor.call.end(ts.value, ts);
         }
     }
     //#endregion

@@ -511,6 +511,11 @@ var StatementLex = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(StatementLex.prototype, "CALL", {
+        get: function () { return this.keyWord.toUpperCase() == 'CALL'; },
+        enumerable: true,
+        configurable: true
+    });
     //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
     StatementLex.parse = KeyWordLex.parser(true, [
         'LET',
@@ -524,6 +529,7 @@ var StatementLex = /** @class */ (function (_super) {
         'GOSUB',
         'RETURN',
         'PRINT',
+        'CALL',
     ], function (kw, begin, end) { return new StatementLex(kw, begin, end); });
     return StatementLex;
 }(KeyWordLex));

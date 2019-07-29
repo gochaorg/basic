@@ -12,6 +12,8 @@ var GoSubStatement_1 = require("../ast/GoSubStatement");
 var ReturnStatement_1 = require("../ast/ReturnStatement");
 var PrintStatement_1 = require("../ast/PrintStatement");
 var Printer_1 = require("./Printer");
+var CallStatement_1 = require("../ast/CallStatement");
+var ExtFun_1 = require("./ExtFun");
 var BasicVm = /** @class */ (function () {
     function BasicVm(source, memo) {
         this._printer = this.defaultPrinter;
@@ -121,6 +123,7 @@ var BasicVm = /** @class */ (function () {
         throw new Error("undefined expression " + exp);
     };
     Object.defineProperty(BasicVm.prototype, "defaultPrinter", {
+        //#region Printing
         get: function () {
             return Printer_1.printers.console.clone().configure(function (c) {
                 c.prefix = "BASIC> ";
@@ -147,6 +150,25 @@ var BasicVm = /** @class */ (function () {
     };
     BasicVm.prototype.println = function () {
         this.printer.println();
+    };
+    //#endregion
+    BasicVm.prototype.callProcudure = function (name, args, callst) {
+        var fnInst = this.memo.read(name);
+        if (typeof (fnInst) == 'object' && fnInst instanceof ExtFun_1.ExtFun) {
+            var fn = fnInst;
+            var ctx = new ExtFun_1.CallCtx();
+            ctx.procedure = {
+                name: name
+            };
+            fn.apply(ctx, args);
+        }
+        else if (typeof (fnInst) == 'function') {
+            var fn = fnInst;
+            fn.apply({}, args);
+        }
+        else {
+            throw new Error("can't call procedure " + name + ", procedure not found");
+        }
     };
     /**
      * Выполняет выражение (statement)
@@ -227,6 +249,14 @@ var BasicVm = /** @class */ (function () {
                 _this.print(v);
             });
             this.println();
+        }
+        if (st instanceof CallStatement_1.CallStatement) {
+            var callArgs_1 = [];
+            st.args.forEach(function (exp) {
+                var v = _this.evalExpression(exp);
+                callArgs_1.push(v);
+            });
+            this.callProcudure(st.name.id, callArgs_1, st);
         }
     };
     /**

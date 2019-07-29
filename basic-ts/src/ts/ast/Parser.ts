@@ -20,6 +20,7 @@ import { IfStatement } from './IfStatement';
 import { GoSubStatement } from './GoSubStatement';
 import { ReturnStatement } from './ReturnStatement';
 import { PrintStatement } from './PrintStatement';
+import { CallStatement } from './CallStatement';
 
 /**
  * Опции парсера
@@ -161,6 +162,9 @@ export class Parser {
 
         const printStmt = this.printStatement(opts)
         if( printStmt )return printStmt
+
+        const callStmt = this.callStatement(opts)
+        if( callStmt )return callStmt
 
         return null
     }
@@ -596,6 +600,65 @@ export class Parser {
                     linf ? linf.lex : gtLex, 
                     lastLex, 
                     gtLex,
+                    exps )
+            }
+            return null
+        }
+        if( opts.tryLineNum ){
+            return this.matchLine(prod) || prod()
+        }else{
+            return prod()
+        }
+    }
+
+    /**
+     * callStatement ::= [ SourceLineBeginLex | NumberLex ]
+     *                    StatementLex(CALL) IDLex [expression {',' expression}] 
+     * @param opts опции компилятора
+     */
+    callStatement(opts?:Options):Statement|null {
+        if( !opts ){ opts = this.options }
+        if( this.ptr.eof )return null
+        this.log('callStatement() ptr=',this.ptr.gets(3))
+
+        const prod = ( linf?:{line:number,lex:Lex} ) => {
+            let [callLex, idLex] = this.ptr.gets(2)
+            if( callLex instanceof StatementLex 
+            &&  callLex.CALL
+            &&  idLex instanceof IDLex
+            ){
+                this.ptr.move(2)
+                const exps:Expression[] = []
+                let lastLex:Lex = callLex
+                while(true){
+                    if( exps.length>0 ){
+                        const lNext = this.ptr.get()
+                        if( !(lNext && lNext instanceof OperatorLex && lNext.argDelim) ){                            
+                            break
+                        }else{
+                            this.ptr.move(1)
+                        }
+                    }
+                    this.ptr.push()
+                    const exp = this.expression()
+                    if( exp ){
+                        exps.push(exp)
+                        if( exp.rightTreeLex ){
+                            lastLex = exp.rightTreeLex
+                        }
+                    }else{
+                        this.ptr.pop()
+                        if( exps.length>0 ){
+                            //TODO here error report
+                        }
+                        break
+                    }
+                }
+                return new CallStatement(
+                    linf ? linf.lex : callLex, 
+                    lastLex, 
+                    callLex,
+                    idLex,
                     exps )
             }
             return null

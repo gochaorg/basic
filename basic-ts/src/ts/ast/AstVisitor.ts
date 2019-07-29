@@ -13,6 +13,7 @@ import { GotoStatement } from "./GotoStatement";
 import { ReturnStatement } from "./ReturnStatement";
 import { GoSubStatement } from "./GoSubStatement";
 import { PrintStatement } from "./PrintStatement";
+import { CallStatement } from "./CallStatement";
 
 /**
 Шаг при обходе дерева
@@ -34,6 +35,7 @@ export interface AstVisitor {
     gosub?: AstBeginEnd<GoSubStatement>
     return?: AstBeginEnd<ReturnStatement>
     print?: AstBeginEnd<PrintStatement>
+    call?: AstBeginEnd<CallStatement>
     operator?: {
         binary?: AstBeginEnd<BinaryOpExpression>
         unary?: AstBeginEnd<UnaryOpExpression>
@@ -97,6 +99,19 @@ export function walk( ts:AstTreeStep, visitor:AstVisitor ){
         })
         if( visitor.print && visitor.print.end ){
             visitor.print.end( ts.value, ts )
+        }
+    }
+    //#endregion
+    //#region CallStatement
+    if( ts.value instanceof CallStatement ){
+        if( visitor.call && visitor.call.begin ){
+            visitor.call.begin( ts.value, ts )
+        }
+        ts.value.args.forEach( (e)=>{
+            walk( ts.follow(e), visitor )
+        })
+        if( visitor.call && visitor.call.end ){
+            visitor.call.end( ts.value, ts )
         }
     }
     //#endregion
