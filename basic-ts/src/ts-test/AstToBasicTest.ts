@@ -10,6 +10,7 @@ su1 = su1.parse(
     '20 LET b = 10*2+7\n'+
     '22 GOTO 10\n'+
     '24 LET A = B(10,2)\n'+
+    '30 PRINT "Hello"\n'+
     'RUN 10',
     {
         immediateStatements(commands){
@@ -19,4 +20,4 @@ su1 = su1.parse(
     }
 )
 
-console.log( astToBasic(su1.line(24).statement) )
+console.log( astToBasic(su1.line(30).statement) )

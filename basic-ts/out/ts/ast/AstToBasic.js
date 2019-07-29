@@ -41,21 +41,21 @@ function astToBasic(root, opts) {
             var sval = root.value;
             var str = "\"";
             for (var i = 0; i < sval.length; i++) {
-                var ch = str[i];
+                var ch = sval[i];
                 if (ch == '"') {
-                    str += "encode_dquote";
+                    str += "{encode_dquote}";
                 }
                 else if (ch == "'") {
-                    str += "encode_quote";
+                    str += "{encode_quote}";
                 }
                 else if (ch == "\n") {
-                    str += "encode_nl";
+                    str += "{encode_nl}";
                 }
                 else if (ch == "\r") {
-                    str += "encode_cr";
+                    str += "{encode_cr}";
                 }
                 else if (ch == "\t") {
-                    str += "encode_tab";
+                    str += "{encode_tab}";
                 }
                 else if (ch.charCodeAt(0) > 31) {
                     str += ch;

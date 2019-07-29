@@ -43,17 +43,17 @@ export function astToBasic(
             const sval = root.value as string
             let str = "\""
             for( let i=0; i<sval.length; i++){
-                let ch = str[i]
+                let ch = sval[i]
                 if( ch=='"' ){
-                    str += "encode_dquote"
+                    str += "{encode_dquote}"
                 }else if( ch=="'" ){
-                    str += "encode_quote"
+                    str += "{encode_quote}"
                 }else if( ch=="\n" ){
-                    str += "encode_nl"
+                    str += "{encode_nl}"
                 }else if( ch=="\r" ){
-                    str += "encode_cr"
+                    str += "{encode_cr}"
                 }else if( ch=="\t" ){
-                    str += "encode_tab"
+                    str += "{encode_tab}"
                 }else if( ch.charCodeAt(0)>31 ){
                     str += ch
                 }

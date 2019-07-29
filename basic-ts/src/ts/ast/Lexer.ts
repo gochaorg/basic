@@ -220,17 +220,6 @@ export class NewLineLex extends KeyWordLex {
  * Лексема встроенного оператора
  */
 export class OperatorLex extends KeyWordLex {
-    /*
-    static readonly POW = '^'
-    static readonly MULT = '*'
-    static readonly DIV = '/'
-    static readonly IDIV = '\\'
-    static readonly MOD = 'MOD'
-    static readonly PLUS = '+'
-    static readonly MINUS = '-'
-    static readonly EQUALS = '-'
-    */
-
     readonly kind:string
     constructor(keyWord:string, begin?:number, end?:number){
         super(keyWord, begin,end)

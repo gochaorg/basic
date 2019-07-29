@@ -16,11 +16,12 @@ su1 = su1.parse('10 REM cmnt\n' +
     '20 LET b = 10*2+7\n' +
     '22 GOTO 10\n' +
     '24 LET A = B(10,2)\n' +
+    '30 PRINT "Hello"\n' +
     'RUN 10', {
     immediateStatements: function (commands) {
         //console.log("== immediate commands ==")
         //commands.forEach( cmd => console.log(cmd))
     }
 });
-console.log(AstToBasic_1.astToBasic(su1.line(24).statement));
+console.log(AstToBasic_1.astToBasic(su1.line(30).statement));
 //# sourceMappingURL=AstToBasicTest.js.map
