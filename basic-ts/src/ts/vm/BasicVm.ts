@@ -1,7 +1,7 @@
 import { SourceUnit } from "./SourceUnit";
 import { Statement } from "../ast/Statement";
 import { LetStatement } from "../ast/LetStatement";
-import { Expression, BinaryOpExpression, LiteralExpression, VarRefExpression, UnaryOpExpression } from "../ast/OperatorExp";
+import { Expression, BinaryOpExpression, LiteralExpression, VarRefExpression, UnaryOpExpression, VarArrIndexRef } from "../ast/OperatorExp";
 import { Memo } from "./Memo";
 import { asInt } from "../common/Num";
 import { RemStatement } from "../ast/RemStatement";
@@ -42,6 +42,14 @@ export class BasicVm {
     evalExpression( exp:Expression ):any {
         if( exp instanceof LiteralExpression ){
             return exp.value
+        }
+        if( exp instanceof VarArrIndexRef ){
+            const arr = this.memo.read( exp.varname )
+            if( arr==undefined ){
+                throw new Error("undefined variable "+exp.varname)
+            }
+            const res = this.memo.read( exp.varname, exp.indexes )
+            return res
         }
         if( exp instanceof VarRefExpression ){
             const res = this.memo.read( exp.varname )

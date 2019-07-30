@@ -41,6 +41,14 @@ var BasicVm = /** @class */ (function () {
         if (exp instanceof OperatorExp_1.LiteralExpression) {
             return exp.value;
         }
+        if (exp instanceof OperatorExp_1.VarArrIndexRef) {
+            var arr = this.memo.read(exp.varname);
+            if (arr == undefined) {
+                throw new Error("undefined variable " + exp.varname);
+            }
+            var res = this.memo.read(exp.varname, exp.indexes);
+            return res;
+        }
         if (exp instanceof OperatorExp_1.VarRefExpression) {
             var res = this.memo.read(exp.varname);
             if (res == undefined)
