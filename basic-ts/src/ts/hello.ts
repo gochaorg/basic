@@ -5,6 +5,8 @@ import { Memo } from './vm/Memo';
 import { BasicVm } from './vm/BasicVm';
 import { Statement } from './ast/Statement';
 import { printers, Printer } from './vm/Printer';
+import * as tsLang from './stdlib/TsLang';
+import { Fun } from './vm/ExtFun';
 
 type MemVarUI = {
     container:HTMLDivElement
@@ -107,16 +109,25 @@ class GWBASICApp {
     //#endregion
 
     //#region memo
-    private memoInstance?:Memo = new Memo()
+    private memoInstance?:Memo
     get memo():Memo { 
-        if( this.memoInstance ) return this.memoInstance 
+        if( this.memoInstance ) {
+            return this.memoInstance 
+        }
         this.memoInstance = new Memo()
+        this.registerLibs()
         setTimeout(()=>{this.renderMemo()},1)
         return this.memoInstance
     }
     set memo( mem:Memo ){
         this.memoInstance = mem
+        this.registerLibs()
         setTimeout(()=>{this.renderMemo()},1)
+    }
+    private registerLibs(){
+        if( this.memoInstance ){
+            tsLang.register(this.memoInstance)
+        }
     }
     renderMemo(){
         Object.keys(this.uiVars).forEach( n=>{delete this.uiVars[n]} )
@@ -124,11 +135,7 @@ class GWBASICApp {
             this.ui.memoDump.innerHTML = ''
             for( const varname of this.memo.varnames ){
                 const varvalue = this.memo.read(varname)
-                const ui = {
-                    container: wu.div({class:'var'}).el,
-                    name: wu.span({class:'name'}).text(varname).el,
-                    value: wu.span({class:'value'}).text(varvalue).el
-                }
+                const ui = this.renderVarValue( varname, varvalue )
                 ui.container.appendChild( ui.name )
                 ui.container.appendChild( ui.value )
                 this.uiVars[varname] = ui
@@ -143,11 +150,7 @@ class GWBASICApp {
             if( ui ){
                 ui.value.innerText = newvalue
             }else{
-                ui = {
-                    container: wu.div({class:'var'}).el,
-                    name: wu.span({class:'name'}).text(varname).el,
-                    value: wu.span({class:'value'}).text(newvalue).el
-                }
+                ui = this.renderVarValue(varname, newvalue)
                 ui.container.appendChild( ui.name )
                 ui.container.appendChild( ui.value )
                 this.uiVars[varname] = ui
@@ -161,6 +164,27 @@ class GWBASICApp {
                 this.ui.memoDump.removeChild( ui.container )
                 delete this.uiVars[varname]
             }
+        }
+    }
+    renderVarValue(varname:string, varvalue:any):MemVarUI {
+        let clss = ""
+
+        let renderFn = (value:any):HTMLElement => {
+            return wu.span({class:'value'+clss}).text("Function").el
+        }
+        let render = (value:any):HTMLElement => {
+            return wu.span({class:'value'+clss}).text(value).el
+        };
+
+        if( varvalue instanceof Fun ){
+            clss += " Fun"
+            render = renderFn
+        }
+
+        return {
+            container: wu.div({class:'var'+clss}).el,
+            name: wu.span({class:'name'+clss}).text(varname).el,
+            value: render(varvalue)
         }
     }
     //#endregion

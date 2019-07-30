@@ -13,15 +13,14 @@ var AstToBasic_1 = require("./ast/AstToBasic");
 var Memo_1 = require("./vm/Memo");
 var BasicVm_1 = require("./vm/BasicVm");
 var Printer_1 = require("./vm/Printer");
+var tsLang = __importStar(require("./stdlib/TsLang"));
+var ExtFun_1 = require("./vm/ExtFun");
 var GWBASICApp = /** @class */ (function () {
     function GWBASICApp() {
         //#endregion
         //#region sourceUnit
         this.suValue = new SourceUnit_1.SourceUnit;
         this.renderedSourceLines = {};
-        //#endregion
-        //#region memo
-        this.memoInstance = new Memo_1.Memo();
         this.uiVars = {};
     }
     Object.defineProperty(GWBASICApp.prototype, "ui", {
@@ -129,20 +128,28 @@ var GWBASICApp = /** @class */ (function () {
     Object.defineProperty(GWBASICApp.prototype, "memo", {
         get: function () {
             var _this = this;
-            if (this.memoInstance)
+            if (this.memoInstance) {
                 return this.memoInstance;
+            }
             this.memoInstance = new Memo_1.Memo();
+            this.registerLibs();
             setTimeout(function () { _this.renderMemo(); }, 1);
             return this.memoInstance;
         },
         set: function (mem) {
             var _this = this;
             this.memoInstance = mem;
+            this.registerLibs();
             setTimeout(function () { _this.renderMemo(); }, 1);
         },
         enumerable: true,
         configurable: true
     });
+    GWBASICApp.prototype.registerLibs = function () {
+        if (this.memoInstance) {
+            tsLang.register(this.memoInstance);
+        }
+    };
     GWBASICApp.prototype.renderMemo = function () {
         var _this = this;
         Object.keys(this.uiVars).forEach(function (n) { delete _this.uiVars[n]; });
@@ -151,11 +158,7 @@ var GWBASICApp = /** @class */ (function () {
             for (var _i = 0, _a = this.memo.varnames; _i < _a.length; _i++) {
                 var varname = _a[_i];
                 var varvalue = this.memo.read(varname);
-                var ui = {
-                    container: wu.div({ class: 'var' }).el,
-                    name: wu.span({ class: 'name' }).text(varname).el,
-                    value: wu.span({ class: 'value' }).text(varvalue).el
-                };
+                var ui = this.renderVarValue(varname, varvalue);
                 ui.container.appendChild(ui.name);
                 ui.container.appendChild(ui.value);
                 this.uiVars[varname] = ui;
@@ -170,11 +173,7 @@ var GWBASICApp = /** @class */ (function () {
                 ui.value.innerText = newvalue;
             }
             else {
-                ui = {
-                    container: wu.div({ class: 'var' }).el,
-                    name: wu.span({ class: 'name' }).text(varname).el,
-                    value: wu.span({ class: 'value' }).text(newvalue).el
-                };
+                ui = this.renderVarValue(varname, newvalue);
                 ui.container.appendChild(ui.name);
                 ui.container.appendChild(ui.value);
                 this.uiVars[varname] = ui;
@@ -190,6 +189,24 @@ var GWBASICApp = /** @class */ (function () {
                 delete this.uiVars[varname];
             }
         }
+    };
+    GWBASICApp.prototype.renderVarValue = function (varname, varvalue) {
+        var clss = "";
+        var renderFn = function (value) {
+            return wu.span({ class: 'value' + clss }).text("Function").el;
+        };
+        var render = function (value) {
+            return wu.span({ class: 'value' + clss }).text(value).el;
+        };
+        if (varvalue instanceof ExtFun_1.Fun) {
+            clss += " Fun";
+            render = renderFn;
+        }
+        return {
+            container: wu.div({ class: 'var' + clss }).el,
+            name: wu.span({ class: 'name' + clss }).text(varname).el,
+            value: render(varvalue)
+        };
     };
     Object.defineProperty(GWBASICApp.prototype, "vmPrinter", {
         //#endregion
