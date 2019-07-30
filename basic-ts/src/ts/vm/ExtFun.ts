@@ -1,9 +1,18 @@
+import { SourceUnit } from "./SourceUnit";
+import { CallStatement } from "../ast/CallStatement";
+import { BasicVm } from "./BasicVm";
+
 /**
  * Контекст вызова внешней функции
  */
 export class CallCtx {
-    procedure?: {
-        name: string
+    readonly call: CallStatement
+    readonly source: SourceUnit
+    readonly vm:BasicVm
+    constructor(vm:BasicVm, source:SourceUnit, call:CallStatement){
+        this.call = call
+        this.source = source
+        this.vm = vm
     }
 }
 

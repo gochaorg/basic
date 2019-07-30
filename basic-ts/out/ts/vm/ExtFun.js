@@ -17,7 +17,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * Контекст вызова внешней функции
  */
 var CallCtx = /** @class */ (function () {
-    function CallCtx() {
+    function CallCtx(vm, source, call) {
+        this.call = call;
+        this.source = source;
+        this.vm = vm;
     }
     return CallCtx;
 }());

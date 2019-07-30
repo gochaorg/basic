@@ -142,10 +142,7 @@ export class BasicVm {
         const fnInst = this.memo.read(name)
         if( typeof(fnInst)=='object' && fnInst instanceof ExtFun ){
             const fn = fnInst as ExtFun
-            const ctx = new CallCtx()
-            ctx.procedure = {
-                name: name
-            }
+            const ctx = new CallCtx(this, this.source, callst)            
             fn.apply(ctx, args)
         }else if( typeof(fnInst)=='function' ){
             const fn = fnInst as Function

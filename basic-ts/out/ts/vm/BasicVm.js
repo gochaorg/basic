@@ -156,10 +156,7 @@ var BasicVm = /** @class */ (function () {
         var fnInst = this.memo.read(name);
         if (typeof (fnInst) == 'object' && fnInst instanceof ExtFun_1.ExtFun) {
             var fn = fnInst;
-            var ctx = new ExtFun_1.CallCtx();
-            ctx.procedure = {
-                name: name
-            };
+            var ctx = new ExtFun_1.CallCtx(this, this.source, callst);
             fn.apply(ctx, args);
         }
         else if (typeof (fnInst) == 'function') {
