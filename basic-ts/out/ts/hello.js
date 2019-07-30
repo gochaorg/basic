@@ -144,11 +144,22 @@ var GWBASICApp = /** @class */ (function () {
         configurable: true
     });
     GWBASICApp.prototype.renderMemo = function () {
+        var _this = this;
+        Object.keys(this.uiVars).forEach(function (n) { delete _this.uiVars[n]; });
         if (this.ui.memoDump) {
             this.ui.memoDump.innerHTML = '';
             for (var _i = 0, _a = this.memo.varnames; _i < _a.length; _i++) {
                 var varname = _a[_i];
                 var varvalue = this.memo.read(varname);
+                var ui = {
+                    container: wu.div({ class: 'var' }).el,
+                    name: wu.span({ class: 'name' }).text(varname).el,
+                    value: wu.span({ class: 'value' }).text(varvalue).el
+                };
+                ui.container.appendChild(ui.name);
+                ui.container.appendChild(ui.value);
+                this.uiVars[varname] = ui;
+                this.ui.memoDump.appendChild(ui.container);
             }
         }
     };
@@ -170,6 +181,13 @@ var GWBASICApp = /** @class */ (function () {
                 if (this.ui.memoDump) {
                     this.ui.memoDump.appendChild(ui.container);
                 }
+            }
+        }
+        else {
+            var ui = this.uiVars[varname];
+            if (this.ui.memoDump && ui) {
+                this.ui.memoDump.removeChild(ui.container);
+                delete this.uiVars[varname];
             }
         }
     };

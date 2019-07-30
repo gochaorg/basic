@@ -23,11 +23,27 @@ export class Memo {
     debug:boolean = false
 
     /**
+     * Игнорирование регистра символов в именах переменных
+     */
+    ignoreCase:boolean = true
+
+    /**
      * Чтение значения
      * @param varname имя переменной
      */
     read(varname:string,indexes?:any[]):any { 
         let v = this.values[varname]
+
+        if( v==undefined && this.ignoreCase ){
+            const matched = Object.keys(this.values).filter( (x,y,z)=>{ 
+                return x.toUpperCase() == varname.toUpperCase(); } 
+            );
+
+            if( matched.length>0 ){
+                v = this.values[matched[0]]
+            }
+        }
+
         if( indexes ){
             const arr:any[] = []
             for( let a of indexes ){ arr.push(a) }
@@ -47,6 +63,12 @@ export class Memo {
         return v
     }
 
+    protected emit( varname:string, from:any, to:any, indexes?:any[] ) {
+        for( let ls of this.listeners ){
+            ls( varname, from, to, indexes )
+        }
+    }
+
     /**
      * Запись значения памяти
      * @param varname имя переменной
@@ -60,12 +82,32 @@ export class Memo {
 
         if( indexes ){
             let arr : Array<any> = []
-            if( this.values[varname] instanceof Array 
-            ||  this.values[varname] instanceof Object 
+            let v = this.values[varname]
+            if( v == undefined && this.ignoreCase ){
+                const matchedVarNames = Object.keys(this.values).filter( (x,y,z)=>{ 
+                    return x.toUpperCase() == varname.toUpperCase(); } 
+                );
+                if( matchedVarNames.length>0 ){
+                    v = this.values[matchedVarNames[0]]
+                }
+            }
+
+            if( v instanceof Array 
+            ||  v instanceof Object 
             ){
-                arr = this.values[varname]
+                arr = v
                 if( this.debug )console.log(`resolved ${varname} as []`)
-            }else{
+            }else{                
+                const matchedVarNames = Object.keys(this.values).filter( (x,y,z)=>{ 
+                    return x.toUpperCase() == varname.toUpperCase(); } 
+                );
+                matchedVarNames.forEach( mname => {
+                    if( mname!=varname ){
+                        const old = this.values[mname];
+                        delete this.values[mname];
+                        this.emit( mname, old, undefined );
+                    }
+                });
                 this.values[varname] = arr
                 if( this.debug )console.log(`assign ${varname} = []`)
             }
@@ -92,18 +134,31 @@ export class Memo {
                 if( this.debug )console.log(`assign [${idx}] = ${value}`)                
             }
 
-            for( let ls of this.listeners ){
-                ls( varname, old, value, aindexes )
-            }
-
-            return
+            this.emit( varname, old, value, aindexes );
+            return;
         }
 
         if( this.debug )console.log(`debug write var ${varname} = ${value}`)
-        const old = this.values[varname]
-        this.values[varname] = value
-        for( let ls of this.listeners ){
-            ls( varname, old, value )
+
+        if( this.ignoreCase ){
+            const matched = Object.keys(this.values).filter( (x,y,z)=>{ 
+                return x.toUpperCase() == varname.toUpperCase(); } 
+            );
+
+            matched.forEach( n => {
+                if( n!=varname ){
+                    const old = this.values[n];
+                    delete this.values[n];
+                    this.emit(n,old,undefined);
+                }
+            });
+            const old = this.values[varname];
+            this.values[varname] = value;
+            this.emit(varname,old,value);
+        }else{
+            const old = this.values[varname];
+            this.values[varname] = value;
+            this.emit(varname,old,value);
         }
     }
 

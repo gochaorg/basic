@@ -119,10 +119,20 @@ class GWBASICApp {
         setTimeout(()=>{this.renderMemo()},1)
     }
     renderMemo(){
+        Object.keys(this.uiVars).forEach( n=>{delete this.uiVars[n]} )
         if( this.ui.memoDump ){
             this.ui.memoDump.innerHTML = ''
             for( const varname of this.memo.varnames ){
                 const varvalue = this.memo.read(varname)
+                const ui = {
+                    container: wu.div({class:'var'}).el,
+                    name: wu.span({class:'name'}).text(varname).el,
+                    value: wu.span({class:'value'}).text(varvalue).el
+                }
+                ui.container.appendChild( ui.name )
+                ui.container.appendChild( ui.value )
+                this.uiVars[varname] = ui
+                this.ui.memoDump.appendChild( ui.container )                
             }
         }
     }
@@ -144,6 +154,12 @@ class GWBASICApp {
                 if( this.ui.memoDump ){
                     this.ui.memoDump.appendChild( ui.container )
                 }
+            }
+        }else{
+            let ui = this.uiVars[varname]
+            if( this.ui.memoDump && ui ){
+                this.ui.memoDump.removeChild( ui.container )
+                delete this.uiVars[varname]
             }
         }
     }

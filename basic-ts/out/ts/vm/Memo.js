@@ -17,6 +17,10 @@ var Memo = /** @class */ (function () {
          * Выводить на консоль изменения памяти
          */
         this.debug = false;
+        /**
+         * Игнорирование регистра символов в именах переменных
+         */
+        this.ignoreCase = true;
     }
     /**
      * Чтение значения
@@ -24,6 +28,14 @@ var Memo = /** @class */ (function () {
      */
     Memo.prototype.read = function (varname, indexes) {
         var v = this.values[varname];
+        if (v == undefined && this.ignoreCase) {
+            var matched = Object.keys(this.values).filter(function (x, y, z) {
+                return x.toUpperCase() == varname.toUpperCase();
+            });
+            if (matched.length > 0) {
+                v = this.values[matched[0]];
+            }
+        }
         if (indexes) {
             var arr = [];
             for (var _i = 0, indexes_1 = indexes; _i < indexes_1.length; _i++) {
@@ -47,12 +59,19 @@ var Memo = /** @class */ (function () {
         }
         return v;
     };
+    Memo.prototype.emit = function (varname, from, to, indexes) {
+        for (var _i = 0, _a = this.listeners; _i < _a.length; _i++) {
+            var ls = _a[_i];
+            ls(varname, from, to, indexes);
+        }
+    };
     /**
      * Запись значения памяти
      * @param varname имя переменной
      * @param value значение переменной
      */
     Memo.prototype.write = function (varname, value, indexes) {
+        var _this = this;
         var aindexes = [];
         if (indexes) {
             for (var _i = 0, indexes_2 = indexes; _i < indexes_2.length; _i++) {
@@ -62,13 +81,32 @@ var Memo = /** @class */ (function () {
         }
         if (indexes) {
             var arr = [];
-            if (this.values[varname] instanceof Array
-                || this.values[varname] instanceof Object) {
-                arr = this.values[varname];
+            var v = this.values[varname];
+            if (v == undefined && this.ignoreCase) {
+                var matchedVarNames = Object.keys(this.values).filter(function (x, y, z) {
+                    return x.toUpperCase() == varname.toUpperCase();
+                });
+                if (matchedVarNames.length > 0) {
+                    v = this.values[matchedVarNames[0]];
+                }
+            }
+            if (v instanceof Array
+                || v instanceof Object) {
+                arr = v;
                 if (this.debug)
                     console.log("resolved " + varname + " as []");
             }
             else {
+                var matchedVarNames = Object.keys(this.values).filter(function (x, y, z) {
+                    return x.toUpperCase() == varname.toUpperCase();
+                });
+                matchedVarNames.forEach(function (mname) {
+                    if (mname != varname) {
+                        var old_1 = _this.values[mname];
+                        delete _this.values[mname];
+                        _this.emit(mname, old_1, undefined);
+                    }
+                });
                 this.values[varname] = arr;
                 if (this.debug)
                     console.log("assign " + varname + " = []");
@@ -88,27 +126,38 @@ var Memo = /** @class */ (function () {
                         console.log("assign [" + idx + "] = []");
                 }
             }
-            var old_1 = undefined;
+            var old = undefined;
             if (indexes.length == 1) {
                 var idx = indexes[0];
-                old_1 = arr[idx];
+                old = arr[idx];
                 arr[idx] = value;
                 if (this.debug)
                     console.log("assign [" + idx + "] = " + value);
             }
-            for (var _a = 0, _b = this.listeners; _a < _b.length; _a++) {
-                var ls = _b[_a];
-                ls(varname, old_1, value, aindexes);
-            }
+            this.emit(varname, old, value, aindexes);
             return;
         }
         if (this.debug)
             console.log("debug write var " + varname + " = " + value);
-        var old = this.values[varname];
-        this.values[varname] = value;
-        for (var _c = 0, _d = this.listeners; _c < _d.length; _c++) {
-            var ls = _d[_c];
-            ls(varname, old, value);
+        if (this.ignoreCase) {
+            var matched = Object.keys(this.values).filter(function (x, y, z) {
+                return x.toUpperCase() == varname.toUpperCase();
+            });
+            matched.forEach(function (n) {
+                if (n != varname) {
+                    var old_2 = _this.values[n];
+                    delete _this.values[n];
+                    _this.emit(n, old_2, undefined);
+                }
+            });
+            var old = this.values[varname];
+            this.values[varname] = value;
+            this.emit(varname, old, value);
+        }
+        else {
+            var old = this.values[varname];
+            this.values[varname] = value;
+            this.emit(varname, old, value);
         }
     };
     Object.defineProperty(Memo.prototype, "varnames", {
