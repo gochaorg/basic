@@ -18,10 +18,10 @@ var GotoStatement = /** @class */ (function (_super) {
     __extends(GotoStatement, _super);
     function GotoStatement(begin, end, line) {
         var _this = _super.call(this) || this;
+        _this.kind = 'Goto';
         _this.begin = begin;
         _this.end = end;
         _this.gotoLine = line;
-        _this.kind = 'Goto';
         return _this;
     }
     return GotoStatement;

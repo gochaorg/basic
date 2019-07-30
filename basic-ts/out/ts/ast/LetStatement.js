@@ -18,11 +18,11 @@ var LetStatement = /** @class */ (function (_super) {
     __extends(LetStatement, _super);
     function LetStatement(begin, end, variable, value) {
         var _this = _super.call(this) || this;
+        _this.kind = 'Let';
         _this.begin = begin;
         _this.end = end;
         _this.variable = variable;
         _this.value = value;
-        _this.kind = 'Let';
         return _this;
     }
     Object.defineProperty(LetStatement.prototype, "varname", {

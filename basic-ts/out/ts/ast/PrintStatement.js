@@ -18,11 +18,11 @@ var PrintStatement = /** @class */ (function (_super) {
     __extends(PrintStatement, _super);
     function PrintStatement(begin, end, print, args) {
         var _this = _super.call(this) || this;
+        _this.kind = 'Print';
         _this.begin = begin;
         _this.end = end;
         _this.print = print;
         _this.args = args;
-        _this.kind = 'Print';
         return _this;
     }
     return PrintStatement;

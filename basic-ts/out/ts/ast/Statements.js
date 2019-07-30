@@ -18,6 +18,7 @@ var Statements = /** @class */ (function (_super) {
     __extends(Statements, _super);
     function Statements(begin, end, statements) {
         var _this = _super.call(this) || this;
+        _this.kind = "Statements";
         _this.begin = begin;
         _this.end = end;
         _this.statements = statements;

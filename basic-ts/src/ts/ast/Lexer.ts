@@ -17,6 +17,7 @@ export interface Lex {
  * Абстрактная поддержка лексем
  */
 export abstract class AbstractLex implements Lex {
+    abstract readonly kind:string;
     readonly begin: number;
     readonly end: number;
     constructor(begin?:number, end?:number){
@@ -149,6 +150,7 @@ export class Chars {
  * Лексема пробельного текста
  */
 export class WhiteSpaceLex extends AbstractLex {
+    readonly kind = 'WhiteSpaceLex'
     constructor(begin?:number, end?:number){
         super(begin,end)
     }
@@ -169,15 +171,15 @@ export class WhiteSpaceLex extends AbstractLex {
 /**
  * Лексема ключевых слов
  */
-export class KeyWordLex extends AbstractLex {
+export abstract class KeyWordLex extends AbstractLex {
     readonly keyWord:string
     constructor(keyWord:string, begin?:number, end?:number){
         super(begin,end)
         this.keyWord = keyWord
     }
-    static defaultKeyWordBuilder : (kw:string, kwBegin:number, kwEnd:number)=>Lex = (kw,kwBegin,kwEnd) => {
-        return new KeyWordLex(kw, kwBegin, kwEnd)
-    }
+    // static defaultKeyWordBuilder : (kw:string, kwBegin:number, kwEnd:number)=>Lex = (kw,kwBegin,kwEnd) => {
+    //     return new KeyWordLex(kw, kwBegin, kwEnd)
+    // }
     static parser(ignorecase:boolean,keyWords:string[], keyWordBuilder?:(kw:string, kwBegin:number, kwEnd:number)=>Lex ) {
         keyWords = keyWords.sort( (a,b) => 0-(a.length - b.length) )
         return (str:string, off:number):Lex|null=>{
@@ -191,13 +193,17 @@ export class KeyWordLex extends AbstractLex {
                     if( keyWordBuilder ){
                         return keyWordBuilder(ss,off,off+ss.length)
                     }else{
-                        return new KeyWordLex(ss,off,off+ss.length)
+                        return new ParsedKeyWordLex(ss,off,off+ss.length)
                     }
                 }
             }
             return null
         }
     }
+}
+
+export class ParsedKeyWordLex extends KeyWordLex {
+    readonly kind = "ParsedKeyWordLex"
 }
 
 /**
@@ -332,18 +338,20 @@ export class StatementLex extends KeyWordLex {
 /**
  * Пустая лексема
  */
-export class DummyLex extends AbstractLex {}
+export class DummyLex extends AbstractLex {
+    readonly kind = 'DummyLex'
+}
 
 /**
  * Лексема коментарий
  */
 export class RemLex extends AbstractLex {
-    readonly comment:string
     readonly kind:string
+    readonly comment:string
     constructor(cmnt:string, begin?:number, end?:number){
         super(begin,end)
-        this.comment = cmnt
         this.kind = 'RemLex'
+        this.comment = cmnt
     }
 
     static parse(str:string, off:number):Lex|null {
@@ -535,12 +543,11 @@ export class StringLex extends AbstractLex {
  * Идентификатор
  */
 export class IDLex extends AbstractLex {
+    readonly kind:string = 'ID'
     readonly id:string
-    readonly kind:string
     constructor(id:string, begin?:number, end?:number){
         super(begin,end)
         this.id = id
-        this.kind = 'ID'
     }
     static parse(str:string, off:number):Lex|null {
         if( off>=str.length )return null

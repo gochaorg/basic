@@ -18,10 +18,10 @@ var GoSubStatement = /** @class */ (function (_super) {
     __extends(GoSubStatement, _super);
     function GoSubStatement(begin, end, line) {
         var _this = _super.call(this) || this;
+        _this.kind = 'Gosub';
         _this.begin = begin;
         _this.end = end;
         _this.gotoLine = line;
-        _this.kind = 'Gosub';
         return _this;
     }
     return GoSubStatement;

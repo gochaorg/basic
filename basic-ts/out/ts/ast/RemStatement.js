@@ -18,10 +18,10 @@ var RemStatement = /** @class */ (function (_super) {
     __extends(RemStatement, _super);
     function RemStatement(begin, end, rem) {
         var _this = _super.call(this) || this;
+        _this.kind = 'Rem';
         _this.begin = begin;
         _this.end = end;
         _this.rem = rem;
-        _this.kind = 'Rem';
         return _this;
     }
     return RemStatement;

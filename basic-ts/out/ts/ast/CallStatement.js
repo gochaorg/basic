@@ -18,12 +18,12 @@ var CallStatement = /** @class */ (function (_super) {
     __extends(CallStatement, _super);
     function CallStatement(begin, end, call, name, args) {
         var _this = _super.call(this) || this;
+        _this.kind = 'Call';
         _this.begin = begin;
         _this.end = end;
         _this.call = call;
         _this.name = name;
         _this.args = args;
-        _this.kind = 'Call';
         return _this;
     }
     return CallStatement;

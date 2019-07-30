@@ -18,12 +18,12 @@ var IfStatement = /** @class */ (function (_super) {
     __extends(IfStatement, _super);
     function IfStatement(begin, end, boolExp, trueStatement, falseStatement) {
         var _this = _super.call(this) || this;
+        _this.kind = 'If';
         _this.begin = begin;
         _this.end = end;
         _this.boolExp = boolExp;
         _this.trueStatement = trueStatement;
         _this.falseStatement = falseStatement;
-        _this.kind = 'If';
         return _this;
     }
     return IfStatement;

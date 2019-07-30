@@ -18,10 +18,10 @@ var ReturnStatement = /** @class */ (function (_super) {
     __extends(ReturnStatement, _super);
     function ReturnStatement(begin, end, line) {
         var _this = _super.call(this) || this;
+        _this.kind = 'Return';
         _this.begin = begin;
         _this.end = end;
         _this.gotoLine = line;
-        _this.kind = 'Return';
         return _this;
     }
     return ReturnStatement;

@@ -16,6 +16,10 @@ var Args = /** @class */ (function () {
          * Последовательно выполняемые команды
          */
         this.commands = [];
+        /**
+         * Кодировка файла
+         */
+        this.encoding = 'utf-8';
     }
     return Args;
 }());
@@ -46,8 +50,29 @@ function processArgs(commandLineArgs) {
             args.shift();
             var filename_1 = args.shift();
             if (filename_1) {
-                q.commands.push(function () { runFile(filename_1); });
+                q.commands.push(function () { runFile(filename_1, q.encoding); });
             }
+            return parseArgs;
+        }
+        if (args.length > 1 && args[0] == '--ast2json') {
+            args.shift();
+            var filename_2 = args.shift();
+            if (filename_2) {
+                var outfile_1 = undefined;
+                if (args.length > 1 && args[0] == '--out') {
+                    args.shift();
+                    outfile_1 = args.shift();
+                }
+                q.commands.push(function () {
+                    ast2json(filename_2, q.encoding, outfile_1);
+                });
+            }
+            return parseArgs;
+        }
+        if (args.length > 1 && args[0] == '--encoding') {
+            args.shift();
+            q.encoding = args.shift();
+            return parseArgs;
         }
         args.shift();
         return parseArgs;
@@ -82,10 +107,12 @@ function processArgs(commandLineArgs) {
 /**
  * Выполнить файл
  * @param filename имя файла
+ * @param encoding кодировка файла
  */
-function runFile(filename) {
+function runFile(filename, encoding) {
+    if (encoding === void 0) { encoding = 'utf-8'; }
     //console.log(`run file ${filename}`)
-    var basicSrc = fs_1.default.readFileSync(filename, { encoding: 'utf-8' });
+    var basicSrc = fs_1.default.readFileSync(filename, { encoding: encoding });
     var su = new SourceUnit_1.SourceUnit().parse(basicSrc);
     var vm = new BasicVm_1.BasicVm(su);
     vm.ip = 0;
@@ -97,8 +124,48 @@ function runFile(filename) {
  * Отобразить справку
  */
 function showHelp(a) {
-    console.log("tsbasic");
-    console.log(a);
+    console.log("tsbasic command line syntax:");
+    console.log("============================");
+    console.log("");
+    console.log("common syntax");
+    console.log("-------------");
+    console.log("    tsbasic ::= `tsbasic` (runFile|keyValues)");
+    console.log("    runFile ::= source_file_name");
+    console.log("    keyValues ::= { runFileKey ");
+    console.log("                  | ast2json");
+    console.log("                  | encoding");
+    console.log("                  }");
+    console.log("    runFileKey ::= (`-r` | `--run` ) source_file_name");
+    console.log("    ast2json   ::= `--ast2json` source_file_name [ `--out` output_file_name ]");
+    console.log("    encoding   ::= `--encoding` encoding");
+    console.log("");
+    console.log("run file");
+    console.log("--------");
+    console.log("    tsbasic basic_file.bas");
+    console.log("    tsbasic -r basic_file.bas");
+    console.log("    tsbasic --run basic_file.bas");
+    console.log("");
+    console.log("ast 2 json");
+    console.log("----------");
+    console.log("    tsbasic --ast2json basic_file.bas --out ast.json");
+}
+/**
+ * Парсинг файла и вывод его дерева AST в файл
+ * @param filename basic файл
+ * @param encoding кодировка файла
+ * @param outputFilename файл в который производиться вывод
+ */
+function ast2json(filename, encoding, outputFilename) {
+    if (encoding === void 0) { encoding = 'utf-8'; }
+    var basicSrc = fs_1.default.readFileSync(filename, { encoding: encoding });
+    var su = new SourceUnit_1.SourceUnit().parse(basicSrc);
+    var jsn = JSON.stringify(su, undefined, 2);
+    if (outputFilename) {
+        fs_1.default.writeFileSync(outputFilename, jsn, { encoding: encoding });
+    }
+    else {
+        console.log(jsn);
+    }
 }
 var tsArgs = processArgs(process.argv);
 tsArgs.commands.forEach(function (a) { return a(tsArgs); });

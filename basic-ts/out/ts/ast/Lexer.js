@@ -217,7 +217,9 @@ exports.Chars = Chars;
 var WhiteSpaceLex = /** @class */ (function (_super) {
     __extends(WhiteSpaceLex, _super);
     function WhiteSpaceLex(begin, end) {
-        return _super.call(this, begin, end) || this;
+        var _this = _super.call(this, begin, end) || this;
+        _this.kind = 'WhiteSpaceLex';
+        return _this;
     }
     WhiteSpaceLex.parse = function (str, off) {
         if (off >= str.length)
@@ -248,6 +250,9 @@ var KeyWordLex = /** @class */ (function (_super) {
         _this.keyWord = keyWord;
         return _this;
     }
+    // static defaultKeyWordBuilder : (kw:string, kwBegin:number, kwEnd:number)=>Lex = (kw,kwBegin,kwEnd) => {
+    //     return new KeyWordLex(kw, kwBegin, kwEnd)
+    // }
     KeyWordLex.parser = function (ignorecase, keyWords, keyWordBuilder) {
         keyWords = keyWords.sort(function (a, b) { return 0 - (a.length - b.length); });
         return function (str, off) {
@@ -263,19 +268,26 @@ var KeyWordLex = /** @class */ (function (_super) {
                         return keyWordBuilder(ss, off, off + ss.length);
                     }
                     else {
-                        return new KeyWordLex(ss, off, off + ss.length);
+                        return new ParsedKeyWordLex(ss, off, off + ss.length);
                     }
                 }
             }
             return null;
         };
     };
-    KeyWordLex.defaultKeyWordBuilder = function (kw, kwBegin, kwEnd) {
-        return new KeyWordLex(kw, kwBegin, kwEnd);
-    };
     return KeyWordLex;
 }(AbstractLex));
 exports.KeyWordLex = KeyWordLex;
+var ParsedKeyWordLex = /** @class */ (function (_super) {
+    __extends(ParsedKeyWordLex, _super);
+    function ParsedKeyWordLex() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.kind = "ParsedKeyWordLex";
+        return _this;
+    }
+    return ParsedKeyWordLex;
+}(KeyWordLex));
+exports.ParsedKeyWordLex = ParsedKeyWordLex;
 /**
  * Лексема начала новой строки
  */
@@ -540,7 +552,9 @@ exports.StatementLex = StatementLex;
 var DummyLex = /** @class */ (function (_super) {
     __extends(DummyLex, _super);
     function DummyLex() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        _this.kind = 'DummyLex';
+        return _this;
     }
     return DummyLex;
 }(AbstractLex));
@@ -552,8 +566,8 @@ var RemLex = /** @class */ (function (_super) {
     __extends(RemLex, _super);
     function RemLex(cmnt, begin, end) {
         var _this = _super.call(this, begin, end) || this;
-        _this.comment = cmnt;
         _this.kind = 'RemLex';
+        _this.comment = cmnt;
         return _this;
     }
     RemLex.parse = function (str, off) {
@@ -759,8 +773,8 @@ var IDLex = /** @class */ (function (_super) {
     __extends(IDLex, _super);
     function IDLex(id, begin, end) {
         var _this = _super.call(this, begin, end) || this;
-        _this.id = id;
         _this.kind = 'ID';
+        _this.id = id;
         return _this;
     }
     IDLex.parse = function (str, off) {
