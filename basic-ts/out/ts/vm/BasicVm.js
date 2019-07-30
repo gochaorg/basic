@@ -38,13 +38,20 @@ var BasicVm = /** @class */ (function () {
      * @param exp выражение
      */
     BasicVm.prototype.evalExpression = function (exp) {
+        var _this = this;
         if (exp instanceof OperatorExp_1.LiteralExpression) {
             return exp.value;
         }
         if (exp instanceof OperatorExp_1.VarArrIndexRef) {
-            var arr = this.memo.read(exp.varname);
-            if (arr == undefined) {
+            var varInst = this.memo.read(exp.varname);
+            if (varInst == undefined) {
                 throw new Error("undefined variable " + exp.varname);
+            }
+            if (varInst instanceof ExtFun_1.Fun) {
+                var ctx = new ExtFun_1.CallCtx(this, exp);
+                var fn = varInst;
+                var args = exp.indexes.map(function (e) { return _this.evalExpression(e); });
+                return fn.apply(ctx, args);
             }
             var res = this.memo.read(exp.varname, exp.indexes);
             return res;
@@ -162,9 +169,9 @@ var BasicVm = /** @class */ (function () {
     //#endregion
     BasicVm.prototype.callProcudure = function (name, args, callst) {
         var fnInst = this.memo.read(name);
-        if (typeof (fnInst) == 'object' && fnInst instanceof ExtFun_1.ExtFun) {
+        if (typeof (fnInst) == 'object' && fnInst instanceof ExtFun_1.Fun) {
             var fn = fnInst;
-            var ctx = new ExtFun_1.CallCtx(this, this.source, callst);
+            var ctx = new ExtFun_1.CallCtx(this, callst);
             fn.apply(ctx, args);
         }
         else if (typeof (fnInst) == 'function') {

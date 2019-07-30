@@ -17,65 +17,111 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * Контекст вызова внешней функции
  */
 var CallCtx = /** @class */ (function () {
-    function CallCtx(vm, source, call) {
+    function CallCtx(vm, call) {
         this.call = call;
-        this.source = source;
         this.vm = vm;
     }
+    Object.defineProperty(CallCtx.prototype, "source", {
+        get: function () { return this.vm.source; },
+        enumerable: true,
+        configurable: true
+    });
     return CallCtx;
 }());
 exports.CallCtx = CallCtx;
 /**
  * Внешняя функция
  */
-var ExtFun = /** @class */ (function () {
-    function ExtFun() {
+var Fun = /** @class */ (function () {
+    function Fun() {
     }
     /**
      * Вызов внешней функции
      * @param ctx контекст вызова функции
      * @param args аргументы функции
      */
-    ExtFun.prototype.apply = function (ctx, args) {
+    Fun.prototype.apply = function (ctx, args) {
     };
-    return ExtFun;
+    return Fun;
 }());
-exports.ExtFun = ExtFun;
+exports.Fun = Fun;
 /**
  * Вызов функции без аргументов
  */
-var ExtFun0 = /** @class */ (function (_super) {
-    __extends(ExtFun0, _super);
-    function ExtFun0(fn0) {
+var Fun0 = /** @class */ (function (_super) {
+    __extends(Fun0, _super);
+    function Fun0(fn0) {
         var _this = _super.call(this) || this;
         _this.fn0 = fn0;
         return _this;
     }
-    ExtFun0.prototype.apply = function (ctx, args) {
-        this.fn0(ctx);
+    Fun0.prototype.apply = function (ctx, args) {
+        return this.fn0(ctx);
     };
-    return ExtFun0;
-}(ExtFun));
-exports.ExtFun0 = ExtFun0;
+    return Fun0;
+}(Fun));
+exports.Fun0 = Fun0;
 /**
  * Вызов функции без аргументов
  */
-var ExtFun1 = /** @class */ (function (_super) {
-    __extends(ExtFun1, _super);
-    function ExtFun1(fn1) {
+var Fun1 = /** @class */ (function (_super) {
+    __extends(Fun1, _super);
+    function Fun1(fn1) {
         var _this = _super.call(this) || this;
         _this.fn1 = fn1;
         return _this;
     }
-    ExtFun1.prototype.apply = function (ctx, args) {
+    Fun1.prototype.apply = function (ctx, args) {
         if (args && args.length > 0) {
-            this.fn1(ctx, args[0]);
+            return this.fn1(ctx, args[0]);
         }
         else {
             throw new Error("can't call procedure " + name);
         }
     };
-    return ExtFun1;
-}(ExtFun));
-exports.ExtFun1 = ExtFun1;
+    return Fun1;
+}(Fun));
+exports.Fun1 = Fun1;
+/**
+ * Вызов функции без аргументов
+ */
+var Fun2 = /** @class */ (function (_super) {
+    __extends(Fun2, _super);
+    function Fun2(fn2) {
+        var _this = _super.call(this) || this;
+        _this.fn2 = fn2;
+        return _this;
+    }
+    Fun2.prototype.apply = function (ctx, args) {
+        if (args && args.length > 1) {
+            return this.fn2(ctx, args[0], args[1]);
+        }
+        else {
+            throw new Error("can't call procedure " + name);
+        }
+    };
+    return Fun2;
+}(Fun));
+exports.Fun2 = Fun2;
+/**
+ * Вызов функции без аргументов
+ */
+var Fun3 = /** @class */ (function (_super) {
+    __extends(Fun3, _super);
+    function Fun3(fn3) {
+        var _this = _super.call(this) || this;
+        _this.fn3 = fn3;
+        return _this;
+    }
+    Fun3.prototype.apply = function (ctx, args) {
+        if (args && args.length > 2) {
+            return this.fn3(ctx, args[0], args[1], args[2]);
+        }
+        else {
+            throw new Error("can't call procedure " + name);
+        }
+    };
+    return Fun3;
+}(Fun));
+exports.Fun3 = Fun3;
 //# sourceMappingURL=ExtFun.js.map

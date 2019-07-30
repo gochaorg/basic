@@ -37,3 +37,8 @@ export type ValidAstType =
     PrintStatement |
     CallStatement |
     Statements ;
+
+    /**
+     * Базовый тип в AST дереве
+     */
+export type AstNode = Statement | Expression;

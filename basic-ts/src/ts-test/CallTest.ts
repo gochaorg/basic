@@ -1,20 +1,21 @@
 import * as su from '../ts/vm/SourceUnit'
 import { BasicVm } from '../ts/vm/BasicVm'
 import { Memo } from '../ts/vm/Memo'
-import { ExtFun, ExtFun0 } from '../ts/vm/ExtFun';
+import { Fun, Fun0, Fun2 } from '../ts/vm/ExtFun';
 import { astToBasic } from '../ts/ast/AstToBasic';
 
 console.log('== call test ==')
 const src1 = 
     '10 CALL LIST\n'+
-    '12 CALL DUMP'
+    '12 CALL DUMP\n'+
+    '20 PRINT SUMM(1,2)'
 
 console.log( "source:", src1 )
 const su1 = su.parse(src1)
 console.log( "parsed:",su1 )
 
 const vm1 = new BasicVm(su1)
-const fnTEST1 = new ExtFun0( ctx=>{
+const fnTEST1 = new Fun0( ctx=>{
     console.log("list of source")
     let src = ""
     ctx.source.lines.forEach( sl => {
@@ -24,9 +25,18 @@ const fnTEST1 = new ExtFun0( ctx=>{
 })
 vm1.memo.write('LIST',fnTEST1)
 
-vm1.memo.write('DUMP', new ExtFun0( ctx=>{
+vm1.memo.write('DUMP', new Fun0( ctx=>{
     console.log("dump")
     console.log(ctx.vm.memo)
+}))
+
+vm1.memo.write('SUMM', new Fun2( (ctx,a,b) => { 
+    //console.log("call summ1",a,b)
+    if( typeof(a)=='number' && typeof(b)=='number' )return a+b
+    if( typeof(a)=='number' && typeof(b)=='string' )return a+b
+    if( typeof(a)=='string' && typeof(b)=='string' )return a+b
+    if( typeof(a)=='string' && typeof(b)=='number' )return a+b
+    return undefined
 }))
 
 console.log("run")

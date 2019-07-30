@@ -13,7 +13,7 @@ import { ReturnStatement } from "../ast/ReturnStatement";
 import { PrintStatement } from "../ast/PrintStatement";
 import { Printer,printers } from "./Printer";
 import { CallStatement } from "../ast/CallStatement";
-import { ExtFun, CallCtx } from "./ExtFun";
+import { Fun, CallCtx } from "./ExtFun";
 
 export class BasicVm {
     /**
@@ -44,9 +44,15 @@ export class BasicVm {
             return exp.value
         }
         if( exp instanceof VarArrIndexRef ){
-            const arr = this.memo.read( exp.varname )
-            if( arr==undefined ){
+            const varInst = this.memo.read( exp.varname )
+            if( varInst==undefined ){
                 throw new Error("undefined variable "+exp.varname)
+            }
+            if( varInst instanceof Fun ){
+                const ctx = new CallCtx(this,exp)
+                const fn = varInst
+                const args = exp.indexes.map( e => this.evalExpression(e) )
+                return fn.apply(ctx, args)
             }
             const res = this.memo.read( exp.varname, exp.indexes )
             return res
@@ -148,9 +154,9 @@ export class BasicVm {
 
     private callProcudure(name:string, args:any[], callst:CallStatement){
         const fnInst = this.memo.read(name)
-        if( typeof(fnInst)=='object' && fnInst instanceof ExtFun ){
-            const fn = fnInst as ExtFun
-            const ctx = new CallCtx(this, this.source, callst)            
+        if( typeof(fnInst)=='object' && fnInst instanceof Fun ){
+            const fn = fnInst as Fun
+            const ctx = new CallCtx(this, callst)            
             fn.apply(ctx, args)
         }else if( typeof(fnInst)=='function' ){
             const fn = fnInst as Function
