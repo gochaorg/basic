@@ -4,7 +4,10 @@
   "description": "gwbasic interpert",
   "main": "index.js",
   "dependencies": {
+    "@types/eureka-js-client": "^4.4.2",
     "@types/express": "^4.17.0",
+    "axios": "^0.19.0",
+    "eureka-js-client": "^4.5.0",
     "express": "^4.17.1"
   },
   "devDependencies": {
