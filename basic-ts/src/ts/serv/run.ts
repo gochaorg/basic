@@ -1,8 +1,8 @@
 import fs from 'fs';
-import { Conf } from './Conf';
+import { TsBasConf } from './TsBasConf';
 
 // конфигурация
-const conf = new Conf()
+const conf = new TsBasConf()
 
 /** Обработка параметров командной строки */
 function processCmdLine(){
@@ -27,6 +27,7 @@ function processCmdLine(){
 }
 
 processCmdLine()
+conf.run()
 
 // const jsnText = fs.readFileSync('src/test/serv/conf.json',{encoding:'utf-8'})
 // const jsnConf = JSON.parse(jsnText)

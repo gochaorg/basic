@@ -1,42 +1,41 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var HtmlElementBuilder = /** @class */ (function () {
-    function HtmlElementBuilder(el) {
+class HtmlElementBuilder {
+    constructor(el) {
         this.el = el;
     }
-    HtmlElementBuilder.prototype.append = function (prnt) {
+    append(prnt) {
         if (prnt) {
             prnt.appendChild(this.el);
         }
         return this;
-    };
-    HtmlElementBuilder.prototype.html = function (v) {
+    }
+    html(v) {
         this.el.innerHTML = v;
         return this;
-    };
-    HtmlElementBuilder.prototype.text = function (v) {
+    }
+    text(v) {
         this.el.textContent = v;
         return this;
-    };
-    HtmlElementBuilder.prototype.attr = function (name, val) {
+    }
+    attr(name, val) {
         this.el.setAttribute(name, val);
         return this;
-    };
-    HtmlElementBuilder.prototype.onclick = function (listener) {
-        this.el.addEventListener("click", function (ev) {
+    }
+    onclick(listener) {
+        this.el.addEventListener("click", (ev) => {
             listener(ev);
             return null;
         });
         return this;
-    };
-    return HtmlElementBuilder;
-}());
+    }
+}
 exports.HtmlElementBuilder = HtmlElementBuilder;
 function el(tagname, attribs) {
-    var el = document.createElement(tagname);
+    const el = document.createElement(tagname);
     if (attribs) {
-        for (var k in attribs) {
-            var v = attribs[k];
+        for (let k in attribs) {
+            let v = attribs[k];
             if (typeof (v) == 'string') {
                 el.setAttribute(k, v);
             }
@@ -80,15 +79,15 @@ function a(attribs) {
 }
 exports.a = a;
 function toHtml(text) {
-    var map = {
+    const map = {
         '&': '&amp;',
         '<': '&lt;',
         '>': '&gt;',
         '"': '&quot;',
         "'": '&#039;'
     };
-    return text.replace(/[&<>"']/g, function (m) {
-        var n = map[m];
+    return text.replace(/[&<>"']/g, (m) => {
+        const n = map[m];
         return n;
     });
 }

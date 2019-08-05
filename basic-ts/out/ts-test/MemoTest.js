@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Memo_1 = require("../ts/vm/Memo");
+const Memo_1 = require("../ts/vm/Memo");
 console.log('=== test memo ===');
-var mem = new Memo_1.Memo();
+const mem = new Memo_1.Memo();
 mem.values['ar1'] = [1, 2, 3, 'a', 'b', 'c'];
 mem.values['ar2'] = [[1, 2, 3], ['a', 'b', 'c']];
 console.log('read mem: ', mem.read('ar1', [1]));

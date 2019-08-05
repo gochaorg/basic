@@ -1,5 +1,5 @@
-import * as Basic from '../ts/ast/Parser'
-import * as Ast from '../ts/ast/AstVisitor'
+import * as Basic from '../../ts/ast/Parser'
+import * as Ast from '../../ts/ast/AstVisitor'
 
 console.log('== Basic parser / Ast visitor ==')
 const src1 = 

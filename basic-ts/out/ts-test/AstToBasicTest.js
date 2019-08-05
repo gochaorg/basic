@@ -7,9 +7,9 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var su = __importStar(require("../ts/vm/SourceUnit"));
-var AstToBasic_1 = require("../ts/ast/AstToBasic");
-var su1 = new su.SourceUnit;
+const su = __importStar(require("../ts/vm/SourceUnit"));
+const AstToBasic_1 = require("../ts/ast/AstToBasic");
+let su1 = new su.SourceUnit;
 console.log("parsing");
 console.log("======================");
 su1 = su1.parse('10 REM cmnt\n' +
@@ -18,7 +18,7 @@ su1 = su1.parse('10 REM cmnt\n' +
     '24 LET A = B(10,2)\n' +
     '30 PRINT "Hello"\n' +
     'RUN 10', {
-    immediateStatements: function (commands) {
+    immediateStatements(commands) {
         //console.log("== immediate commands ==")
         //commands.forEach( cmd => console.log(cmd))
     }

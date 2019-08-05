@@ -1,21 +1,21 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var LetStatement_1 = require("../ast/LetStatement");
-var OperatorExp_1 = require("../ast/OperatorExp");
-var Memo_1 = require("./Memo");
-var Num_1 = require("../common/Num");
-var RemStatement_1 = require("../ast/RemStatement");
-var RunStatement_1 = require("../ast/RunStatement");
-var GotoStatement_1 = require("../ast/GotoStatement");
-var IfStatement_1 = require("../ast/IfStatement");
-var GoSubStatement_1 = require("../ast/GoSubStatement");
-var ReturnStatement_1 = require("../ast/ReturnStatement");
-var PrintStatement_1 = require("../ast/PrintStatement");
-var Printer_1 = require("./Printer");
-var CallStatement_1 = require("../ast/CallStatement");
-var ExtFun_1 = require("./ExtFun");
-var BasicVm = /** @class */ (function () {
-    function BasicVm(source, memo) {
+const LetStatement_1 = require("../ast/LetStatement");
+const OperatorExp_1 = require("../ast/OperatorExp");
+const Memo_1 = require("./Memo");
+const Num_1 = require("../common/Num");
+const RemStatement_1 = require("../ast/RemStatement");
+const RunStatement_1 = require("../ast/RunStatement");
+const GotoStatement_1 = require("../ast/GotoStatement");
+const IfStatement_1 = require("../ast/IfStatement");
+const GoSubStatement_1 = require("../ast/GoSubStatement");
+const ReturnStatement_1 = require("../ast/ReturnStatement");
+const PrintStatement_1 = require("../ast/PrintStatement");
+const Printer_1 = require("./Printer");
+const CallStatement_1 = require("../ast/CallStatement");
+const ExtFun_1 = require("./ExtFun");
+class BasicVm {
+    constructor(source, memo) {
         this._printer = this.defaultPrinter;
         /**
          * Стек вызовов GoSub
@@ -37,27 +37,26 @@ var BasicVm = /** @class */ (function () {
      * Вычисляет выражение (expression)
      * @param exp выражение
      */
-    BasicVm.prototype.evalExpression = function (exp) {
-        var _this = this;
+    evalExpression(exp) {
         if (exp instanceof OperatorExp_1.LiteralExpression) {
             return exp.value;
         }
         if (exp instanceof OperatorExp_1.VarArrIndexRef) {
-            var varInst = this.memo.read(exp.varname);
+            const varInst = this.memo.read(exp.varname);
             if (varInst == undefined) {
                 throw new Error("undefined variable " + exp.varname);
             }
             if (varInst instanceof ExtFun_1.Fun) {
-                var ctx = new ExtFun_1.CallCtx(this, exp);
-                var fn = varInst;
-                var args = exp.indexes.map(function (e) { return _this.evalExpression(e); });
+                const ctx = new ExtFun_1.CallCtx(this, exp);
+                const fn = varInst;
+                const args = exp.indexes.map(e => this.evalExpression(e));
                 return fn.apply(ctx, args);
             }
-            var res = this.memo.read(exp.varname, exp.indexes);
+            const res = this.memo.read(exp.varname, exp.indexes);
             return res;
         }
         if (exp instanceof OperatorExp_1.VarRefExpression) {
-            var res = this.memo.read(exp.varname);
+            const res = this.memo.read(exp.varname);
             if (res == undefined)
                 throw new Error("undefined variable " + exp.varname);
             return res;
@@ -69,7 +68,7 @@ var BasicVm = /** @class */ (function () {
                 return this.evalExpression(exp.base);
             if (exp.operator.not)
                 return !this.evalExpression(exp.base);
-            throw new Error("undefined unary operator " + exp.operator.keyWord);
+            throw new Error(`undefined unary operator ${exp.operator.keyWord}`);
         }
         if (exp instanceof OperatorExp_1.BinaryOpExpression) {
             //#region math
@@ -98,8 +97,8 @@ var BasicVm = /** @class */ (function () {
             if (exp.operator.eqv)
                 return this.evalExpression(exp.left) == this.evalExpression(exp.right);
             if (exp.operator.imp) {
-                var l = this.evalExpression(exp.left);
-                var r = this.evalExpression(exp.right);
+                const l = this.evalExpression(exp.left);
+                const r = this.evalExpression(exp.right);
                 if (l) {
                     if (r) {
                         return true;
@@ -133,66 +132,57 @@ var BasicVm = /** @class */ (function () {
                 return this.evalExpression(exp.left) >= this.evalExpression(exp.right);
             }
             //#endregion
-            throw new Error("undefined binary operator " + exp.operator.keyWord);
+            throw new Error(`undefined binary operator ${exp.operator.keyWord}`);
         }
         throw new Error("undefined expression " + exp);
-    };
-    Object.defineProperty(BasicVm.prototype, "defaultPrinter", {
-        //#region Printing
-        get: function () {
-            return Printer_1.printers.console.clone().configure(function (c) {
-                c.prefix = "BASIC> ";
-            });
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(BasicVm.prototype, "printer", {
-        get: function () { return this._printer; },
-        set: function (x) {
-            if (x) {
-                this._printer = x;
-            }
-            else {
-                this._printer = this.defaultPrinter;
-            }
-        },
-        enumerable: true,
-        configurable: true
-    });
-    BasicVm.prototype.print = function (v) {
+    }
+    //#region Printing
+    get defaultPrinter() {
+        return Printer_1.printers.console.clone().configure(c => {
+            c.prefix = "BASIC> ";
+        });
+    }
+    get printer() { return this._printer; }
+    set printer(x) {
+        if (x) {
+            this._printer = x;
+        }
+        else {
+            this._printer = this.defaultPrinter;
+        }
+    }
+    print(v) {
         this.printer.print(v);
-    };
-    BasicVm.prototype.println = function () {
+    }
+    println() {
         this.printer.println();
-    };
+    }
     //#endregion
-    BasicVm.prototype.callProcudure = function (name, args, callst) {
-        var fnInst = this.memo.read(name);
+    callProcudure(name, args, callst) {
+        const fnInst = this.memo.read(name);
         if (typeof (fnInst) == 'object' && fnInst instanceof ExtFun_1.Fun) {
-            var fn = fnInst;
-            var ctx = new ExtFun_1.CallCtx(this, callst);
+            const fn = fnInst;
+            const ctx = new ExtFun_1.CallCtx(this, callst);
             fn.apply(ctx, args);
         }
         else if (typeof (fnInst) == 'function') {
-            var fn = fnInst;
+            const fn = fnInst;
             fn.apply({}, args);
         }
         else {
-            throw new Error("can't call procedure " + name + ", procedure not found");
+            throw new Error(`can't call procedure ${name}, procedure not found`);
         }
-    };
+    }
     /**
      * Выполняет выражение (statement)
      * @param st выражение
      */
-    BasicVm.prototype.evalStatement = function (st) {
-        var _this = this;
+    evalStatement(st) {
         if (st instanceof RemStatement_1.RemStatement) {
             return;
         }
         if (st instanceof LetStatement_1.LetStatement) {
-            var val = this.evalExpression(st.value);
+            const val = this.evalExpression(st.value);
             this.memo.write(st.varname, val);
             return;
         }
@@ -200,54 +190,54 @@ var BasicVm = /** @class */ (function () {
             return;
         }
         if (st instanceof GotoStatement_1.GotoStatement) {
-            var found = this.source.find(st.gotoLine.value);
+            const found = this.source.find(st.gotoLine.value);
             if (found) {
                 this.ip = found.index;
             }
             else {
-                throw new Error("source line " + st.gotoLine.value + " not found");
+                throw new Error(`source line ${st.gotoLine.value} not found`);
             }
             return;
         }
         if (st instanceof GoSubStatement_1.GoSubStatement) {
-            var found = this.source.find(st.gotoLine.value);
+            const found = this.source.find(st.gotoLine.value);
             if (found) {
                 //console.log("gosub ",found)
                 this.ipStack.push(this.ip);
                 this.ip = found.index;
             }
             else {
-                throw new Error("source line " + st.gotoLine.value + " not found");
+                throw new Error(`source line ${st.gotoLine.value} not found`);
             }
         }
         if (st instanceof ReturnStatement_1.ReturnStatement) {
             if (st.gotoLine) {
-                var found = this.source.find(st.gotoLine.value);
+                const found = this.source.find(st.gotoLine.value);
                 if (found) {
                     this.ipStack.pop();
                     this.ip = found.index;
                 }
                 else {
-                    throw new Error("source line " + st.gotoLine.value + " not found");
+                    throw new Error(`source line ${st.gotoLine.value} not found`);
                 }
             }
             else {
                 if (this.ipStack.length > 0) {
-                    var targetIp = this.ipStack.pop();
+                    const targetIp = this.ipStack.pop();
                     if (targetIp !== undefined) {
                         this.ip = targetIp + 1;
                     }
                     else {
-                        throw new Error("gosub stack return undefined");
+                        throw new Error(`gosub stack return undefined`);
                     }
                 }
                 else {
-                    throw new Error("gosub stack is empty");
+                    throw new Error(`gosub stack is empty`);
                 }
             }
         }
         if (st instanceof IfStatement_1.IfStatement) {
-            var bval = this.evalExpression(st.boolExp);
+            const bval = this.evalExpression(st.boolExp);
             if (bval) {
                 this.evalStatement(st.trueStatement);
             }
@@ -256,51 +246,50 @@ var BasicVm = /** @class */ (function () {
             }
         }
         if (st instanceof PrintStatement_1.PrintStatement) {
-            st.args.forEach(function (exp) {
-                var v = _this.evalExpression(exp);
-                _this.print(v);
+            st.args.forEach((exp) => {
+                const v = this.evalExpression(exp);
+                this.print(v);
             });
             this.println();
         }
         if (st instanceof CallStatement_1.CallStatement) {
-            var callArgs_1 = [];
-            st.args.forEach(function (exp) {
-                var v = _this.evalExpression(exp);
-                callArgs_1.push(v);
+            const callArgs = [];
+            st.args.forEach((exp) => {
+                const v = this.evalExpression(exp);
+                callArgs.push(v);
             });
-            this.callProcudure(st.name.id, callArgs_1, st);
+            this.callProcudure(st.name.id, callArgs, st);
         }
-    };
+    }
     /**
      * Проверяет есть ли еще инструкции для выполнения
      * @returns true - есть инструкции для выполенения
      */
-    BasicVm.prototype.hasNext = function () {
+    hasNext() {
         if (this.ip < 0)
             return false;
         if (this.ip >= this.source.lines.length)
             return false;
         return true;
-    };
+    }
     /**
      * Выполняет очередную инструкцию
      * @returns true - инструкция выполнена / false - инструкция не была выполнена ибо конец
      */
-    BasicVm.prototype.next = function () {
+    next() {
         if (!this.hasNext())
             return false;
-        var st = this.source.lines[this.ip];
+        const st = this.source.lines[this.ip];
         if (st == undefined || st == null)
             return false;
-        var beforeIp = this.ip;
+        const beforeIp = this.ip;
         this.evalStatement(st.statement);
-        var afterIp = this.ip;
+        const afterIp = this.ip;
         if (afterIp == beforeIp) {
             this.ip++;
         }
         return true;
-    };
-    return BasicVm;
-}());
+    }
+}
 exports.BasicVm = BasicVm;
 //# sourceMappingURL=BasicVm.js.map

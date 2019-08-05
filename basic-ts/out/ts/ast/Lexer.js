@@ -2,25 +2,12 @@
 /**
  * Работа с лексемами BASIC
  */
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Абстрактная поддержка лексем
  */
-var AbstractLex = /** @class */ (function () {
-    function AbstractLex(begin, end) {
+class AbstractLex {
+    constructor(begin, end) {
         if (begin !== undefined) {
             this.begin = begin;
         }
@@ -34,8 +21,7 @@ var AbstractLex = /** @class */ (function () {
             this.end = 0;
         }
     }
-    return AbstractLex;
-}());
+}
 exports.AbstractLex = AbstractLex;
 /**
  * Получение списка лексем из текста
@@ -43,14 +29,13 @@ exports.AbstractLex = AbstractLex;
  * @param lexs парсеры лексем
  */
 function lexems(text, lexs) {
-    var res = [];
-    var off = 0;
+    let res = [];
+    let off = 0;
     while (true) {
         if (off >= text.length)
             break;
-        var lx = null;
-        for (var _i = 0, lexs_1 = lexs; _i < lexs_1.length; _i++) {
-            var lxParse = lexs_1[_i];
+        let lx = null;
+        for (let lxParse of lexs) {
             if (lx != null)
                 break;
             lx = lxParse(text, off);
@@ -71,10 +56,8 @@ exports.lexems = lexems;
 /**
  * Поддержка разных классов символов
  */
-var Chars = /** @class */ (function () {
-    function Chars() {
-    }
-    Chars.isWS = function (str) {
+class Chars {
+    static isWS(str) {
         if (str == ' ')
             return true;
         if (str == '\n')
@@ -84,8 +67,8 @@ var Chars = /** @class */ (function () {
         if (str == '\t')
             return true;
         return false;
-    };
-    Chars.isNewline = function (str) {
+    }
+    static isNewline(str) {
         if (str == '\n')
             return true;
         if (str == '\r')
@@ -95,8 +78,8 @@ var Chars = /** @class */ (function () {
         if (str == '\r\n')
             return true;
         return false;
-    };
-    Chars.isHexDigit = function (str) {
+    }
+    static isHexDigit(str) {
         if (str == '0' || str == '1' || str == '2' || str == '3' || str == '4')
             return true;
         if (str == '5' || str == '6' || str == '7' || str == '8' || str == '9')
@@ -110,8 +93,8 @@ var Chars = /** @class */ (function () {
         if (str == 'd' || str == 'e' || str == 'f')
             return true;
         return false;
-    };
-    Chars.hexDigit = function (str) {
+    }
+    static hexDigit(str) {
         if (!Chars.isHexDigit(str))
             throw new Error("not a digit");
         if (str == '0')
@@ -147,15 +130,15 @@ var Chars = /** @class */ (function () {
         if (str == 'f' || str == 'F')
             return 15;
         throw new Error("not a digit");
-    };
-    Chars.isDecDigit = function (str) {
+    }
+    static isDecDigit(str) {
         if (str == '0' || str == '1' || str == '2' || str == '3' || str == '4')
             return true;
         if (str == '5' || str == '6' || str == '7' || str == '8' || str == '9')
             return true;
         return false;
-    };
-    Chars.decDigit = function (str) {
+    }
+    static decDigit(str) {
         if (!Chars.isDecDigit(str))
             throw new Error("not a digit");
         if (str == '0')
@@ -179,15 +162,15 @@ var Chars = /** @class */ (function () {
         if (str == '9')
             return 9;
         throw new Error("not a digit");
-    };
-    Chars.isOctDigit = function (str) {
+    }
+    static isOctDigit(str) {
         if (str == '0' || str == '1' || str == '2' || str == '3' || str == '4')
             return true;
         if (str == '5' || str == '6' || str == '7')
             return true;
         return false;
-    };
-    Chars.octDigit = function (str) {
+    }
+    static octDigit(str) {
         if (!Chars.isOctDigit(str))
             throw new Error("not a digit");
         if (str == '0')
@@ -207,26 +190,23 @@ var Chars = /** @class */ (function () {
         if (str == '7')
             return 7;
         throw new Error("not a digit");
-    };
-    return Chars;
-}());
+    }
+}
 exports.Chars = Chars;
 /**
  * Лексема пробельного текста
  */
-var WhiteSpaceLex = /** @class */ (function (_super) {
-    __extends(WhiteSpaceLex, _super);
-    function WhiteSpaceLex(begin, end) {
-        var _this = _super.call(this, begin, end) || this;
-        _this.kind = 'WhiteSpaceLex';
-        return _this;
+class WhiteSpaceLex extends AbstractLex {
+    constructor(begin, end) {
+        super(begin, end);
+        this.kind = 'WhiteSpaceLex';
     }
-    WhiteSpaceLex.parse = function (str, off) {
+    static parse(str, off) {
         if (off >= str.length)
             return null;
         if (!Chars.isWS(str.substr(off, 1)))
             return null;
-        var from = off;
+        let from = off;
         while (true) {
             if (off >= str.length)
                 break;
@@ -234,33 +214,29 @@ var WhiteSpaceLex = /** @class */ (function (_super) {
                 break;
             off++;
         }
-        var to = off;
+        let to = off;
         return new WhiteSpaceLex(from, to);
-    };
-    return WhiteSpaceLex;
-}(AbstractLex));
+    }
+}
 exports.WhiteSpaceLex = WhiteSpaceLex;
 /**
  * Лексема ключевых слов
  */
-var KeyWordLex = /** @class */ (function (_super) {
-    __extends(KeyWordLex, _super);
-    function KeyWordLex(keyWord, begin, end) {
-        var _this = _super.call(this, begin, end) || this;
-        _this.keyWord = keyWord;
-        return _this;
+class KeyWordLex extends AbstractLex {
+    constructor(keyWord, begin, end) {
+        super(begin, end);
+        this.keyWord = keyWord;
     }
     // static defaultKeyWordBuilder : (kw:string, kwBegin:number, kwEnd:number)=>Lex = (kw,kwBegin,kwEnd) => {
     //     return new KeyWordLex(kw, kwBegin, kwEnd)
     // }
-    KeyWordLex.parser = function (ignorecase, keyWords, keyWordBuilder) {
-        keyWords = keyWords.sort(function (a, b) { return 0 - (a.length - b.length); });
-        return function (str, off) {
+    static parser(ignorecase, keyWords, keyWordBuilder) {
+        keyWords = keyWords.sort((a, b) => 0 - (a.length - b.length));
+        return (str, off) => {
             if (off >= str.length)
                 return null;
-            for (var _i = 0, keyWords_1 = keyWords; _i < keyWords_1.length; _i++) {
-                var kw = keyWords_1[_i];
-                var ss = str.substring(off, off + kw.length);
+            for (let kw of keyWords) {
+                let ss = str.substring(off, off + kw.length);
                 if ((ignorecase && ss.toUpperCase() == kw.toUpperCase()) ||
                     (!ignorecase && ss == kw)) {
                     //return new KeyWordLex(ss,off,off+ss.length)
@@ -274,312 +250,162 @@ var KeyWordLex = /** @class */ (function (_super) {
             }
             return null;
         };
-    };
-    return KeyWordLex;
-}(AbstractLex));
-exports.KeyWordLex = KeyWordLex;
-var ParsedKeyWordLex = /** @class */ (function (_super) {
-    __extends(ParsedKeyWordLex, _super);
-    function ParsedKeyWordLex() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.kind = "ParsedKeyWordLex";
-        return _this;
     }
-    return ParsedKeyWordLex;
-}(KeyWordLex));
+}
+exports.KeyWordLex = KeyWordLex;
+class ParsedKeyWordLex extends KeyWordLex {
+    constructor() {
+        super(...arguments);
+        this.kind = "ParsedKeyWordLex";
+    }
+}
 exports.ParsedKeyWordLex = ParsedKeyWordLex;
 /**
  * Лексема начала новой строки
  */
-var NewLineLex = /** @class */ (function (_super) {
-    __extends(NewLineLex, _super);
-    function NewLineLex(keyWord, begin, end) {
-        var _this = _super.call(this, keyWord, begin, end) || this;
-        _this.kind = 'NewLineSeparator';
-        return _this;
+class NewLineLex extends KeyWordLex {
+    constructor(keyWord, begin, end) {
+        super(keyWord, begin, end);
+        this.kind = 'NewLineSeparator';
     }
-    NewLineLex.parse = KeyWordLex.parser(false, ['\n\r', '\r\n', '\n', '\r'], function (kw, begin, end) { return new NewLineLex(kw, begin, end); });
-    return NewLineLex;
-}(KeyWordLex));
+}
+NewLineLex.parse = KeyWordLex.parser(false, ['\n\r', '\r\n', '\n', '\r'], (kw, begin, end) => { return new NewLineLex(kw, begin, end); });
 exports.NewLineLex = NewLineLex;
 /**
  * Лексема встроенного оператора
  */
-var OperatorLex = /** @class */ (function (_super) {
-    __extends(OperatorLex, _super);
-    function OperatorLex(keyWord, begin, end) {
-        var _this = _super.call(this, keyWord, begin, end) || this;
-        _this.kind = 'OperatorLex';
-        return _this;
+class OperatorLex extends KeyWordLex {
+    constructor(keyWord, begin, end) {
+        super(keyWord, begin, end);
+        this.kind = 'OperatorLex';
     }
-    Object.defineProperty(OperatorLex.prototype, "pow", {
-        get: function () { return this.keyWord != null && this.keyWord == '^'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "mult", {
-        get: function () { return this.keyWord != null && this.keyWord == '*'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "div", {
-        get: function () { return this.keyWord != null && this.keyWord == '/'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "idiv", {
-        get: function () { return this.keyWord != null && this.keyWord == '\\'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "mod", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'MOD'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "plus", {
-        get: function () { return this.keyWord != null && this.keyWord == '+'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "minus", {
-        get: function () { return this.keyWord != null && this.keyWord == '-'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "equals", {
-        get: function () { return this.keyWord != null && this.keyWord == '='; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "notEquals", {
-        get: function () { return this.keyWord != null && (this.keyWord == '<>' || this.keyWord == '><'); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "less", {
-        get: function () { return this.keyWord != null && this.keyWord == '<'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "lesOrEquals", {
-        get: function () { return this.keyWord != null && (this.keyWord == '<=' || this.keyWord == '=<'); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "more", {
-        get: function () { return this.keyWord != null && this.keyWord == '>'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "moreOrEquals", {
-        get: function () { return this.keyWord != null && (this.keyWord == '>=' || this.keyWord == '=>'); },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "ordReleation", {
-        get: function () { return this.more || this.moreOrEquals || this.equals || this.notEquals || this.lesOrEquals || this.less; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "not", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'NOT'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "and", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'AND'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "or", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'OR'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "xor", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'XOR'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "eqv", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'EQV'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "imp", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == 'IMP'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "arrBrOpen", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == '('; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "arrBrClose", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == ')'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(OperatorLex.prototype, "argDelim", {
-        get: function () { return this.keyWord != null && this.keyWord.toUpperCase() == ','; },
-        enumerable: true,
-        configurable: true
-    });
-    OperatorLex.parse = KeyWordLex.parser(true, [
-        '(', ')',
-        // математические операции в порядке уменьшения приоритета
-        '^',
-        '*', '/',
-        '\\',
-        'MOD',
-        '+', '-',
-        '=', '<>', '><', '<', '>', '<=', '>=', '=>',
-        'NOT',
-        'AND',
-        'OR',
-        'XOR',
-        // 1 XOR 1 = 0
-        // 1 XOR 0 = 1
-        // 0 XOR 1 = 1
-        // 0 XOR 0 = 0
-        'EQV',
-        // 1 EQV 1 = 1
-        // 1 EQV 0 = 0
-        // 0 EQV 1 = 0
-        // 0 EQV 0 = 1
-        'IMP',
-        // 0 IMP 0 = 1
-        // 0 IMP 1 = 1
-        // 1 IMP 0 = 0
-        // 1 IMP 1 = 1
-        ','
-    ], function (kw, begin, end) { return new OperatorLex(kw, begin, end); });
-    return OperatorLex;
-}(KeyWordLex));
+    get pow() { return this.keyWord != null && this.keyWord == '^'; }
+    get mult() { return this.keyWord != null && this.keyWord == '*'; }
+    get div() { return this.keyWord != null && this.keyWord == '/'; }
+    get idiv() { return this.keyWord != null && this.keyWord == '\\'; }
+    get mod() { return this.keyWord != null && this.keyWord.toUpperCase() == 'MOD'; }
+    get plus() { return this.keyWord != null && this.keyWord == '+'; }
+    get minus() { return this.keyWord != null && this.keyWord == '-'; }
+    get equals() { return this.keyWord != null && this.keyWord == '='; }
+    get notEquals() { return this.keyWord != null && (this.keyWord == '<>' || this.keyWord == '><'); }
+    get less() { return this.keyWord != null && this.keyWord == '<'; }
+    get lesOrEquals() { return this.keyWord != null && (this.keyWord == '<=' || this.keyWord == '=<'); }
+    get more() { return this.keyWord != null && this.keyWord == '>'; }
+    get moreOrEquals() { return this.keyWord != null && (this.keyWord == '>=' || this.keyWord == '=>'); }
+    get ordReleation() { return this.more || this.moreOrEquals || this.equals || this.notEquals || this.lesOrEquals || this.less; }
+    get not() { return this.keyWord != null && this.keyWord.toUpperCase() == 'NOT'; }
+    get and() { return this.keyWord != null && this.keyWord.toUpperCase() == 'AND'; }
+    get or() { return this.keyWord != null && this.keyWord.toUpperCase() == 'OR'; }
+    get xor() { return this.keyWord != null && this.keyWord.toUpperCase() == 'XOR'; }
+    get eqv() { return this.keyWord != null && this.keyWord.toUpperCase() == 'EQV'; }
+    get imp() { return this.keyWord != null && this.keyWord.toUpperCase() == 'IMP'; }
+    get arrBrOpen() { return this.keyWord != null && this.keyWord.toUpperCase() == '('; }
+    get arrBrClose() { return this.keyWord != null && this.keyWord.toUpperCase() == ')'; }
+    get argDelim() { return this.keyWord != null && this.keyWord.toUpperCase() == ','; }
+}
+OperatorLex.parse = KeyWordLex.parser(true, [
+    '(', ')',
+    // математические операции в порядке уменьшения приоритета
+    '^',
+    '*', '/',
+    '\\',
+    'MOD',
+    '+', '-',
+    '=', '<>', '><', '<', '>', '<=', '>=', '=>',
+    'NOT',
+    'AND',
+    'OR',
+    'XOR',
+    // 1 XOR 1 = 0
+    // 1 XOR 0 = 1
+    // 0 XOR 1 = 1
+    // 0 XOR 0 = 0
+    'EQV',
+    // 1 EQV 1 = 1
+    // 1 EQV 0 = 0
+    // 0 EQV 1 = 0
+    // 0 EQV 0 = 1
+    'IMP',
+    // 0 IMP 0 = 1
+    // 0 IMP 1 = 1
+    // 1 IMP 0 = 0
+    // 1 IMP 1 = 1
+    ','
+], (kw, begin, end) => { return new OperatorLex(kw, begin, end); });
 exports.OperatorLex = OperatorLex;
-var StatementLex = /** @class */ (function (_super) {
-    __extends(StatementLex, _super);
-    function StatementLex(keyWord, begin, end) {
-        var _this = _super.call(this, keyWord, begin, end) || this;
-        _this.kind = 'StatementLex';
-        return _this;
+class StatementLex extends KeyWordLex {
+    constructor(keyWord, begin, end) {
+        super(keyWord, begin, end);
+        this.kind = 'StatementLex';
     }
-    Object.defineProperty(StatementLex.prototype, "LET", {
-        get: function () { return this.keyWord.toUpperCase() == 'LET'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "RUN", {
-        get: function () { return this.keyWord.toUpperCase() == 'RUN'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "GOTO", {
-        get: function () {
-            if (this.keyWord.toUpperCase() == 'GOTO')
-                return true;
-            if (this.keyWord.toUpperCase() == 'GO TO')
-                return true;
-            return false;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "IF", {
-        get: function () { return this.keyWord.toUpperCase() == 'IF'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "THEN", {
-        get: function () { return this.keyWord.toUpperCase() == 'THEN'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "ELSE", {
-        get: function () { return this.keyWord.toUpperCase() == 'ELSE'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "GOSUB", {
-        get: function () {
-            if (this.keyWord.toUpperCase() == 'GO SUB')
-                return true;
-            if (this.keyWord.toUpperCase() == 'GOSUB')
-                return true;
-            return false;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "RETURN", {
-        get: function () { return this.keyWord.toUpperCase() == 'RETURN'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "PRINT", {
-        get: function () { return this.keyWord.toUpperCase() == 'PRINT'; },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(StatementLex.prototype, "CALL", {
-        get: function () { return this.keyWord.toUpperCase() == 'CALL'; },
-        enumerable: true,
-        configurable: true
-    });
-    //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
-    StatementLex.parse = KeyWordLex.parser(true, [
-        'LET',
-        'RUN',
-        'GOTO',
-        'GO TO',
-        'IF',
-        'THEN',
-        'ELSE',
-        'GO SUB',
-        'GOSUB',
-        'RETURN',
-        'PRINT',
-        'CALL',
-    ], function (kw, begin, end) { return new StatementLex(kw, begin, end); });
-    return StatementLex;
-}(KeyWordLex));
+    get LET() { return this.keyWord.toUpperCase() == 'LET'; }
+    get RUN() { return this.keyWord.toUpperCase() == 'RUN'; }
+    get GOTO() {
+        if (this.keyWord.toUpperCase() == 'GOTO')
+            return true;
+        if (this.keyWord.toUpperCase() == 'GO TO')
+            return true;
+        return false;
+    }
+    get IF() { return this.keyWord.toUpperCase() == 'IF'; }
+    get THEN() { return this.keyWord.toUpperCase() == 'THEN'; }
+    get ELSE() { return this.keyWord.toUpperCase() == 'ELSE'; }
+    get GOSUB() {
+        if (this.keyWord.toUpperCase() == 'GO SUB')
+            return true;
+        if (this.keyWord.toUpperCase() == 'GOSUB')
+            return true;
+        return false;
+    }
+    get RETURN() { return this.keyWord.toUpperCase() == 'RETURN'; }
+    get PRINT() { return this.keyWord.toUpperCase() == 'PRINT'; }
+    get CALL() { return this.keyWord.toUpperCase() == 'CALL'; }
+}
+//get LIST() { return this.keyWord.toUpperCase()=='LIST' }
+StatementLex.parse = KeyWordLex.parser(true, [
+    'LET',
+    'RUN',
+    'GOTO',
+    'GO TO',
+    'IF',
+    'THEN',
+    'ELSE',
+    'GO SUB',
+    'GOSUB',
+    'RETURN',
+    'PRINT',
+    'CALL',
+], (kw, begin, end) => { return new StatementLex(kw, begin, end); });
 exports.StatementLex = StatementLex;
 /**
  * Пустая лексема
  */
-var DummyLex = /** @class */ (function (_super) {
-    __extends(DummyLex, _super);
-    function DummyLex() {
-        var _this = _super !== null && _super.apply(this, arguments) || this;
-        _this.kind = 'DummyLex';
-        return _this;
+class DummyLex extends AbstractLex {
+    constructor() {
+        super(...arguments);
+        this.kind = 'DummyLex';
     }
-    return DummyLex;
-}(AbstractLex));
+}
 exports.DummyLex = DummyLex;
 /**
  * Лексема коментарий
  */
-var RemLex = /** @class */ (function (_super) {
-    __extends(RemLex, _super);
-    function RemLex(cmnt, begin, end) {
-        var _this = _super.call(this, begin, end) || this;
-        _this.kind = 'RemLex';
-        _this.comment = cmnt;
-        return _this;
+class RemLex extends AbstractLex {
+    constructor(cmnt, begin, end) {
+        super(begin, end);
+        this.kind = 'RemLex';
+        this.comment = cmnt;
     }
-    RemLex.parse = function (str, off) {
+    static parse(str, off) {
         if (off >= str.length)
             return null;
-        var rm1 = str.substring(off, off + 4);
+        let rm1 = str.substring(off, off + 4);
         if (rm1.toUpperCase() == 'REM') {
             return new RemLex('', off, off + rm1.length);
         }
         if (!(rm1.toUpperCase() == 'REM '))
             return null;
-        var begin = off;
+        let begin = off;
         off += 4;
         while (true) {
             if (off >= str.length)
@@ -589,78 +415,75 @@ var RemLex = /** @class */ (function (_super) {
             }
             off++;
         }
-        var end = off;
-        var cmntBegin = begin + 4;
+        let end = off;
+        let cmntBegin = begin + 4;
         return new RemLex(str.substring(cmntBegin, end), begin, end);
-    };
-    return RemLex;
-}(AbstractLex));
+    }
+}
 exports.RemLex = RemLex;
 /**
  * См https://robhagemans.github.io/pcbasic/doc/1.2/#literals
  */
-var NumberLex = /** @class */ (function (_super) {
-    __extends(NumberLex, _super);
-    function NumberLex(val, integer, begin, end) {
-        var _this = _super.call(this, begin, end) || this;
-        _this.value = val;
-        _this.integer = integer;
-        _this.kind = 'NumberLiteral';
-        return _this;
+class NumberLex extends AbstractLex {
+    constructor(val, integer, begin, end) {
+        super(begin, end);
+        this.value = val;
+        this.integer = integer;
+        this.kind = 'NumberLiteral';
     }
-    NumberLex.parseOct = function (str, off) {
+    static parseOct(str, off) {
         //console.log("parseOct")
         if (off >= str.length)
             return null;
-        var head = str.substring(off, off + 2);
+        let head = str.substring(off, off + 2);
         if (!(head == '&o' || head == '&O'))
             return null;
-        var num = 0;
-        var kSys = 8;
-        var begin = off;
+        let num = 0;
+        let kSys = 8;
+        let begin = off;
         off += 2;
         while (true) {
             if (off >= str.length)
                 break;
-            var chDgt = str.substring(off, off + 1);
+            let chDgt = str.substring(off, off + 1);
             if (!Chars.isOctDigit(chDgt)) {
                 break;
             }
             num = num * kSys + Chars.octDigit(chDgt);
             off++;
         }
-        var end = off;
+        let end = off;
         return new NumberLex(num, true, begin, end);
-    };
-    NumberLex.parseHex = function (str, off) {
+    }
+    static parseHex(str, off) {
         //console.log("parseHex")
         if (off >= str.length)
             return null;
-        var head = str.substring(off, off + 2);
+        let head = str.substring(off, off + 2);
         if (!(head == '&h' || head == '&H'))
             return null;
-        var num = 0;
-        var kSys = 16;
-        var begin = off;
+        let num = 0;
+        let kSys = 16;
+        let begin = off;
         off += 2;
         while (true) {
             if (off >= str.length)
                 break;
-            var chDgt = str.substring(off, off + 1);
+            let chDgt = str.substring(off, off + 1);
             if (!Chars.isHexDigit(chDgt)) {
                 break;
             }
             num = num * kSys + Chars.hexDigit(chDgt);
             off++;
         }
-        var end = off;
+        let end = off;
         return new NumberLex(num, true, begin, end);
-    };
-    NumberLex.parseDec = function (str, off) {
+    }
+    static parseDec(str, off) {
         //console.log("parseDec")
         if (off >= str.length)
             return null;
-        var head = str.substring(off);
+        let head = str.substring(off);
         /*
         > "+1234.22e+6%".match( /^([+\-]\d+)((\.\d+)(([eEdD])([+\-]?\d+))?)?([%\#!])?/ )
         [ '+1234.22e+6%',
@@ -675,10 +498,10 @@ var NumberLex = /** @class */ (function (_super) {
         input: '+1234.22e+6%',
         groups: undefined ]
         */
-        var m1 = head.match(/^([+\-]?\d+)((\.\d+)(([eEdD])([+\-]?\d+))?)?([%\#!])?/);
+        let m1 = head.match(/^([+\-]?\d+)((\.\d+)(([eEdD])([+\-]?\d+))?)?([%\#!])?/);
         if (m1) {
-            var integer = true;
-            var p1 = m1[1];
+            let integer = true;
+            let p1 = m1[1];
             if (m1[3])
                 p1 = p1 + m1[3]; //float part
             if (m1[5] && (m1[5] == 'e' || m1[5] == 'E')) {
@@ -691,60 +514,53 @@ var NumberLex = /** @class */ (function (_super) {
             if (m1[3] && m1[3].length > 0) {
                 integer = false;
             }
-            var num = parseFloat(p1);
-            var begin = off;
-            var end = off + m1[0].length;
+            let num = parseFloat(p1);
+            let begin = off;
+            let end = off + m1[0].length;
             return new NumberLex(num, integer, begin, end);
         }
         return null;
-    };
-    NumberLex.parse = function (str, off) {
-        var octn = NumberLex.parseOct(str, off);
+    }
+    static parse(str, off) {
+        let octn = NumberLex.parseOct(str, off);
         if (octn)
             return octn;
-        var hexn = NumberLex.parseHex(str, off);
+        let hexn = NumberLex.parseHex(str, off);
         if (hexn)
             return hexn;
-        var decn = NumberLex.parseDec(str, off);
+        let decn = NumberLex.parseDec(str, off);
         return decn;
-    };
-    Object.defineProperty(NumberLex.prototype, "asSourceLine", {
-        /**
-         * Конвертирует в номер исходной строки
-         */
-        get: function () {
-            return new SourceLineBeginLex(this.value, this.begin, this.end);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return NumberLex;
-}(AbstractLex));
+    }
+    /**
+     * Конвертирует в номер исходной строки
+     */
+    get asSourceLine() {
+        return new SourceLineBeginLex(this.value, this.begin, this.end);
+    }
+}
 exports.NumberLex = NumberLex;
 /**
  * Строковая лексема
  */
-var StringLex = /** @class */ (function (_super) {
-    __extends(StringLex, _super);
-    function StringLex(val, begin, end) {
-        var _this = _super.call(this, begin, end) || this;
-        _this.value = val;
-        _this.kind = 'StringLiteral';
-        return _this;
+class StringLex extends AbstractLex {
+    constructor(val, begin, end) {
+        super(begin, end);
+        this.value = val;
+        this.kind = 'StringLiteral';
     }
-    StringLex.parse = function (str, off) {
+    static parse(str, off) {
         if (off >= str.length)
             return null;
         if (!(str.substring(off, off + 1) == '"'))
             return null;
-        var begin = off;
+        let begin = off;
         off++;
-        var sBegin = off;
-        var sEnd = -1;
+        let sBegin = off;
+        let sEnd = -1;
         while (true) {
             if (off >= str.length)
                 break;
-            var ch = str.substring(off, off + 1);
+            let ch = str.substring(off, off + 1);
             if (ch == '"') {
                 sEnd = off;
                 off++;
@@ -756,40 +572,36 @@ var StringLex = /** @class */ (function (_super) {
             }
             off++;
         }
-        var end = off;
-        var sVal = str.substring(sBegin, off);
+        let end = off;
+        let sVal = str.substring(sBegin, off);
         if (sEnd > sBegin) {
             sVal = str.substring(sBegin, sEnd);
         }
         return new StringLex(sVal, begin, end);
-    };
-    return StringLex;
-}(AbstractLex));
+    }
+}
 exports.StringLex = StringLex;
 /**
  * Идентификатор
  */
-var IDLex = /** @class */ (function (_super) {
-    __extends(IDLex, _super);
-    function IDLex(id, begin, end) {
-        var _this = _super.call(this, begin, end) || this;
-        _this.kind = 'ID';
-        _this.id = id;
-        return _this;
+class IDLex extends AbstractLex {
+    constructor(id, begin, end) {
+        super(begin, end);
+        this.kind = 'ID';
+        this.id = id;
     }
-    IDLex.parse = function (str, off) {
+    static parse(str, off) {
         if (off >= str.length)
             return null;
-        var head = str.substring(off);
-        var m1 = head.match(/^[a-zA-Z][a-zA-Z0-9\.]*[\#\!\%\$]?/);
+        let head = str.substring(off);
+        let m1 = head.match(/^[a-zA-Z][a-zA-Z0-9\.]*[\#\!\%\$]?/);
         if (m1) {
-            var s = m1[0];
+            let s = m1[0];
             return new IDLex(s, off, off + s.length);
         }
         return null;
-    };
-    return IDLex;
-}(AbstractLex));
+    }
+}
 exports.IDLex = IDLex;
 /**
  * Лексемы языка BASIC
@@ -807,88 +619,69 @@ exports.basicLexems = [
 /**
  * Маркер начала строки
  */
-var SourceLineBeginLex = /** @class */ (function (_super) {
-    __extends(SourceLineBeginLex, _super);
-    function SourceLineBeginLex(line, begin, end) {
-        var _this = _super.call(this, begin, end) || this;
-        _this.line = line;
-        _this.kind = 'SourceLine';
-        return _this;
+class SourceLineBeginLex extends AbstractLex {
+    constructor(line, begin, end) {
+        super(begin, end);
+        this.line = line;
+        this.kind = 'SourceLine';
     }
-    return SourceLineBeginLex;
-}(AbstractLex));
+}
 exports.SourceLineBeginLex = SourceLineBeginLex;
 /**
  * Фильтр лексем
  */
-var LexIterate = /** @class */ (function () {
-    function LexIterate(lexs) {
+class LexIterate {
+    constructor(lexs) {
         this.lexs = lexs;
     }
-    LexIterate.prototype.get = function () { return this.lexs; };
-    Object.defineProperty(LexIterate.prototype, "dropWhitespace", {
-        /**
-         * Удаляет лексемы пробельных символов
-         */
-        get: function () {
-            var lexs = [];
-            for (var _i = 0, _a = this.lexs; _i < _a.length; _i++) {
-                var lx = _a[_i];
-                if (!(lx instanceof WhiteSpaceLex)) {
-                    lexs.push(lx);
-                }
+    get() { return this.lexs; }
+    /**
+     * Удаляет лексемы пробельных символов
+     */
+    get dropWhitespace() {
+        let lexs = [];
+        for (let lx of this.lexs) {
+            if (!(lx instanceof WhiteSpaceLex)) {
+                lexs.push(lx);
             }
-            return new LexIterate(lexs);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LexIterate.prototype, "dropNewLines", {
-        /**
-         * Удаляет лексемы перевода строк
-         */
-        get: function () {
-            var lexs = [];
-            for (var _i = 0, _a = this.lexs; _i < _a.length; _i++) {
-                var lx = _a[_i];
-                if (!(lx instanceof NewLineLex)) {
-                    lexs.push(lx);
-                }
+        }
+        return new LexIterate(lexs);
+    }
+    /**
+     * Удаляет лексемы перевода строк
+     */
+    get dropNewLines() {
+        let lexs = [];
+        for (let lx of this.lexs) {
+            if (!(lx instanceof NewLineLex)) {
+                lexs.push(lx);
             }
-            return new LexIterate(lexs);
-        },
-        enumerable: true,
-        configurable: true
-    });
-    Object.defineProperty(LexIterate.prototype, "lines", {
-        /**
-         * Разбивает лексемы на набор строк
-         */
-        get: function () {
-            var lines = [];
-            var line = [];
-            for (var _i = 0, _a = this.lexs; _i < _a.length; _i++) {
-                var lx = _a[_i];
-                if (lx instanceof SourceLineBeginLex) {
-                    if (line.length > 0) {
-                        lines.push(line);
-                    }
-                    line = [lx];
+        }
+        return new LexIterate(lexs);
+    }
+    /**
+     * Разбивает лексемы на набор строк
+     */
+    get lines() {
+        let lines = [];
+        let line = [];
+        for (let lx of this.lexs) {
+            if (lx instanceof SourceLineBeginLex) {
+                if (line.length > 0) {
+                    lines.push(line);
                 }
-                else {
-                    line.push(lx);
-                }
+                line = [lx];
             }
-            if (line.length > 0) {
-                lines.push(line);
+            else {
+                line.push(lx);
             }
-            return lines;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    return LexIterate;
-}());
+        }
+        if (line.length > 0) {
+            lines.push(line);
+        }
+        return lines;
+    }
+}
 exports.LexIterate = LexIterate;
 /**
  * Фильтр лексем
@@ -898,7 +691,7 @@ function filter(lexs) {
     return new LexIterate(lexs);
 }
 exports.filter = filter;
-var isStatement = function (lx) {
+const isStatement = (lx) => {
     if (lx == undefined)
         return false;
     if (lx == null)
@@ -914,10 +707,10 @@ var isStatement = function (lx) {
  * @param source исходный текст
  */
 function parseBasicLexs(source) {
-    var lexs = lexems(source, exports.basicLexems);
+    let lexs = lexems(source, exports.basicLexems);
     lexs = filter(lexs).dropWhitespace.lexs;
-    var res = [];
-    for (var i = 0; i < lexs.length; i++) {
+    let res = [];
+    for (let i = 0; i < lexs.length; i++) {
         if (i == 0) {
             if (lexs[i] instanceof NumberLex &&
                 (i + 1) < lexs.length &&

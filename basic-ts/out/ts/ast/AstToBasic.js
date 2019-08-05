@@ -1,17 +1,17 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var OperatorExp_1 = require("./OperatorExp");
-var LetStatement_1 = require("./LetStatement");
-var RemStatement_1 = require("./RemStatement");
-var RunStatement_1 = require("./RunStatement");
-var Statements_1 = require("./Statements");
-var SourceUnit_1 = require("../vm/SourceUnit");
-var GotoStatement_1 = require("./GotoStatement");
-var IfStatement_1 = require("./IfStatement");
-var GoSubStatement_1 = require("./GoSubStatement");
-var ReturnStatement_1 = require("./ReturnStatement");
-var PrintStatement_1 = require("./PrintStatement");
-var CallStatement_1 = require("./CallStatement");
+const OperatorExp_1 = require("./OperatorExp");
+const LetStatement_1 = require("./LetStatement");
+const RemStatement_1 = require("./RemStatement");
+const RunStatement_1 = require("./RunStatement");
+const Statements_1 = require("./Statements");
+const SourceUnit_1 = require("../vm/SourceUnit");
+const GotoStatement_1 = require("./GotoStatement");
+const IfStatement_1 = require("./IfStatement");
+const GoSubStatement_1 = require("./GoSubStatement");
+const ReturnStatement_1 = require("./ReturnStatement");
+const PrintStatement_1 = require("./PrintStatement");
+const CallStatement_1 = require("./CallStatement");
 /**
  * Генератор из AST в BASIC
  */
@@ -39,10 +39,10 @@ function astToBasic(root, opts) {
             }
         }
         else if (typeof (root.value) == 'string') {
-            var sval = root.value;
-            var str = "\"";
-            for (var i = 0; i < sval.length; i++) {
-                var ch = sval[i];
+            const sval = root.value;
+            let str = "\"";
+            for (let i = 0; i < sval.length; i++) {
+                let ch = sval[i];
                 if (ch == '"') {
                     str += "{encode_dquote}";
                 }
@@ -66,18 +66,17 @@ function astToBasic(root, opts) {
             return str;
         }
         else {
-            throw new Error("unknow Literal value type = " + typeof (root.value));
+            throw new Error(`unknow Literal value type = ${typeof (root.value)}`);
         }
     }
     //#endregion
     //#region var ref
     if (root instanceof OperatorExp_1.VarArrIndexRef) {
-        var code = '';
+        let code = '';
         code += root.varname;
         code += '(';
-        var idx = -1;
-        for (var _i = 0, _a = root.indexes; _i < _a.length; _i++) {
-            var aidx = _a[_i];
+        let idx = -1;
+        for (let aidx of root.indexes) {
             idx++;
             if (idx > 0)
                 code += ',';
@@ -99,7 +98,7 @@ function astToBasic(root, opts) {
     //#endregion
     //#region BinaryOpExpression
     if (root instanceof OperatorExp_1.BinaryOpExpression) {
-        var code = '';
+        let code = '';
         if (root.left.treeSize > 1) {
             code += '(' + astToBasic(root.left, opts) + ')';
         }
@@ -118,81 +117,81 @@ function astToBasic(root, opts) {
     //#endregion
     //#region LET
     if (root instanceof LetStatement_1.LetStatement) {
-        var code = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
-        code += "LET " + root.varname + " = " + astToBasic(root.value, opts);
+        code += `LET ${root.varname} = ${astToBasic(root.value, opts)}`;
         return code;
     }
     //#endregion
     //#region REM
     if (root instanceof RemStatement_1.RemStatement) {
-        var code = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
-        code += "REM " + root.rem.comment;
+        code += `REM ${root.rem.comment}`;
         return code;
     }
     //#endregion
     //#region RUN
     if (root instanceof RunStatement_1.RunStatement) {
-        var code = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
         code += "RUN";
         if (root.runLine != undefined) {
-            code += " " + root.runLine;
+            code += ` ${root.runLine}`;
         }
         return code;
     }
     //#endregion
     //#region GOTO
     if (root instanceof GotoStatement_1.GotoStatement) {
-        var code = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
         code += "GOTO";
         if (root.gotoLine != undefined) {
-            code += " " + root.gotoLine.value;
+            code += ` ${root.gotoLine.value}`;
         }
         return code;
     }
     //#endregion
     //#region GOSUB
     if (root instanceof GoSubStatement_1.GoSubStatement) {
-        var code = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
         code += "GOSUB";
         if (root.gotoLine != undefined) {
-            code += " " + root.gotoLine.value;
+            code += ` ${root.gotoLine.value}`;
         }
         return code;
     }
     //#endregion
     //#region RETURN
     if (root instanceof ReturnStatement_1.ReturnStatement) {
-        var code = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
         code += "RETURN";
         if (root.gotoLine != undefined) {
-            code += " " + root.gotoLine.value;
+            code += ` ${root.gotoLine.value}`;
         }
         return code;
     }
     //#endregion
     //#region IF
     if (root instanceof IfStatement_1.IfStatement) {
-        var code = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
         code += "IF ";
         code += astToBasic(root.boolExp, opts);
@@ -207,67 +206,67 @@ function astToBasic(root, opts) {
     //#endregion
     //#region PrintStatement
     if (root instanceof PrintStatement_1.PrintStatement) {
-        var code_1 = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code_1 = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
-        code_1 += "PRINT";
+        code += "PRINT";
         if (root.args.length > 0)
-            code_1 += " ";
-        var argi_1 = -1;
-        root.args.forEach(function (arg) {
-            argi_1++;
-            if (argi_1 > 0) {
-                code_1 += ",";
+            code += " ";
+        let argi = -1;
+        root.args.forEach(arg => {
+            argi++;
+            if (argi > 0) {
+                code += ",";
             }
-            code_1 += astToBasic(arg, opts);
+            code += astToBasic(arg, opts);
         });
-        return code_1;
+        return code;
     }
     //#endregion
     //#region CallStatement
     if (root instanceof CallStatement_1.CallStatement) {
-        var code_2 = '';
+        let code = '';
         if (root.sourceLine != undefined && opts.sourceLineNumber) {
-            code_2 = root.sourceLine + " ";
+            code = `${root.sourceLine} `;
         }
-        code_2 += "CALL ";
-        code_2 += root.name.id;
+        code += "CALL ";
+        code += root.name.id;
         if (root.args.length > 0)
-            code_2 += " ";
-        var argi_2 = -1;
-        root.args.forEach(function (arg) {
-            argi_2++;
-            if (argi_2 > 0) {
-                code_2 += ",";
+            code += " ";
+        let argi = -1;
+        root.args.forEach(arg => {
+            argi++;
+            if (argi > 0) {
+                code += ",";
             }
-            code_2 += astToBasic(arg, opts);
+            code += astToBasic(arg, opts);
         });
-        return code_2;
+        return code;
     }
     //#endregion
     //#region Statements
     if (root instanceof Statements_1.Statements) {
-        var code_3 = '';
-        root.statements.forEach(function (st) {
-            if (code_3.length > 0) {
-                code_3 += "\n";
+        let code = '';
+        root.statements.forEach(st => {
+            if (code.length > 0) {
+                code += "\n";
             }
-            code_3 += astToBasic(st, opts);
+            code += astToBasic(st, opts);
         });
-        return code_3;
+        return code;
     }
     //#endregion
     //#region SourceUnit
     if (root instanceof SourceUnit_1.SourceUnit) {
-        var code_4 = '';
-        root.lines.forEach(function (line) {
-            if (code_4.length > 0) {
-                code_4 += "\n";
+        let code = '';
+        root.lines.forEach(line => {
+            if (code.length > 0) {
+                code += "\n";
             }
-            code_4 += astToBasic(line.statement, opts);
+            code += astToBasic(line.statement, opts);
         });
-        return code_4;
+        return code;
     }
     //#endregion
     throw new Error("unknow argument type " + root + ":" + Object.getPrototypeOf(root));

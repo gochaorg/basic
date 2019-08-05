@@ -2,41 +2,23 @@
 /**
  * Обход Ast дерева
  */
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
-var RemStatement_1 = require("./RemStatement");
-var Statements_1 = require("./Statements");
-var LetStatement_1 = require("./LetStatement");
-var RunStatement_1 = require("./RunStatement");
-var OperatorExp_1 = require("./OperatorExp");
-var TreeIt_1 = require("../common/TreeIt");
-var GotoStatement_1 = require("./GotoStatement");
-var ReturnStatement_1 = require("./ReturnStatement");
-var GoSubStatement_1 = require("./GoSubStatement");
-var PrintStatement_1 = require("./PrintStatement");
-var CallStatement_1 = require("./CallStatement");
+const RemStatement_1 = require("./RemStatement");
+const Statements_1 = require("./Statements");
+const LetStatement_1 = require("./LetStatement");
+const RunStatement_1 = require("./RunStatement");
+const OperatorExp_1 = require("./OperatorExp");
+const TreeIt_1 = require("../common/TreeIt");
+const GotoStatement_1 = require("./GotoStatement");
+const ReturnStatement_1 = require("./ReturnStatement");
+const GoSubStatement_1 = require("./GoSubStatement");
+const PrintStatement_1 = require("./PrintStatement");
+const CallStatement_1 = require("./CallStatement");
 /**
 Шаг при обходе дерева
 */
-var AstTreeStep = /** @class */ (function (_super) {
-    __extends(AstTreeStep, _super);
-    function AstTreeStep() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    return AstTreeStep;
-}(TreeIt_1.TreeStep));
+class AstTreeStep extends TreeIt_1.TreeStep {
+}
 exports.AstTreeStep = AstTreeStep;
 function walk(ts, visitor) {
     //#region check args
@@ -52,8 +34,7 @@ function walk(ts, visitor) {
         if (visitor.statements && visitor.statements.begin) {
             visitor.statements.begin(ts.value, ts);
         }
-        for (var _i = 0, _a = ts.value.statements; _i < _a.length; _i++) {
-            var st = _a[_i];
+        for (let st of ts.value.statements) {
             walk(ts.follow(st), visitor);
         }
         if (visitor.statements && visitor.statements.end) {
@@ -87,7 +68,7 @@ function walk(ts, visitor) {
         if (visitor.print && visitor.print.begin) {
             visitor.print.begin(ts.value, ts);
         }
-        ts.value.args.forEach(function (e) {
+        ts.value.args.forEach((e) => {
             walk(ts.follow(e), visitor);
         });
         if (visitor.print && visitor.print.end) {
@@ -100,7 +81,7 @@ function walk(ts, visitor) {
         if (visitor.call && visitor.call.begin) {
             visitor.call.begin(ts.value, ts);
         }
-        ts.value.args.forEach(function (e) {
+        ts.value.args.forEach((e) => {
             walk(ts.follow(e), visitor);
         });
         if (visitor.call && visitor.call.end) {

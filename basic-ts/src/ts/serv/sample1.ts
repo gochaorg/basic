@@ -1,15 +1,5 @@
-// import http = require('http');
-// const originalRequest = http.request; 
-// // override the function
-// http.request = function wrapMethodRequest(req) {
-//   console.log(req.host, req.body);
-//   // do something with the req here
-//   // ...
-//   // call the original 'request' function   
-//   return originalRequest.apply(this, arguments);
-// }
-
 import express = require('express');
+import eureka = require('./EurekaClient');
 
 const app: express.Application = express()
 
@@ -39,8 +29,51 @@ app.get('/sum/:a/:b',(req,res,next)=>{
     }
 });
 
+let euClient : eureka.Client
+
 const httpServ = app.listen(3000,()=>{
     console.log("http started")
-    
-    //httpServ.clo
+    euClient = new eureka.Client({
+        eureka:{
+            api:[
+                'http://localhost:8701/eureka',
+                'http://localhost:8702/eureka',
+            ]
+        },
+        registry:{
+            app:'sample1',
+            hostName:'localhost',
+            port:3000,
+            homePageUrl:'http://localhost:3000/info',
+            ipAddr:'127.0.0.1',
+            status:"UP"
+        }
+    })
+    euClient.start().then(()=>{
+        console.log("eureka client started")
+    }).catch(()=>{
+        console.log("eureka client start fails")
+        httpServ.close()
+    })
 });
+
+app.post('/shutdown',(req,res)=>{
+    console.log("shutdown server")
+    
+    const euStop = (next:()=>any)=>{
+        if( euClient ){
+            euClient.stop().then( ()=>{
+                next()
+            }).catch(()=>{
+                next()                
+            })
+        }else{
+            next()
+        }
+    }
+
+    euStop( ()=>{
+        httpServ.close()
+        process.exit(1)
+    })
+})

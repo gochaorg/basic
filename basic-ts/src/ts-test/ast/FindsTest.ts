@@ -1,4 +1,4 @@
-import * as bfind from '../ts/common/Finds'
+import * as bfind from '../../ts/common/Finds'
 
 let arr1 : string[] = [ 'a', 'b', 'r', 'r', 'c', 'c', 'd', 'f', 'r','r','r','r','r','r','r','r', 'e', 'z', 'aa', 'ab' ]
 const srtFn = (a:string,b:string) => a.localeCompare(b)

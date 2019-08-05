@@ -1,73 +1,70 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var ConsolePrinter = /** @class */ (function () {
-    function ConsolePrinter() {
+class ConsolePrinter {
+    constructor() {
         this.args = [];
         this.prefix = "";
     }
-    ConsolePrinter.prototype.clone = function () {
-        var c = new ConsolePrinter();
+    clone() {
+        const c = new ConsolePrinter();
         c.args = this.args;
         c.prefix = this.prefix;
         return c;
-    };
-    ConsolePrinter.prototype.configure = function (x) {
+    }
+    configure(x) {
         x(this);
         return this;
-    };
-    ConsolePrinter.prototype.print = function (value) {
+    }
+    print(value) {
         this.args.push(value);
-    };
-    ConsolePrinter.prototype.println = function () {
-        console.log(this.prefix + this.args.map(function (x) { return "" + x; }).join(""));
+    }
+    println() {
+        console.log(this.prefix + this.args.map(x => "" + x).join(""));
         this.args = [];
-    };
-    return ConsolePrinter;
-}());
+    }
+}
 exports.ConsolePrinter = ConsolePrinter;
-var CustomPrinter = /** @class */ (function () {
-    function CustomPrinter(printfn, printlnfn) {
+class CustomPrinter {
+    constructor(printfn, printlnfn) {
         this.printfn = printfn;
         this.printlnfn = printlnfn;
     }
-    CustomPrinter.prototype.clone = function () {
+    clone() {
         return new CustomPrinter(this.printfn, this.printlnfn);
-    };
-    CustomPrinter.prototype.print = function (value) {
+    }
+    print(value) {
         this.printfn(value);
-    };
-    CustomPrinter.prototype.println = function () {
+    }
+    println() {
         this.printlnfn();
-    };
-    return CustomPrinter;
-}());
+    }
+}
 exports.CustomPrinter = CustomPrinter;
-var SingleFnPrinter = /** @class */ (function () {
-    function SingleFnPrinter(printfn) {
+class SingleFnPrinter {
+    constructor(printfn) {
         this.args = [];
         this.printfn = printfn;
     }
-    SingleFnPrinter.prototype.clone = function () {
-        var c = new SingleFnPrinter(this.printfn);
-        this.args.forEach(function (x) { return c.args.push(x); });
+    clone() {
+        const c = new SingleFnPrinter(this.printfn);
+        this.args.forEach(x => c.args.push(x));
         return c;
-    };
-    SingleFnPrinter.prototype.print = function (value) {
+    }
+    print(value) {
         this.args.push(value);
-    };
-    SingleFnPrinter.prototype.println = function () {
+    }
+    println() {
         this.printfn(this.args);
         this.args = [];
-    };
-    return SingleFnPrinter;
-}());
+    }
+}
 exports.SingleFnPrinter = SingleFnPrinter;
 exports.printers = {
     console: new ConsolePrinter(),
-    custom: function (printfn, printlnfn) {
+    custom(printfn, printlnfn) {
         return new CustomPrinter(printfn, printlnfn);
     },
-    sprint: function (printfn) {
+    sprint(printfn) {
         return new SingleFnPrinter(printfn);
     }
 };

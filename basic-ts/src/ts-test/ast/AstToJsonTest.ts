@@ -1,5 +1,5 @@
-import * as su from '../ts/vm/SourceUnit'
-import { astToBasic } from '../ts/ast/AstToBasic'
+import * as su from '../../ts/vm/SourceUnit'
+import { astToBasic } from '../../ts/ast/AstToBasic'
 
 let su1 = new su.SourceUnit
 

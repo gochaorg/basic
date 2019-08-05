@@ -1,6 +1,6 @@
-import * as su from '../ts/vm/SourceUnit'
-import { BasicVm } from '../ts/vm/BasicVm'
-import { Memo } from '../ts/vm/Memo'
+import * as su from '../../ts/vm/SourceUnit'
+import { BasicVm } from '../../ts/vm/BasicVm'
+import { Memo } from '../../ts/vm/Memo'
 
 console.log('== BasicVM test ==')
 const src1 = 

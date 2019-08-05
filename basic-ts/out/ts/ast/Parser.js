@@ -1,23 +1,23 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Pointer_1 = require("./Pointer");
-var Lexer_1 = require("./Lexer");
-var RemStatement_1 = require("./RemStatement");
-var Statements_1 = require("./Statements");
-var OperatorExp_1 = require("./OperatorExp");
-var LetStatement_1 = require("./LetStatement");
-var RunStatement_1 = require("./RunStatement");
-var GotoStatement_1 = require("./GotoStatement");
-var IfStatement_1 = require("./IfStatement");
-var GoSubStatement_1 = require("./GoSubStatement");
-var ReturnStatement_1 = require("./ReturnStatement");
-var PrintStatement_1 = require("./PrintStatement");
-var CallStatement_1 = require("./CallStatement");
+const Pointer_1 = require("./Pointer");
+const Lexer_1 = require("./Lexer");
+const RemStatement_1 = require("./RemStatement");
+const Statements_1 = require("./Statements");
+const OperatorExp_1 = require("./OperatorExp");
+const LetStatement_1 = require("./LetStatement");
+const RunStatement_1 = require("./RunStatement");
+const GotoStatement_1 = require("./GotoStatement");
+const IfStatement_1 = require("./IfStatement");
+const GoSubStatement_1 = require("./GoSubStatement");
+const ReturnStatement_1 = require("./ReturnStatement");
+const PrintStatement_1 = require("./PrintStatement");
+const CallStatement_1 = require("./CallStatement");
 /**
  * Опции парсера
  */
-var Options = /** @class */ (function () {
-    function Options() {
+class Options {
+    constructor() {
         /**
          * парсинг statement с учетом номера строки
          */
@@ -26,26 +26,25 @@ var Options = /** @class */ (function () {
     /**
      * Клонирование
      */
-    Options.prototype.clone = function (conf) {
-        var c = new Options();
+    clone(conf) {
+        const c = new Options();
         c.tryLineNum = this.tryLineNum;
         if (conf) {
             conf(c);
         }
         return c;
-    };
-    return Options;
-}());
+    }
+}
 exports.Options = Options;
 /**
  * Парсинг BASIC
  */
-var Parser = /** @class */ (function () {
+class Parser {
     /**
      * Конструктор
      * @param lexs лексемы
      */
-    function Parser(lexs) {
+    constructor(lexs) {
         this.debug = false;
         /**
          * Опции
@@ -57,33 +56,29 @@ var Parser = /** @class */ (function () {
      * Конструктор
      * @param source исходный текст
      */
-    Parser.create = function (source) {
+    static create(source) {
         return new Parser(Lexer_1.parseBasicLexs(source));
-    };
-    Parser.prototype.log = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
+    }
+    log(...args) {
         if (this.debug) {
-            console.log.apply(console, args);
+            console.log(...args);
         }
-    };
+    }
     /**
      * statements ::= { statement }
      */
-    Parser.prototype.statements = function () {
-        var res = [];
+    statements() {
+        const res = [];
         if (this.ptr.eof)
             return null;
-        var total = this.ptr.entries.length;
-        var tailEntries = this.ptr.gets(total - this.ptr.ptr);
-        var lines = Lexer_1.filter(tailEntries).lines;
-        var firstLex = null;
-        var lastLex = null;
+        const total = this.ptr.entries.length;
+        const tailEntries = this.ptr.gets(total - this.ptr.ptr);
+        const lines = Lexer_1.filter(tailEntries).lines;
+        let firstLex = null;
+        let lastLex = null;
         this.log("statements() lines:", lines);
-        for (var li = 0; li < lines.length; li++) {
-            var lineLex = lines[li];
+        for (let li = 0; li < lines.length; li++) {
+            const lineLex = lines[li];
             if (firstLex == null && lineLex.length > 0) {
                 firstLex = lineLex[0];
             }
@@ -91,10 +86,10 @@ var Parser = /** @class */ (function () {
                 lastLex = lineLex[lineLex.length - 1];
             }
             this.log("statements() line:", lineLex);
-            var lineParser = new Parser(lineLex);
+            const lineParser = new Parser(lineLex);
             lineParser.debug = this.debug;
             while (!lineParser.ptr.eof) {
-                var lineStatement = lineParser.statement();
+                const lineStatement = lineParser.statement();
                 if (lineStatement) {
                     res.push(lineStatement);
                 }
@@ -107,7 +102,7 @@ var Parser = /** @class */ (function () {
             return new Statements_1.Statements(firstLex, lastLex, res);
         }
         return new Statements_1.Statements(new Lexer_1.DummyLex(-1, -1), new Lexer_1.DummyLex(-1, -1), res);
-    };
+    }
     /**
      * statement ::= remStatement
      *             | letStatement
@@ -118,40 +113,40 @@ var Parser = /** @class */ (function () {
      *             | returnStatement
      *             | printStatement
      */
-    Parser.prototype.statement = function (opts) {
+    statement(opts) {
         if (!opts) {
             opts = this.options;
         }
         this.log('statement() ptr=', this.ptr.gets(3));
-        var remStmt = this.remStatement(opts);
+        const remStmt = this.remStatement(opts);
         if (remStmt)
             return remStmt;
-        var letStmt = this.letStatement(opts);
+        const letStmt = this.letStatement(opts);
         if (letStmt)
             return letStmt;
-        var runStmt = this.runStatement(opts);
+        const runStmt = this.runStatement(opts);
         if (runStmt)
             return runStmt;
-        var gotoStmt = this.gotoStatement(opts);
+        const gotoStmt = this.gotoStatement(opts);
         if (gotoStmt)
             return gotoStmt;
-        var ifStmt = this.ifStatement(opts);
+        const ifStmt = this.ifStatement(opts);
         if (ifStmt)
             return ifStmt;
-        var gosubStmt = this.gosubStatement(opts);
+        const gosubStmt = this.gosubStatement(opts);
         if (gosubStmt)
             return gosubStmt;
-        var returnStmt = this.returnStatement(opts);
+        const returnStmt = this.returnStatement(opts);
         if (returnStmt)
             return returnStmt;
-        var printStmt = this.printStatement(opts);
+        const printStmt = this.printStatement(opts);
         if (printStmt)
             return printStmt;
-        var callStmt = this.callStatement(opts);
+        const callStmt = this.callStatement(opts);
         if (callStmt)
             return callStmt;
         return null;
-    };
+    }
     /**
      * Проверка если текущая лексема обозначает начало нумерованной строки,
      * то лексема и номер строки передается в функцию,
@@ -160,9 +155,9 @@ var Parser = /** @class */ (function () {
      * Функция модет вернуть null, тогда будет восстановлена позиция
      * @param proc функция принимающая номер строки
      */
-    Parser.prototype.matchLine = function (proc) {
-        var lineNum = undefined;
-        var lineNumLex = this.ptr.get(0);
+    matchLine(proc) {
+        let lineNum = undefined;
+        let lineNumLex = this.ptr.get(0);
         if ((lineNumLex instanceof Lexer_1.SourceLineBeginLex
             || lineNumLex instanceof Lexer_1.NumberLex)) {
             if (lineNumLex instanceof Lexer_1.SourceLineBeginLex) {
@@ -174,7 +169,7 @@ var Parser = /** @class */ (function () {
             if (lineNum) {
                 this.ptr.push();
                 this.ptr.move(1);
-                var res = proc({ line: lineNum, lex: lineNumLex });
+                let res = proc({ line: lineNum, lex: lineNumLex });
                 if (res) {
                     this.ptr.drop();
                     return res;
@@ -183,19 +178,19 @@ var Parser = /** @class */ (function () {
             }
         }
         return null;
-    };
+    }
     /**
      * remStatement ::= SourceLineBeginLex RemLex
      *                | NumberLex RemLex
      *                | RemLex
      */
-    Parser.prototype.remStatement = function (opts) {
+    remStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
-        var _a = this.ptr.gets(2), lex1 = _a[0], lex2 = _a[1];
+        let [lex1, lex2] = this.ptr.gets(2);
         if (lex1 instanceof Lexer_1.SourceLineBeginLex && lex2 instanceof Lexer_1.RemLex && opts.tryLineNum) {
             this.ptr.move(2);
             return new RemStatement_1.RemStatement(lex1, lex2, lex2);
@@ -209,13 +204,12 @@ var Parser = /** @class */ (function () {
             return new RemStatement_1.RemStatement(lex1, lex1, lex1);
         }
         return null;
-    };
+    }
     /**
      * letStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                  StatementLex(LET) IDLex OperatorLex(=) expression
      */
-    Parser.prototype.letStatement = function (opts) {
-        var _this = this;
+    letStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
@@ -237,26 +231,26 @@ var Parser = /** @class */ (function () {
         //     }
         //     off = 1
         // }
-        var prod = function (arg) {
-            _this.ptr.push();
-            var lexLet = _this.ptr.get();
+        const prod = (arg) => {
+            this.ptr.push();
+            let lexLet = this.ptr.get();
             if (lexLet instanceof Lexer_1.StatementLex && lexLet.LET) {
-                _this.ptr.move(1);
+                this.ptr.move(1);
             }
             else {
-                _this.ptr.pop();
+                this.ptr.pop();
                 return null;
             }
-            var lexId = _this.ptr.get();
+            const lexId = this.ptr.get();
             if (lexId instanceof Lexer_1.IDLex) {
-                var lxNext = _this.ptr.get(1);
+                const lxNext = this.ptr.get(1);
                 if (lxNext instanceof Lexer_1.OperatorLex && lxNext.keyWord == '=') {
-                    _this.ptr.move(2);
-                    var exp = _this.expression();
+                    this.ptr.move(2);
+                    const exp = this.expression();
                     if (exp) {
-                        var begin = arg ? arg.lex : lexLet;
-                        var end = exp.rightTreeLex || begin;
-                        _this.ptr.drop();
+                        const begin = arg ? arg.lex : lexLet;
+                        let end = exp.rightTreeLex || begin;
+                        this.ptr.drop();
                         return new LetStatement_1.LetStatement(begin, end, lexId, exp);
                     }
                 }
@@ -265,7 +259,7 @@ var Parser = /** @class */ (function () {
                 //     //let exp
                 // }
             }
-            _this.ptr.pop();
+            this.ptr.pop();
             return null;
         };
         if (opts.tryLineNum) {
@@ -302,21 +296,21 @@ var Parser = /** @class */ (function () {
         //     }
         // }
         // return null
-    };
+    }
     /**
      * runStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                  StatementLex(RUN) [lineNumber : NumberLex]
      */
-    Parser.prototype.runStatement = function (opts) {
+    runStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
         this.log('runStatement() ptr=', this.ptr.gets(3));
-        var lineNum = undefined;
-        var lineNumLex = this.ptr.get(0);
-        var off = 0;
+        let lineNum = undefined;
+        let lineNumLex = this.ptr.get(0);
+        let off = 0;
         if (opts.tryLineNum &&
             (lineNumLex instanceof Lexer_1.SourceLineBeginLex
                 || lineNumLex instanceof Lexer_1.NumberLex)) {
@@ -328,11 +322,11 @@ var Parser = /** @class */ (function () {
             }
             off = 1;
         }
-        var runLex = this.ptr.get(off);
+        let runLex = this.ptr.get(off);
         if (runLex instanceof Lexer_1.StatementLex &&
             runLex.RUN) {
             this.log('runStatement() RUN');
-            var runLineLex = this.ptr.get(off + 1);
+            let runLineLex = this.ptr.get(off + 1);
             if (runLineLex instanceof Lexer_1.NumberLex) {
                 off += 2;
                 this.ptr.move(off);
@@ -346,26 +340,25 @@ var Parser = /** @class */ (function () {
             return new RunStatement_1.RunStatement(lineNumLex || runLex, runLex);
         }
         return null;
-    };
+    }
     /**
      * gotoStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                   StatementLex(GOTO) lineNumber:NumberLex
      * @param opts опции компилятора
      */
-    Parser.prototype.gotoStatement = function (opts) {
-        var _this = this;
+    gotoStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
         this.log('gotoStatement() ptr=', this.ptr.gets(3));
-        var prod = function (linf) {
-            var _a = _this.ptr.gets(2), gtLex = _a[0], gtLine = _a[1];
+        const prod = (linf) => {
+            let [gtLex, gtLine] = this.ptr.gets(2);
             if (gtLex instanceof Lexer_1.StatementLex
                 && gtLex.GOTO
                 && gtLine instanceof Lexer_1.NumberLex) {
-                _this.ptr.move(2);
+                this.ptr.move(2);
                 return new GotoStatement_1.GotoStatement(linf ? linf.lex : gtLex, gtLine, gtLine);
             }
             return null;
@@ -376,26 +369,25 @@ var Parser = /** @class */ (function () {
         else {
             return prod();
         }
-    };
+    }
     /**
      * gosubStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                   StatementLex(GOSUB) lineNumber:NumberLex
      * @param opts опции компилятора
      */
-    Parser.prototype.gosubStatement = function (opts) {
-        var _this = this;
+    gosubStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
         this.log('gosubStatement() ptr=', this.ptr.gets(3));
-        var prod = function (linf) {
-            var _a = _this.ptr.gets(2), gtLex = _a[0], gtLine = _a[1];
+        const prod = (linf) => {
+            let [gtLex, gtLine] = this.ptr.gets(2);
             if (gtLex instanceof Lexer_1.StatementLex
                 && gtLex.GOSUB
                 && gtLine instanceof Lexer_1.NumberLex) {
-                _this.ptr.move(2);
+                this.ptr.move(2);
                 return new GoSubStatement_1.GoSubStatement(linf ? linf.lex : gtLex, gtLine, gtLine);
             }
             return null;
@@ -406,28 +398,27 @@ var Parser = /** @class */ (function () {
         else {
             return prod();
         }
-    };
+    }
     /**
      * returnStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                   StatementLex(RETURN) [lineNumber:NumberLex]
      * @param opts опции компилятора
      */
-    Parser.prototype.returnStatement = function (opts) {
-        var _this = this;
+    returnStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
         this.log('returnStatement() ptr=', this.ptr.gets(3));
-        var prod = function (linf) {
-            var gtLex = _this.ptr.gets(1)[0];
+        const prod = (linf) => {
+            let [gtLex] = this.ptr.gets(1);
             if (gtLex instanceof Lexer_1.StatementLex
                 && gtLex.RETURN) {
-                _this.ptr.move(1);
-                var gtLine = _this.ptr.fetch(0, 1)[0];
+                this.ptr.move(1);
+                let [gtLine] = this.ptr.fetch(0, 1);
                 if (gtLine instanceof Lexer_1.NumberLex) {
-                    _this.ptr.move(1);
+                    this.ptr.move(1);
                     return new ReturnStatement_1.ReturnStatement(linf ? linf.lex : gtLex, gtLine, gtLine);
                 }
                 else {
@@ -442,7 +433,7 @@ var Parser = /** @class */ (function () {
         else {
             return prod();
         }
-    };
+    }
     /**
      * ifStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                 StatementLex(IF) expression
@@ -450,56 +441,55 @@ var Parser = /** @class */ (function () {
      *                 [StatementLex(ELSE) statement]
      * @param opts опции компилятора
      */
-    Parser.prototype.ifStatement = function (opts) {
-        var _this = this;
+    ifStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
         this.log('ifStatement() ptr=', this.ptr.gets(3));
-        var prod = function (linf) {
-            var ifLx = _this.ptr.get();
-            _this.log("ifLx ", ifLx);
+        const prod = (linf) => {
+            let ifLx = this.ptr.get();
+            this.log("ifLx ", ifLx);
             if (!ifLx)
                 return null;
             if (!(ifLx instanceof Lexer_1.StatementLex))
                 return null;
             if (!(ifLx.IF))
                 return null;
-            _this.ptr.push();
-            _this.ptr.move(1);
-            var exp = _this.expression();
+            this.ptr.push();
+            this.ptr.move(1);
+            let exp = this.expression();
             if (!exp) {
-                _this.ptr.pop();
+                this.ptr.pop();
                 return null;
             }
-            var thenLx = _this.ptr.get();
+            let thenLx = this.ptr.get();
             if (thenLx instanceof Lexer_1.StatementLex && !thenLx.THEN) {
-                _this.ptr.pop();
+                this.ptr.pop();
                 return null;
             }
-            _this.ptr.move(1);
-            var conf = function (op) { op.tryLineNum = false; };
-            var trueSt = _this.statement(opts ? opts.clone(conf) : _this.options.clone(conf));
+            this.ptr.move(1);
+            const conf = (op) => { op.tryLineNum = false; };
+            let trueSt = this.statement(opts ? opts.clone(conf) : this.options.clone(conf));
             if (trueSt == null) {
-                _this.ptr.pop();
+                this.ptr.pop();
                 return null;
             }
-            var elseLx = _this.ptr.get();
-            var falseSt = null;
+            let elseLx = this.ptr.get();
+            let falseSt = null;
             if (elseLx instanceof Lexer_1.StatementLex && elseLx.ELSE) {
-                _this.ptr.push();
-                _this.ptr.move(1);
-                falseSt = _this.statement(opts ? opts.clone(conf) : _this.options.clone(conf));
+                this.ptr.push();
+                this.ptr.move(1);
+                falseSt = this.statement(opts ? opts.clone(conf) : this.options.clone(conf));
                 if (falseSt) {
-                    _this.ptr.drop();
+                    this.ptr.drop();
                 }
                 else {
-                    _this.ptr.pop();
+                    this.ptr.pop();
                 }
             }
-            _this.ptr.drop();
+            this.ptr.drop();
             if (falseSt) {
                 return new IfStatement_1.IfStatement(linf ? linf.lex : ifLx, falseSt ? falseSt.end : trueSt.end, exp, trueSt, falseSt);
             }
@@ -511,39 +501,38 @@ var Parser = /** @class */ (function () {
         else {
             return prod();
         }
-    };
+    }
     /**
      * printStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                    StatementLex(PRINT) [expression {',' expression}]
      * @param opts опции компилятора
      */
-    Parser.prototype.printStatement = function (opts) {
-        var _this = this;
+    printStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
         this.log('printStatement() ptr=', this.ptr.gets(3));
-        var prod = function (linf) {
-            var gtLex = _this.ptr.gets(1)[0];
+        const prod = (linf) => {
+            let [gtLex] = this.ptr.gets(1);
             if (gtLex instanceof Lexer_1.StatementLex
                 && gtLex.PRINT) {
-                _this.ptr.move(1);
-                var exps = [];
-                var lastLex = gtLex;
+                this.ptr.move(1);
+                const exps = [];
+                let lastLex = gtLex;
                 while (true) {
                     if (exps.length > 0) {
-                        var lNext = _this.ptr.get();
+                        const lNext = this.ptr.get();
                         if (!(lNext && lNext instanceof Lexer_1.OperatorLex && lNext.argDelim)) {
                             break;
                         }
                         else {
-                            _this.ptr.move(1);
+                            this.ptr.move(1);
                         }
                     }
-                    _this.ptr.push();
-                    var exp = _this.expression();
+                    this.ptr.push();
+                    const exp = this.expression();
                     if (exp) {
                         exps.push(exp);
                         if (exp.rightTreeLex) {
@@ -551,7 +540,7 @@ var Parser = /** @class */ (function () {
                         }
                     }
                     else {
-                        _this.ptr.pop();
+                        this.ptr.pop();
                         if (exps.length > 0) {
                             //TODO here error report
                         }
@@ -568,40 +557,39 @@ var Parser = /** @class */ (function () {
         else {
             return prod();
         }
-    };
+    }
     /**
      * callStatement ::= [ SourceLineBeginLex | NumberLex ]
      *                    StatementLex(CALL) IDLex [expression {',' expression}]
      * @param opts опции компилятора
      */
-    Parser.prototype.callStatement = function (opts) {
-        var _this = this;
+    callStatement(opts) {
         if (!opts) {
             opts = this.options;
         }
         if (this.ptr.eof)
             return null;
         this.log('callStatement() ptr=', this.ptr.gets(3));
-        var prod = function (linf) {
-            var _a = _this.ptr.gets(2), callLex = _a[0], idLex = _a[1];
+        const prod = (linf) => {
+            let [callLex, idLex] = this.ptr.gets(2);
             if (callLex instanceof Lexer_1.StatementLex
                 && callLex.CALL
                 && idLex instanceof Lexer_1.IDLex) {
-                _this.ptr.move(2);
-                var exps = [];
-                var lastLex = callLex;
+                this.ptr.move(2);
+                const exps = [];
+                let lastLex = callLex;
                 while (true) {
                     if (exps.length > 0) {
-                        var lNext = _this.ptr.get();
+                        const lNext = this.ptr.get();
                         if (!(lNext && lNext instanceof Lexer_1.OperatorLex && lNext.argDelim)) {
                             break;
                         }
                         else {
-                            _this.ptr.move(1);
+                            this.ptr.move(1);
                         }
                     }
-                    _this.ptr.push();
-                    var exp = _this.expression();
+                    this.ptr.push();
+                    const exp = this.expression();
                     if (exp) {
                         exps.push(exp);
                         if (exp.rightTreeLex) {
@@ -609,7 +597,7 @@ var Parser = /** @class */ (function () {
                         }
                     }
                     else {
-                        _this.ptr.pop();
+                        this.ptr.pop();
                         if (exps.length > 0) {
                             //TODO here error report
                         }
@@ -626,33 +614,33 @@ var Parser = /** @class */ (function () {
         else {
             return prod();
         }
-    };
+    }
     /**
      * expression ::= impExpression | bracketExpression
      */
-    Parser.prototype.expression = function () {
+    expression() {
         this.log('expression() ptr=', this.ptr.gets(3));
-        var powExp = this.impExpression();
+        let powExp = this.impExpression();
         if (powExp)
             return powExp;
-        var brExp = this.bracketExpression();
+        let brExp = this.bracketExpression();
         if (brExp)
             return brExp;
         return null;
-    };
+    }
     /**
      * bracketExpression ::= '(' expression ')'
      */
-    Parser.prototype.bracketExpression = function () {
+    bracketExpression() {
         if (this.ptr.eof)
             return null;
-        var leftBr = this.ptr.get(0);
+        let leftBr = this.ptr.get(0);
         if (leftBr instanceof Lexer_1.KeyWordLex && leftBr.keyWord == '(') {
             this.ptr.push();
             this.ptr.move(1);
-            var exp = this.expression();
+            let exp = this.expression();
             if (exp) {
-                var rightBr = this.ptr.get(0);
+                let rightBr = this.ptr.get(0);
                 if (rightBr instanceof Lexer_1.KeyWordLex && rightBr.keyWord == ')') {
                     this.ptr.move(1);
                     this.ptr.drop();
@@ -662,7 +650,7 @@ var Parser = /** @class */ (function () {
             this.ptr.pop();
         }
         return null;
-    };
+    }
     /**
      * Парсинг циклической конструкции:
      * leftOp { operator rightExp }
@@ -676,21 +664,21 @@ var Parser = /** @class */ (function () {
      * @param rightExp вычисление правого операнда
      * @param accpetOperator проверка оператора
      */
-    Parser.prototype.binaryRepeatExpression = function (ruleName, leftOp, rightExp, accpetOperator) {
-        var res = leftOp;
+    binaryRepeatExpression(ruleName, leftOp, rightExp, accpetOperator) {
+        let res = leftOp;
         while (true) {
-            var lx = this.ptr.get();
+            let lx = this.ptr.get();
             if (lx instanceof Lexer_1.OperatorLex && accpetOperator(lx)) {
                 this.ptr.move(1);
-                var rightOp = rightExp();
-                this.log(ruleName + " right=", rightOp);
+                let rightOp = rightExp();
+                this.log(`${ruleName} right=`, rightOp);
                 if (rightOp) {
                     this.ptr.drop();
-                    this.log(ruleName + " succ=", lx.keyWord, res, rightOp);
+                    this.log(`${ruleName} succ=`, lx.keyWord, res, rightOp);
                     res = new OperatorExp_1.BinaryOpExpression(lx, res, rightOp);
                     lx = this.ptr.get();
                     if (lx instanceof Lexer_1.OperatorLex && accpetOperator(lx)) {
-                        this.log(ruleName + " has right " + lx.keyWord);
+                        this.log(`${ruleName} has right ${lx.keyWord}`);
                         this.ptr.push();
                         continue;
                     }
@@ -706,99 +694,94 @@ var Parser = /** @class */ (function () {
                 return res;
             }
         }
-    };
+    }
     /**
      * impExpression ::= eqvExpression [ { 'IMP' eqvExpression } ]
      */
-    Parser.prototype.impExpression = function () {
-        var _this = this;
+    impExpression() {
         this.log('impExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.eqvExpression();
+        let leftOp = this.eqvExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('impExpression()', leftOp, function () { return _this.eqvExpression(); }, function (lx) { return lx.imp; });
+            return this.binaryRepeatExpression('impExpression()', leftOp, () => this.eqvExpression(), (lx) => lx.imp);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * eqvExpression ::= xorExpression [ 'EQV' xorExpression ]
      */
-    Parser.prototype.eqvExpression = function () {
-        var _this = this;
+    eqvExpression() {
         this.log('eqvExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.xorExpression();
+        let leftOp = this.xorExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('eqvExpression()', leftOp, function () { return _this.xorExpression(); }, function (lx) { return lx.eqv; });
+            return this.binaryRepeatExpression('eqvExpression()', leftOp, () => this.xorExpression(), (lx) => lx.eqv);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * xorExpression ::= orExpression [ { 'XOR' orExpression } ]
      */
-    Parser.prototype.xorExpression = function () {
-        var _this = this;
+    xorExpression() {
         this.log('xorExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.orExpression();
+        let leftOp = this.orExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('xorExpression()', leftOp, function () { return _this.orExpression(); }, function (lx) { return lx.xor; });
+            return this.binaryRepeatExpression('xorExpression()', leftOp, () => this.orExpression(), (lx) => lx.xor);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * orExpression ::= andExpression [ { 'OR' andExpression } ]
      */
-    Parser.prototype.orExpression = function () {
-        var _this = this;
+    orExpression() {
         this.log('orExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.andExpression();
+        let leftOp = this.andExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('orExpression()', leftOp, function () { return _this.andExpression(); }, function (lx) { return lx.or; });
+            return this.binaryRepeatExpression('orExpression()', leftOp, () => this.andExpression(), (lx) => lx.or);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * andExpression ::= notExpression [ { 'AND' notExpression } ]
      */
-    Parser.prototype.andExpression = function () {
-        var _this = this;
+    andExpression() {
         this.log('andExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.notExpression();
+        let leftOp = this.notExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('andExpression()', leftOp, function () { return _this.notExpression(); }, function (lx) { return lx.and; });
+            return this.binaryRepeatExpression('andExpression()', leftOp, () => this.notExpression(), (lx) => lx.and);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * notExpression ::= ['NOT'] relationExpression
      */
-    Parser.prototype.notExpression = function () {
+    notExpression() {
         this.log('notExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
-        var lx = this.ptr.get();
+        let lx = this.ptr.get();
         if (lx instanceof Lexer_1.OperatorLex && lx.not) {
             this.ptr.push();
             this.ptr.move(1);
-            var exp = this.relationExpression();
+            let exp = this.relationExpression();
             if (exp) {
                 this.ptr.drop();
                 return new OperatorExp_1.UnaryOpExpression(lx, exp);
@@ -807,21 +790,21 @@ var Parser = /** @class */ (function () {
             return null;
         }
         return this.relationExpression();
-    };
+    }
     /**
      * relationExpression ::= plusExpression [ ('=', '<>', '><', '<', '>', '>=', '<=', '=>', '=<') plusExpression ]
      */
-    Parser.prototype.relationExpression = function () {
+    relationExpression() {
         this.log('relationExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.plusExpression();
+        let leftOp = this.plusExpression();
         if (leftOp) {
-            var lx = this.ptr.get();
+            let lx = this.ptr.get();
             if (lx instanceof Lexer_1.OperatorLex && lx.ordReleation) {
                 this.ptr.move(1);
-                var rightOp = this.plusExpression();
+                let rightOp = this.plusExpression();
                 if (rightOp) {
                     this.ptr.drop();
                     return new OperatorExp_1.BinaryOpExpression(lx, leftOp, rightOp);
@@ -834,102 +817,97 @@ var Parser = /** @class */ (function () {
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * plusExpression ::= modExpression [ { ('+' | '-') modExpression } ]
      */
-    Parser.prototype.plusExpression = function () {
-        var _this = this;
+    plusExpression() {
         this.log('plusExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.modExpression();
+        let leftOp = this.modExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('plusExpression()', leftOp, function () { return _this.modExpression(); }, function (lx) { return lx.plus || lx.minus; });
+            return this.binaryRepeatExpression('plusExpression()', leftOp, () => this.modExpression(), (lx) => lx.plus || lx.minus);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * modExpression ::= intDivExpression [ { 'MOD' intDivExpression } ]
      */
-    Parser.prototype.modExpression = function () {
-        var _this = this;
+    modExpression() {
         this.log('modExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.intDivExpression();
+        let leftOp = this.intDivExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('modExpression()', leftOp, function () { return _this.intDivExpression(); }, function (lx) { return lx.mod; });
+            return this.binaryRepeatExpression('modExpression()', leftOp, () => this.intDivExpression(), (lx) => lx.mod);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * intDivExpression ::= mulExpression [ { '\' mulExpression } ]
      */
-    Parser.prototype.intDivExpression = function () {
-        var _this = this;
+    intDivExpression() {
         this.log('intDivExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.mulExpression();
+        let leftOp = this.mulExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('intDivExpression()', leftOp, function () { return _this.mulExpression(); }, function (lx) { return lx.idiv; });
+            return this.binaryRepeatExpression('intDivExpression()', leftOp, () => this.mulExpression(), (lx) => lx.idiv);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * mulExpression ::= powExpression [ { ( '*' | '/' ) powExpression } ]
      */
-    Parser.prototype.mulExpression = function () {
-        var _this = this;
+    mulExpression() {
         this.log('mulExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.powExpression();
+        let leftOp = this.powExpression();
         if (leftOp) {
-            return this.binaryRepeatExpression('mulExpression()', leftOp, function () { return _this.powExpression(); }, function (lx) { return lx.mult || lx.div; });
+            return this.binaryRepeatExpression('mulExpression()', leftOp, () => this.powExpression(), (lx) => lx.mult || lx.div);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * powExpression ::= signedAtom [ { '^' signedAtom } ]
      */
-    Parser.prototype.powExpression = function () {
-        var _this = this;
+    powExpression() {
         this.log('powExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var leftOp = this.signedAtom();
+        let leftOp = this.signedAtom();
         if (leftOp) {
-            return this.binaryRepeatExpression('powExpression()', leftOp, function () { return _this.signedAtom(); }, function (lx) { return lx.pow; });
+            return this.binaryRepeatExpression('powExpression()', leftOp, () => this.signedAtom(), (lx) => lx.pow);
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * signedAtom ::= [ '+' | '-' ] atom
      */
-    Parser.prototype.signedAtom = function () {
+    signedAtom() {
         this.log('signedAtom() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
         this.ptr.push();
-        var unary = false;
-        var unaryLx = this.ptr.get();
+        let unary = false;
+        let unaryLx = this.ptr.get();
         if (unaryLx instanceof Lexer_1.OperatorLex && (unaryLx.keyWord == '-' || unaryLx.keyWord == '+')) {
             this.ptr.move(1);
             unary = true;
         }
-        var atom = this.atom();
+        let atom = this.atom();
         if (atom) {
             this.ptr.drop();
             if (unary) {
@@ -939,22 +917,22 @@ var Parser = /** @class */ (function () {
         }
         this.ptr.pop();
         return null;
-    };
+    }
     /**
      * atom ::= '(' expression ')'
      *        | baseValueExpression
      */
-    Parser.prototype.atom = function () {
+    atom() {
         this.log('atom() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
-        var leftBr = this.ptr.get(0);
+        let leftBr = this.ptr.get(0);
         if (leftBr instanceof Lexer_1.KeyWordLex && leftBr.keyWord == '(') {
             this.ptr.push();
             this.ptr.move(1);
-            var exp = this.expression();
+            let exp = this.expression();
             if (exp) {
-                var rightBr = this.ptr.get(0);
+                let rightBr = this.ptr.get(0);
                 if (rightBr instanceof Lexer_1.KeyWordLex && rightBr.keyWord == ')') {
                     this.ptr.move(1);
                     this.ptr.drop();
@@ -964,34 +942,34 @@ var Parser = /** @class */ (function () {
             this.ptr.pop();
         }
         return this.baseValueExpression();
-    };
+    }
     /**
      * baseValueExpression ::= constExpression
      *                       | varRefExpression '(' expression [{ ',' expression }] ')'
      *                       | varRefExpression
      */
-    Parser.prototype.baseValueExpression = function () {
+    baseValueExpression() {
         this.log('baseValueExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
-        var cexpr = this.constExpression();
+        let cexpr = this.constExpression();
         this.log('baseValueExpression() cexpr=', cexpr);
         if (cexpr) {
             this.log('baseValueExpression() res=', cexpr);
             return cexpr;
         }
-        var vrefExp = this.varRefExpression();
+        let vrefExp = this.varRefExpression();
         this.log('baseValueExpression() vrefExp=', vrefExp);
         if (vrefExp) {
             this.log('baseValueExpression() res=', vrefExp);
-            var brOpen = this.ptr.get();
+            const brOpen = this.ptr.get();
             if (brOpen instanceof Lexer_1.OperatorLex && brOpen.arrBrOpen) {
-                var parseArrSucc = true;
-                var indexExpression = [];
+                let parseArrSucc = true;
+                const indexExpression = [];
                 this.ptr.push();
                 this.ptr.move(1);
                 while (true) {
-                    var idxExp = this.expression();
+                    const idxExp = this.expression();
                     if (idxExp) {
                         indexExpression.push(idxExp);
                     }
@@ -1000,7 +978,7 @@ var Parser = /** @class */ (function () {
                         parseArrSucc = false;
                         break;
                     }
-                    var lxNext = this.ptr.get();
+                    const lxNext = this.ptr.get();
                     if (lxNext instanceof Lexer_1.OperatorLex) {
                         if (lxNext.argDelim) {
                             this.ptr.move(1);
@@ -1020,15 +998,15 @@ var Parser = /** @class */ (function () {
             return vrefExp;
         }
         return null;
-    };
+    }
     /**
      * constExpression ::= NumberLex | StringLex
      */
-    Parser.prototype.constExpression = function () {
+    constExpression() {
         this.log('constExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
-        var lx = this.ptr.get();
+        let lx = this.ptr.get();
         if (lx instanceof Lexer_1.NumberLex) {
             this.ptr.move(1);
             return new OperatorExp_1.LiteralExpression(lx, lx.value);
@@ -1038,15 +1016,15 @@ var Parser = /** @class */ (function () {
             return new OperatorExp_1.LiteralExpression(lx, lx.value);
         }
         return null;
-    };
+    }
     /**
      * varRefExpression ::= IDLex
      */
-    Parser.prototype.varRefExpression = function () {
+    varRefExpression() {
         this.log('varRefExpression() ptr=', this.ptr.gets(3));
         if (this.ptr.eof)
             return null;
-        var lx = this.ptr.get();
+        let lx = this.ptr.get();
         this.log('varRefExpression() lx=', lx);
         if (lx instanceof Lexer_1.IDLex) {
             this.log('varRefExpression() succ', lx);
@@ -1054,8 +1032,7 @@ var Parser = /** @class */ (function () {
             return new OperatorExp_1.VarRefExpression(lx);
         }
         return null;
-    };
-    return Parser;
-}());
+    }
+}
 exports.Parser = Parser;
 //# sourceMappingURL=Parser.js.map

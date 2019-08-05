@@ -1,4 +1,4 @@
-import * as su from '../ts/vm/SourceUnit'
+import * as su from '../../ts/vm/SourceUnit'
 
 let su1 = new su.SourceUnit
 

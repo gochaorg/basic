@@ -1,4 +1,4 @@
-import { TreeIt } from '../ts/common/TreeIt'
+import { TreeIt } from '../../ts/common/TreeIt'
 
 interface Foo {
     [key: string]: string[];

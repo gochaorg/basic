@@ -1,12 +1,6 @@
-import * as Basic from '../ts/ast/Parser'
+import * as Basic from '../../ts/ast/Parser'
 
 console.log('== Basic parser ==')
-// console.log(
-//     Basic.Parser.create(
-//         '10 REM comments\n'+
-//         '12 REM comment 2'
-//     ).statements()
-// )
 
 interface TestExp {
     debug?: boolean,
@@ -17,20 +11,9 @@ interface TestExp {
 
 let testExpressions:TestExp[] = [
     //{ statement: '10 + 8*3', parseFn: (p)=>p.expression() },
-    { code: '10 REM hello', parseFn: (p)=>p.statement(), json:true },
-    { code: '10 LET a = 1', parseFn: (p)=>p.statement(), json:true },
-    { code: '10 LET b = c < d', parseFn: (p)=>p.statement(), json:true },
-    { code: 
-        '10 REM cmnt\n'+
-        '20 LET b = c < d'
-        , parseFn: (p)=>p.statements() },
-    { code: 
-        '10 REM cmnt\n'+
-        '20 LET b = a\n'+
-        'RUN 10'
-        , parseFn: (p)=>p.statements()
-        , debug: false
-     },
+    //{ code: '10 GOTO 20', parseFn: (p)=>p.statement(), json:true, debug:false },
+    //{ code: '10 IF a>1 THEN GOTO 20 ELSE GOTO 22', parseFn: (p)=>p.statement(), json:true, debug:false },
+    { code: 'IF a>1 THEN GOTO 20 ELSE GOTO 22', parseFn: (p)=>p.statement(), json:true, debug:false },
 ]
 
 console.log("== parse statements ============")

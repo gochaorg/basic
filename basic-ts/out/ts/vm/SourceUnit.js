@@ -1,26 +1,25 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Parser_1 = require("../ast/Parser");
+const Parser_1 = require("../ast/Parser");
 /**
  * Исходная строка
  */
-var SourceLine = /** @class */ (function () {
-    function SourceLine(line, code) {
+class SourceLine {
+    constructor(line, code) {
         this.line = line;
         this.statement = code;
     }
-    return SourceLine;
-}());
+}
 exports.SourceLine = SourceLine;
 /**
  * Исходный текст
  */
-var SourceUnit = /** @class */ (function () {
+class SourceUnit {
     /**
      * Конструктор
      * @param sample образец для копирования
      */
-    function SourceUnit(sample) {
+    constructor(sample) {
         /**
          * Набор строк исхдного текста
          */
@@ -28,95 +27,89 @@ var SourceUnit = /** @class */ (function () {
         //#region lines : IDXSourceLine
         this.linesCache = null;
         if (sample) {
-            for (var li in sample.sourceLines) {
+            for (let li in sample.sourceLines) {
                 this.sourceLines[li] = sample.sourceLines[li];
             }
         }
     }
-    Object.defineProperty(SourceUnit.prototype, "lines", {
-        /**
-         * Возвращает список исходных строк
-         */
-        get: function () {
-            if (this.linesCache)
-                return this.linesCache;
-            var lines = [];
-            var idx = -1;
-            for (var _i = 0, _a = this.sourceLines; _i < _a.length; _i++) {
-                var sl = _a[_i];
-                idx++;
-                lines.push({ statement: sl.statement, index: idx, line: sl.line });
-            }
-            this.linesCache = Object.freeze(lines);
+    /**
+     * Возвращает список исходных строк
+     */
+    get lines() {
+        if (this.linesCache)
             return this.linesCache;
-        },
-        enumerable: true,
-        configurable: true
-    });
+        let lines = [];
+        let idx = -1;
+        for (let sl of this.sourceLines) {
+            idx++;
+            lines.push({ statement: sl.statement, index: idx, line: sl.line });
+        }
+        this.linesCache = Object.freeze(lines);
+        return this.linesCache;
+    }
     //#endregion
     /**
      * Возвращает исходную строку (номер, строка / индекс) по ее номеру
      * @param line номер строки
      */
-    SourceUnit.prototype.find = function (line) {
+    find(line) {
         if (line < 0)
             return null;
-        for (var i in this.sourceLines) {
-            var sline = this.sourceLines[i];
+        for (let i in this.sourceLines) {
+            let sline = this.sourceLines[i];
             if (sline.line == line) {
                 return { statement: sline.statement, index: parseInt(i), line: sline.line };
             }
         }
         return null;
-    };
+    }
     /**
      * Возвращает исходную строку (номер, строка / индекс) по ее номеру
      * @param line номер строки
      */
-    SourceUnit.prototype.line = function (line) {
-        var res = this.find(line);
+    line(line) {
+        const res = this.find(line);
         if (res)
             return res;
-        throw new Error("source line with number " + line + " not found");
-    };
+        throw new Error(`source line with number ${line} not found`);
+    }
     /**
      * Добавляет строку и возвращает новый объект исходного когда
      * @param line номер строки
      * @param code код
      * @returns модифицированный исходный код
      */
-    SourceUnit.prototype.set = function (line, code) {
+    set(line, code) {
         if (line < 0)
             throw new Error("argument line(=" + line + ") < 0");
-        var fnd = this.find(line);
+        const fnd = this.find(line);
         if (fnd) {
-            var cln_1 = new SourceUnit(this);
-            cln_1.sourceLines[fnd.index] = new SourceLine(line, code);
-            return cln_1;
+            let cln = new SourceUnit(this);
+            cln.sourceLines[fnd.index] = new SourceLine(line, code);
+            return cln;
         }
-        var cln = new SourceUnit(this);
+        let cln = new SourceUnit(this);
         cln.sourceLines.push(new SourceLine(line, code));
-        cln.sourceLines = cln.sourceLines.sort(function (a, b) { return a.line - b.line; });
+        cln.sourceLines = cln.sourceLines.sort((a, b) => a.line - b.line);
         return cln;
-    };
+    }
     /**
      * Парсинг исходного текста
      * @param source исходный текст
      * @param presult результат парсинга
      */
-    SourceUnit.prototype.parse = function (source, presult) {
+    parse(source, presult) {
         if (source) {
-            var parser = Parser_1.Parser.create(source);
-            var stmts = parser.statements();
-            var res = this;
+            const parser = Parser_1.Parser.create(source);
+            const stmts = parser.statements();
+            let res = this;
             if (stmts) {
-                var sstmts = [];
-                var istmts = [];
+                const sstmts = [];
+                const istmts = [];
                 if (presult && presult.statments) {
                     presult.statments(stmts);
                 }
-                for (var _i = 0, _a = stmts.statements; _i < _a.length; _i++) {
-                    var st = _a[_i];
+                for (let st of stmts.statements) {
                     if (st.sourceLine) {
                         res = res.set(st.sourceLine, st);
                         sstmts.push(st);
@@ -135,9 +128,8 @@ var SourceUnit = /** @class */ (function () {
             return res;
         }
         return this;
-    };
-    return SourceUnit;
-}());
+    }
+}
 exports.SourceUnit = SourceUnit;
 /**
  * Парсинг исходника

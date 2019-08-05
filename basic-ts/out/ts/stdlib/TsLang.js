@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var ExtFun_1 = require("../vm/ExtFun");
+const ExtFun_1 = require("../vm/ExtFun");
 function register(memo) {
-    memo.write('LEN', new ExtFun_1.Fun1(function (ctx, a) {
+    memo.write('LEN', new ExtFun_1.Fun1((ctx, a) => {
         if (a instanceof Array) {
             return a.length;
         }

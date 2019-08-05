@@ -1,8 +1,8 @@
-import * as su from '../ts/vm/SourceUnit'
-import { BasicVm } from '../ts/vm/BasicVm'
-import { Memo } from '../ts/vm/Memo'
-import { Fun, Fun0, Fun2 } from '../ts/vm/ExtFun';
-import { astToBasic } from '../ts/ast/AstToBasic';
+import * as su from '../../ts/vm/SourceUnit'
+import { BasicVm } from '../../ts/vm/BasicVm'
+import { Memo } from '../../ts/vm/Memo'
+import { Fun, Fun0, Fun2 } from '../../ts/vm/ExtFun';
+import { astToBasic } from '../../ts/ast/AstToBasic';
 
 console.log('== call test ==')
 const src1 = 

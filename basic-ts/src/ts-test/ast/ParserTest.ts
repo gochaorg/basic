@@ -1,7 +1,7 @@
-import * as Basic from '../ts/ast/Parser'
-import { Statement } from '../ts/ast/Statement';
-import { BinaryOpExpression, UnaryOpExpression } from '../ts/ast/OperatorExp';
-import { astToBasic } from '../ts/ast/AstToBasic';
+import * as Basic from '../../ts/ast/Parser'
+import { Statement } from '../../ts/ast/Statement';
+import { BinaryOpExpression, UnaryOpExpression } from '../../ts/ast/OperatorExp';
+import { astToBasic } from '../../ts/ast/AstToBasic';
 
 console.log('== Basic parser ==')
 // console.log(

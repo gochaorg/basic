@@ -3,15 +3,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-var process = require("process");
-var fs_1 = __importDefault(require("fs"));
-var SourceUnit_1 = require("./vm/SourceUnit");
-var BasicVm_1 = require("./vm/BasicVm");
+const process = require("process");
+const fs_1 = __importDefault(require("fs"));
+const SourceUnit_1 = require("./vm/SourceUnit");
+const BasicVm_1 = require("./vm/BasicVm");
 /**
  * Аргументы командной строки
  */
-var Args = /** @class */ (function () {
-    function Args() {
+class Args {
+    constructor() {
         /**
          * Последовательно выполняемые команды
          */
@@ -21,15 +21,14 @@ var Args = /** @class */ (function () {
          */
         this.encoding = 'utf-8';
     }
-    return Args;
-}());
+}
 /**
  * Обработка параметров командной строки
  * @param args параметры командной строки
  */
 function processArgs(commandLineArgs) {
-    var res = new Args();
-    var argz = commandLineArgs.slice();
+    const res = new Args();
+    const argz = [...commandLineArgs];
     if (argz.length > 0) {
         res.nodeExe = argz.shift();
     }
@@ -37,34 +36,34 @@ function processArgs(commandLineArgs) {
         res.startupJs = argz.shift();
     }
     if (argz.length == 0) {
-        res.commands.push(function (a) { showHelp(a); });
+        res.commands.push((a) => { showHelp(a); });
     }
-    var stop = function (r, a) { return stop; };
-    var parseArgs = function (q, args) {
+    let stop = (r, a) => { return stop; };
+    let parseArgs = (q, args) => {
         if (/(\-|\-\-|\/)(\?|help)/.test(args[0])) {
             args.shift();
-            q.commands.push(function (a) { showHelp(a); });
+            q.commands.push((a) => { showHelp(a); });
             return init;
         }
         if (args.length > 1 && (args[0] == '-r' || args[0] == '--run')) {
             args.shift();
-            var filename_1 = args.shift();
-            if (filename_1) {
-                q.commands.push(function () { runFile(filename_1, q.encoding); });
+            const filename = args.shift();
+            if (filename) {
+                q.commands.push(() => { runFile(filename, q.encoding); });
             }
             return parseArgs;
         }
         if (args.length > 1 && args[0] == '--ast2json') {
             args.shift();
-            var filename_2 = args.shift();
-            if (filename_2) {
-                var outfile_1 = undefined;
+            const filename = args.shift();
+            if (filename) {
+                let outfile = undefined;
                 if (args.length > 1 && args[0] == '--out') {
                     args.shift();
-                    outfile_1 = args.shift();
+                    outfile = args.shift();
                 }
-                q.commands.push(function () {
-                    ast2json(filename_2, q.encoding, outfile_1);
+                q.commands.push(() => {
+                    ast2json(filename, q.encoding, outfile);
                 });
             }
             return parseArgs;
@@ -77,26 +76,26 @@ function processArgs(commandLineArgs) {
         args.shift();
         return parseArgs;
     };
-    var init = function (q, args) {
+    let init = (q, args) => {
         if (args.length < 1) {
             return stop;
         }
         if (args.length == 1) {
-            var tryFilename_1 = args[0];
-            var tryFileSt = fs_1.default.statSync(tryFilename_1);
+            const tryFilename = args[0];
+            const tryFileSt = fs_1.default.statSync(tryFilename);
             if (tryFileSt.isFile()) {
                 args.shift();
-                q.commands.push(function () {
-                    runFile(tryFilename_1);
+                q.commands.push(() => {
+                    runFile(tryFilename);
                 });
                 return stop;
             }
         }
         return parseArgs;
     };
-    var parse = init;
+    let parse = init;
     while (argz.length > 0) {
-        var r = parse(res, argz);
+        const r = parse(res, argz);
         if (r == stop) {
             break;
         }
@@ -109,12 +108,11 @@ function processArgs(commandLineArgs) {
  * @param filename имя файла
  * @param encoding кодировка файла
  */
-function runFile(filename, encoding) {
-    if (encoding === void 0) { encoding = 'utf-8'; }
+function runFile(filename, encoding = 'utf-8') {
     //console.log(`run file ${filename}`)
-    var basicSrc = fs_1.default.readFileSync(filename, { encoding: encoding });
-    var su = new SourceUnit_1.SourceUnit().parse(basicSrc);
-    var vm = new BasicVm_1.BasicVm(su);
+    const basicSrc = fs_1.default.readFileSync(filename, { encoding: encoding });
+    const su = new SourceUnit_1.SourceUnit().parse(basicSrc);
+    const vm = new BasicVm_1.BasicVm(su);
     vm.ip = 0;
     while (vm.hasNext()) {
         vm.next();
@@ -155,11 +153,10 @@ function showHelp(a) {
  * @param encoding кодировка файла
  * @param outputFilename файл в который производиться вывод
  */
-function ast2json(filename, encoding, outputFilename) {
-    if (encoding === void 0) { encoding = 'utf-8'; }
-    var basicSrc = fs_1.default.readFileSync(filename, { encoding: encoding });
-    var su = new SourceUnit_1.SourceUnit().parse(basicSrc);
-    var jsn = JSON.stringify(su, undefined, 2);
+function ast2json(filename, encoding = 'utf-8', outputFilename) {
+    const basicSrc = fs_1.default.readFileSync(filename, { encoding: encoding });
+    const su = new SourceUnit_1.SourceUnit().parse(basicSrc);
+    const jsn = JSON.stringify(su, undefined, 2);
     if (outputFilename) {
         fs_1.default.writeFileSync(outputFilename, jsn, { encoding: encoding });
     }
@@ -167,6 +164,6 @@ function ast2json(filename, encoding, outputFilename) {
         console.log(jsn);
     }
 }
-var tsArgs = processArgs(process.argv);
-tsArgs.commands.forEach(function (a) { return a(tsArgs); });
+const tsArgs = processArgs(process.argv);
+tsArgs.commands.forEach(a => a(tsArgs));
 //# sourceMappingURL=tsbasic.js.map

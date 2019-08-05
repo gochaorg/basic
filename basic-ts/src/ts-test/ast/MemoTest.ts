@@ -1,4 +1,4 @@
-import { Memo } from '../ts/vm/Memo'
+import { Memo } from '../../ts/vm/Memo'
 
 console.log('=== test memo ===')
 

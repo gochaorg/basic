@@ -1,4 +1,4 @@
-import * as LX from '../ts/ast/Lexer'
+import * as LX from '../../ts/ast/Lexer'
 
 console.log( '===== BASIC --------=========================================' )
 let lexs1 = LX.parseBasicLexs( 
