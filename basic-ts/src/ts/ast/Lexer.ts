@@ -314,7 +314,7 @@ export class StatementLex extends KeyWordLex {
     get PRINT() { return this.keyWord.toUpperCase()=='PRINT' }
     get CALL() { return this.keyWord.toUpperCase()=='CALL' }
 
-    //get LIST() { return this.keyWord.toUpperCase()=='LIST' }
+    //request LIST() { return this.keyWord.toUpperCase()=='LIST' }
     static parse = KeyWordLex.parser(
         true,
         [                

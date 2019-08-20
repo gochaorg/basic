@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -256,34 +264,36 @@ class Client {
         return prom;
     }
     app(name) {
-        const urls = this.conf.eureka.api.map(u => u + "/apps/" + name);
-        if (urls.length < 1)
-            throw new Error("conf.eureka.api.length < 1");
-        let iurl = -1;
-        let succRes = () => { };
-        let failRes = () => { };
-        const prom = new Promise((resolve, reject) => {
-            succRes = resolve;
-            failRes = reject;
-        });
-        const run = () => {
-            iurl++;
-            const url = urls[(iurl % urls.length)];
-            axios_1.default.get(url).then(res => {
-                console.log(res.data);
-                succRes(res.data);
-            }).catch(res => {
-                console.log("fail app query");
-                if (iurl < this.tryMax) {
-                    run();
-                }
-                else {
-                    failRes(this);
-                }
+        return __awaiter(this, void 0, void 0, function* () {
+            const urls = this.conf.eureka.api.map(u => u + "/apps/" + name);
+            if (urls.length < 1)
+                throw new Error("conf.eureka.api.length < 1");
+            let iurl = -1;
+            let succRes = () => { };
+            let failRes = () => { };
+            const prom = new Promise((resolve, reject) => {
+                succRes = resolve;
+                failRes = reject;
             });
-        };
-        run();
-        return prom;
+            const run = () => {
+                iurl++;
+                const url = urls[(iurl % urls.length)];
+                axios_1.default.get(url).then(res => {
+                    //console.log(res.data)
+                    succRes(res.data);
+                }).catch(res => {
+                    console.log("fail app query");
+                    if (iurl < this.tryMax) {
+                        run();
+                    }
+                    else {
+                        failRes(this);
+                    }
+                });
+            };
+            run();
+            return prom;
+        });
     }
 }
 exports.Client = Client;

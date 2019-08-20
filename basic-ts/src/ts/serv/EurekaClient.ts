@@ -386,7 +386,7 @@ export class Client {
         return prom;
     }
 
-    app(name:string) {
+    async app(name:string):Promise<AppQuery> {
         const urls = this.conf.eureka.api.map( u => u+"/apps/"+name )
         if( urls.length<1 )throw new Error("conf.eureka.api.length < 1")
 
@@ -402,7 +402,7 @@ export class Client {
             iurl++
             const url =  urls[(iurl % urls.length)]
             aux.get(url).then(res=>{
-                console.log(res.data)
+                //console.log(res.data)
                 succRes(res.data)
             }).catch(res=>{
                 console.log("fail app query")

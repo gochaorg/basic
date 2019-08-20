@@ -216,7 +216,7 @@ class Parser {
         if (this.ptr.eof)
             return null;
         // let lineNum : number | undefined = undefined
-        // let lineNumLex = this.ptr.get(0)
+        // let lineNumLex = this.ptr.request(0)
         // let off = 0
         // if( opts.tryLineNum && 
         //     (  lineNumLex instanceof SourceLineBeginLex 
@@ -268,7 +268,7 @@ class Parser {
         else {
             return prod();
         }
-        // let lexLet = this.ptr.get(off)
+        // let lexLet = this.ptr.request(off)
         // if( lexLet instanceof StatementLex && 
         //     lexLet.LET
         // ){
@@ -278,7 +278,7 @@ class Parser {
         //     ){
         //         // parsing...
         //         this.ptr.push()
-        //         let begin = this.ptr.get() || lexLet
+        //         let begin = this.ptr.request() || lexLet
         //         this.ptr.move(off+3)
         //         let exp = this.expression()
         //         if( exp ){
