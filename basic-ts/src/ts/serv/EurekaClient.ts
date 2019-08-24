@@ -1,4 +1,4 @@
-import aux from 'axios';
+import aux, { AxiosRequestConfig } from 'axios';
 import { url } from 'inspector';
 
 export type ClientStatus = "UP" | "DOWN" | "STARTING" | "OUT_OF_SERVICE" | "UNKNOWN"
@@ -354,6 +354,7 @@ export class Client {
         return prom;
     }
 
+    /** Получение информации о сервисах */
     apps(){
         const urls = this.conf.eureka.api.map( u => u+"/apps" )
         if( urls.length<1 )throw new Error("conf.eureka.api.length < 1")
@@ -386,6 +387,7 @@ export class Client {
         return prom;
     }
 
+    /** Получение информации о конкретном сервисе */
     async app(name:string):Promise<AppQuery> {
         const urls = this.conf.eureka.api.map( u => u+"/apps/"+name )
         if( urls.length<1 )throw new Error("conf.eureka.api.length < 1")
@@ -420,4 +422,286 @@ export class Client {
     }
 }
 
-export default Client;
+/** Учет статистики взова */
+export class InstanceStat {
+    maxEntries:number = 100
+
+    readonly calls:{
+        wait:number,
+        time:number,
+        succ:boolean
+    }[] = []
+
+    /** 
+     * фиксирование информации о вызове сервиса
+     * @param wait - ожидание в мс
+     * @param succ - успешность вызова
+     */
+    collect(wait:number, succ:boolean){
+        if( this.maxEntries>0 ){
+            this.calls.push({wait:wait, time:Date.now(), succ:succ})
+            while( this.calls.length>this.maxEntries ){
+                this.calls.shift()
+            }
+        }
+    }
+
+    /** получение оперативной статистики о работе экземпляра сервиса */
+    get stat() {
+        const waits = this.calls.map( i=>i.wait ).reduce( (a,b)=>a+b )
+        const total = this.calls.length
+        const success = this.calls.filter( i => i.succ ).length
+        const fails = this.calls.filter( i => i.succ==false ).length
+        const avg = total>0 ? waits / total : 0
+        return {
+            accessibility: {
+                total: total,
+                success: success,
+                fails: fails,
+                pct: total>0 ? 100 * success / total : -1
+            },
+            times: {
+                waits: waits,
+                avg: avg
+            }
+        }
+    }
+}
+
+/** Сервис который зарегистрирован в eureka */
+class Service {
+    /** список экземпляров */
+    instances:Instance[] = []
+    
+    /** время когда был получен список экземпляров  */
+    protected instFetchDate : number | undefined = undefined
+
+    /** таймаут (мс) после которого необходимо запросить новый список сервисов */
+    protected renewInstTimeout : number | undefined = undefined
+
+    /** инициализация - промис для получения информации о сервисе */
+    private initAppProm : Promise<any>
+
+    /** инициализация завершена */
+    private initFinished = false
+
+    /** инициализация завершена успешно */
+    private initSuccess = false
+    
+    /**
+     * Конструктор
+     * @param eu клиент eureka
+     * @param name имя сервиса
+     */
+    constructor( eu:Client, name:string ){
+        this.initAppProm =
+        eu.app(name).then( appInfo => {
+                this.instances = appInfo.application.instance
+                // console.log(
+                //     `sucess fetch app "${name}" urls:`,
+                //     this.serviceUrlPrefix().map( i => i.url )
+                // )
+                this.initFinished = true
+                this.initSuccess = true
+                this.instFetchDate = Date.now()
+                this.renewInstTimeout = this.instances.
+                    map( inst => inst.leaseInfo.renewalIntervalInSecs ).
+                    map( sec => sec * 1000 ).
+                    reduce( (a,b) => a<b ? a : b )
+            }).catch( err => {
+                console.error("catch err: ",err)
+                this.initFinished = true
+                this.initSuccess = false
+            })
+    }
+
+    serviceUrlPrefix(){
+        return this.instances.map( i => {
+            return { 
+                instance: i, 
+                url: `http://${i.ipAddr}:${i.port.$}`
+            }
+        })
+    }
+
+    protected roundRobinIndex = -1
+
+    /** логирование */
+    readonly log = {
+        print:(message:any)=>{},
+        request: {
+            begin:(url:string,opts?:any)=>{
+                const ent : {[name:string]:any} = {}
+                ent.url = url
+                if( opts )Object.keys(opts).forEach( k => { ent[k]=opts[k] })
+                this.log.print(ent)
+            },
+            call:(url:string, attempt:number, tryMax:number,opts?:any)=>{ 
+                const ent : {[name:string]:any} = {}
+                ent.url = url
+                ent.attempt = attempt
+                ent.tryMax = tryMax
+                if( opts )Object.keys(opts).forEach( k => { ent[k]=opts[k] })
+                this.log.print(ent)
+            },
+            callFail:(url:string, attempt:number, tryMax:number,opts?:any)=>{
+                const ent : {[name:string]:any} = {}
+                ent.url = url
+                ent.attempt = attempt
+                ent.tryMax = tryMax
+                if( opts )Object.keys(opts).forEach( k => { ent[k]=opts[k] })
+                this.log.print(ent)
+            },
+            end:(url:string,err?:any,opts?:any)=>{
+                const ent : {[name:string]:any} = {}
+                ent.url = url
+                if( opts )Object.keys(opts).forEach( k => { ent[k]=opts[k] })
+                this.log.print(ent)
+            }
+        },
+        checkInited: {
+            waitInit: ()=>{ this.log.print({
+                action: "checkInited"
+            })},
+            initFail: ()=>{ this.log.print({
+                action: "init fail"
+            })}
+        }
+    }
+
+    /** проверка завершения инициализации */
+    protected async checkInited(){
+        if( !this.initFinished ){
+            this.log.checkInited.waitInit()
+            await this.initAppProm
+        }
+        if( !this.initSuccess ){
+            this.log.checkInited.initFail()
+            throw new Error("service is not initialized")
+        }
+    }
+
+    /** статистика по экземплярам */
+    readonly stat:{[instId:string]:InstanceStat} = {}
+
+    /** учет статистики вызова экземпляра */
+    protected collect( instId:string, waitTime:number, succ:boolean) {
+        let instSt = this.stat[instId]
+        if( !instSt ){
+            instSt = new InstanceStat()
+            this.stat[instId] = instSt
+        }
+        instSt.collect( waitTime, succ )
+    }
+
+    /** выполнение get запроса к сервису
+     * @param url - адрес, 
+     * если указан адрес относительно корня, без http и домена/ip (например /method/arg1/arg2?blabla),
+     * тогда будет задествован механизм обработки отказов faultTolerance
+     * @param config - конфигурация axios
+     * @returns результат вызова
+     */
+    async get(url:string, config?: AxiosRequestConfig) {
+        // ожидание инициализации
+        await this.checkInited()
+
+        this.log.request.begin(url)
+
+        const absAddr = url.startsWith('http:') || url.startsWith('https:')
+        const firstSlash = url.startsWith('/')
+
+        if( absAddr ){
+            // вызов конкретного экземпляра
+            try {
+                this.log.request.call(url,1,1)
+                const res = await aux.get(url,config)
+                this.log.request.end(url)
+                return res
+            } catch ( err ) {
+                this.log.request.end(url,err)
+                throw err
+            }
+        }else{
+            // берем очередной экземпляр по кругу 
+            this.roundRobinIndex++
+
+            const srvcUrls = this.serviceUrlPrefix()
+            if( srvcUrls.length<1 )throw new Error("service base url not defined")
+
+            // номер попытки            
+            let urli = 0
+            
+            // максимальное кол-во поыток
+            const tryMax = 10
+
+            // сопоставление экземпляра и его идентификатора
+            const instId = (inst:Instance):string => {
+                if( inst.instanceId ){
+                    return inst.instanceId
+                }
+                return `${inst.ipAddr}:${inst.port.$}:${inst.app}`
+            }
+            
+            // засекаем время и кол-во попыток
+            const t0 = Date.now()
+            let tsum = 0
+            let tcnt = 0            
+            while( true ){
+                // засекаем время (начало) вызова
+                const t1 = Date.now()
+                const collectTime = (inst:Instance,succ:boolean)=>{
+                    // засекаем время (конец) вызова
+                    const t2 = Date.now()
+                    const treq = t2 - t1
+                    tcnt++
+                    tsum += treq
+
+                    // фиксируем время и успешность вызова
+                    this.collect(instId(inst), treq, succ)
+                    return {
+                        calls: tcnt,
+                        times: {
+                            summary: tsum,
+                            avg: (tcnt>0 ? tsum / tcnt : 0)
+                        }
+                    }
+                }
+
+                // берем очередной экземпляр и делаем попытку вызова
+                urli++
+                const inst = srvcUrls[
+                    (urli + this.roundRobinIndex) % srvcUrls.length
+                ]
+                try {
+                    // получаем целевой адрес
+                    const targetUrl = inst.url+(firstSlash ? url : '/'+url)
+                    const attempt = urli
+                    
+                    // делаем вызов
+                    this.log.request.call(targetUrl,attempt,tryMax)
+                    const res = await aux.get( targetUrl, config )
+                    this.log.request.end(targetUrl,undefined,collectTime(inst.instance, true))
+
+                    // возвращаем результат
+                    return res
+                } catch( err ){
+                    // ведем учет общего времени на данный метод get
+                    const t2 = Date.now()
+                    const treq = t2 - t1
+                    tcnt++
+                    tsum += treq
+
+                    // фиксируем ошибку вызова в статистике на данный экземпляр
+                    const x = collectTime(inst.instance, false)
+                    if( urli>=tryMax ){
+                        // кол-во вызовов превысело максимальное допустимое
+                        this.log.request.end(url,err,x)
+                        throw err
+                    }
+                }
+            }
+        }
+    }
+}
+
+//export default Client, InstanceStat;

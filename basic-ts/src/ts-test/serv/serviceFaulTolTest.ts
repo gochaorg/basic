@@ -50,42 +50,7 @@ async function testFetch1(){
 //testFetch1()
 //#endregion
 
-class InstanceStat {
-    maxEntries:number = 100
-
-    readonly calls:{
-        wait:number,
-        time:number,
-        succ:boolean
-    }[] = []
-
-    collect(wait:number, succ:boolean){
-        if( this.maxEntries>0 ){
-            this.calls.push({wait:wait, time:Date.now(), succ:succ})
-            while( this.calls.length>this.maxEntries ){
-                this.calls.shift()
-            }
-        }
-    }
-
-    get stat() {
-        const waits = this.calls.map( i=>i.wait ).reduce( (a,b)=>a+b )
-        const total = this.calls.length
-        const success = this.calls.filter( i => i.succ ).length
-        const fails = this.calls.filter( i => i.succ==false ).length
-        const avg = total>0 ? waits / total : 0
-        return {
-            total: total,
-            success: success,
-            fails: fails,
-            times: {
-                waits: waits,
-                avg: avg
-            }
-        }
-    }
-}
-
+/** Сервис который зарегистрирован в eureka */
 class Service {
     instances:eureka.Instance[] = []
 
@@ -93,6 +58,11 @@ class Service {
     private initFinished = false
     private initSuccess = false
     
+    /**
+     * Конструктор
+     * @param eu клиент eureka
+     * @param name имя сервиса
+     */
     constructor( eu:eureka.Client, name:string ){
         this.initAppProm =
         eu.app(name).then( appInfo => {
@@ -174,12 +144,12 @@ class Service {
         }
     }
 
-    readonly stat:{[instId:string]:InstanceStat} = {}
+    readonly stat:{[instId:string]:eureka.InstanceStat} = {}
 
     protected collect( instId:string, waitTime:number, succ:boolean) {
         let instSt = this.stat[instId]
         if( !instSt ){
-            instSt = new InstanceStat()
+            instSt = new eureka.InstanceStat()
             this.stat[instId] = instSt
         }
         instSt.collect( waitTime, succ )
@@ -275,7 +245,7 @@ async function testFetch2(){
     console.log("=========== testFetch2 =============")
     const srv = new Service(euClient,"sample1")
     srv.log.print = msg => console.log('[debug]',msg)
-    for( let i=0; i<30; i++ ){
+    for( let i=0; i<200; i++ ){
         let res = await srv.get(`/sum/${i}/${i+i*2}`)
         console.log(`sum ${i} + ${i+i*2} = `,res.data)
     }

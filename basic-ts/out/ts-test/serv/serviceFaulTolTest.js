@@ -57,37 +57,13 @@ function testFetch1() {
 }
 //testFetch1()
 //#endregion
-class InstanceStat {
-    constructor() {
-        this.maxEntries = 100;
-        this.calls = [];
-    }
-    collect(wait, succ) {
-        if (this.maxEntries > 0) {
-            this.calls.push({ wait: wait, time: Date.now(), succ: succ });
-            while (this.calls.length > this.maxEntries) {
-                this.calls.shift();
-            }
-        }
-    }
-    get stat() {
-        const waits = this.calls.map(i => i.wait).reduce((a, b) => a + b);
-        const total = this.calls.length;
-        const success = this.calls.filter(i => i.succ).length;
-        const fails = this.calls.filter(i => i.succ == false).length;
-        const avg = total > 0 ? waits / total : 0;
-        return {
-            total: total,
-            success: success,
-            fails: fails,
-            times: {
-                waits: waits,
-                avg: avg
-            }
-        };
-    }
-}
+/** Сервис который зарегистрирован в eureka */
 class Service {
+    /**
+     * Конструктор
+     * @param eu клиент eureka
+     * @param name имя сервиса
+     */
     constructor(eu, name) {
         this.instances = [];
         this.initFinished = false;
@@ -178,7 +154,7 @@ class Service {
     collect(instId, waitTime, succ) {
         let instSt = this.stat[instId];
         if (!instSt) {
-            instSt = new InstanceStat();
+            instSt = new eureka.InstanceStat();
             this.stat[instId] = instSt;
         }
         instSt.collect(waitTime, succ);
@@ -267,7 +243,7 @@ function testFetch2() {
         console.log("=========== testFetch2 =============");
         const srv = new Service(euClient, "sample1");
         srv.log.print = msg => console.log('[debug]', msg);
-        for (let i = 0; i < 30; i++) {
+        for (let i = 0; i < 200; i++) {
             let res = yield srv.get(`/sum/${i}/${i + i * 2}`);
             console.log(`sum ${i} + ${i + i * 2} = `, res.data);
         }

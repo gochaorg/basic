@@ -234,6 +234,7 @@ class Client {
         run();
         return prom;
     }
+    /** Получение информации о сервисах */
     apps() {
         const urls = this.conf.eureka.api.map(u => u + "/apps");
         if (urls.length < 1)
@@ -263,6 +264,7 @@ class Client {
         run();
         return prom;
     }
+    /** Получение информации о конкретном сервисе */
     app(name) {
         return __awaiter(this, void 0, void 0, function* () {
             const urls = this.conf.eureka.api.map(u => u + "/apps/" + name);
@@ -297,5 +299,267 @@ class Client {
     }
 }
 exports.Client = Client;
-exports.default = Client;
+/** Учет статистики взова */
+class InstanceStat {
+    constructor() {
+        this.maxEntries = 100;
+        this.calls = [];
+    }
+    /**
+     * фиксирование информации о вызове сервиса
+     * @param wait - ожидание в мс
+     * @param succ - успешность вызова
+     */
+    collect(wait, succ) {
+        if (this.maxEntries > 0) {
+            this.calls.push({ wait: wait, time: Date.now(), succ: succ });
+            while (this.calls.length > this.maxEntries) {
+                this.calls.shift();
+            }
+        }
+    }
+    /** получение оперативной статистики о работе экземпляра сервиса */
+    get stat() {
+        const waits = this.calls.map(i => i.wait).reduce((a, b) => a + b);
+        const total = this.calls.length;
+        const success = this.calls.filter(i => i.succ).length;
+        const fails = this.calls.filter(i => i.succ == false).length;
+        const avg = total > 0 ? waits / total : 0;
+        return {
+            accessibility: {
+                total: total,
+                success: success,
+                fails: fails,
+                pct: total > 0 ? 100 * success / total : -1
+            },
+            times: {
+                waits: waits,
+                avg: avg
+            }
+        };
+    }
+}
+exports.InstanceStat = InstanceStat;
+/** Сервис который зарегистрирован в eureka */
+class Service {
+    /**
+     * Конструктор
+     * @param eu клиент eureka
+     * @param name имя сервиса
+     */
+    constructor(eu, name) {
+        /** список экземпляров */
+        this.instances = [];
+        /** время когда был получен список экземпляров  */
+        this.instFetchDate = undefined;
+        /** таймаут (мс) после которого необходимо запросить новый список сервисов */
+        this.renewInstTimeout = undefined;
+        /** инициализация завершена */
+        this.initFinished = false;
+        /** инициализация завершена успешно */
+        this.initSuccess = false;
+        this.roundRobinIndex = -1;
+        /** логирование */
+        this.log = {
+            print: (message) => { },
+            request: {
+                begin: (url, opts) => {
+                    const ent = {};
+                    ent.url = url;
+                    if (opts)
+                        Object.keys(opts).forEach(k => { ent[k] = opts[k]; });
+                    this.log.print(ent);
+                },
+                call: (url, attempt, tryMax, opts) => {
+                    const ent = {};
+                    ent.url = url;
+                    ent.attempt = attempt;
+                    ent.tryMax = tryMax;
+                    if (opts)
+                        Object.keys(opts).forEach(k => { ent[k] = opts[k]; });
+                    this.log.print(ent);
+                },
+                callFail: (url, attempt, tryMax, opts) => {
+                    const ent = {};
+                    ent.url = url;
+                    ent.attempt = attempt;
+                    ent.tryMax = tryMax;
+                    if (opts)
+                        Object.keys(opts).forEach(k => { ent[k] = opts[k]; });
+                    this.log.print(ent);
+                },
+                end: (url, err, opts) => {
+                    const ent = {};
+                    ent.url = url;
+                    if (opts)
+                        Object.keys(opts).forEach(k => { ent[k] = opts[k]; });
+                    this.log.print(ent);
+                }
+            },
+            checkInited: {
+                waitInit: () => {
+                    this.log.print({
+                        action: "checkInited"
+                    });
+                },
+                initFail: () => {
+                    this.log.print({
+                        action: "init fail"
+                    });
+                }
+            }
+        };
+        /** статистика по экземплярам */
+        this.stat = {};
+        this.initAppProm =
+            eu.app(name).then(appInfo => {
+                this.instances = appInfo.application.instance;
+                // console.log(
+                //     `sucess fetch app "${name}" urls:`,
+                //     this.serviceUrlPrefix().map( i => i.url )
+                // )
+                this.initFinished = true;
+                this.initSuccess = true;
+                this.instFetchDate = Date.now();
+                this.renewInstTimeout = this.instances.
+                    map(inst => inst.leaseInfo.renewalIntervalInSecs).
+                    map(sec => sec * 1000).
+                    reduce((a, b) => a < b ? a : b);
+            }).catch(err => {
+                console.error("catch err: ", err);
+                this.initFinished = true;
+                this.initSuccess = false;
+            });
+    }
+    serviceUrlPrefix() {
+        return this.instances.map(i => {
+            return {
+                instance: i,
+                url: `http://${i.ipAddr}:${i.port.$}`
+            };
+        });
+    }
+    /** проверка завершения инициализации */
+    checkInited() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.initFinished) {
+                this.log.checkInited.waitInit();
+                yield this.initAppProm;
+            }
+            if (!this.initSuccess) {
+                this.log.checkInited.initFail();
+                throw new Error("service is not initialized");
+            }
+        });
+    }
+    /** учет статистики вызова экземпляра */
+    collect(instId, waitTime, succ) {
+        let instSt = this.stat[instId];
+        if (!instSt) {
+            instSt = new InstanceStat();
+            this.stat[instId] = instSt;
+        }
+        instSt.collect(waitTime, succ);
+    }
+    /** выполнение get запроса к сервису
+     * @param url - адрес,
+     * если указан адрес относительно корня, без http и домена/ip (например /method/arg1/arg2?blabla),
+     * тогда будет задествован механизм обработки отказов faultTolerance
+     * @param config - конфигурация axios
+     * @returns результат вызова
+     */
+    get(url, config) {
+        return __awaiter(this, void 0, void 0, function* () {
+            // ожидание инициализации
+            yield this.checkInited();
+            this.log.request.begin(url);
+            const absAddr = url.startsWith('http:') || url.startsWith('https:');
+            const firstSlash = url.startsWith('/');
+            if (absAddr) {
+                // вызов конкретного экземпляра
+                try {
+                    this.log.request.call(url, 1, 1);
+                    const res = yield axios_1.default.get(url, config);
+                    this.log.request.end(url);
+                    return res;
+                }
+                catch (err) {
+                    this.log.request.end(url, err);
+                    throw err;
+                }
+            }
+            else {
+                // берем очередной экземпляр по кругу 
+                this.roundRobinIndex++;
+                const srvcUrls = this.serviceUrlPrefix();
+                if (srvcUrls.length < 1)
+                    throw new Error("service base url not defined");
+                // номер попытки            
+                let urli = 0;
+                // максимальное кол-во поыток
+                const tryMax = 10;
+                // сопоставление экземпляра и его идентификатора
+                const instId = (inst) => {
+                    if (inst.instanceId) {
+                        return inst.instanceId;
+                    }
+                    return `${inst.ipAddr}:${inst.port.$}:${inst.app}`;
+                };
+                // засекаем время и кол-во попыток
+                const t0 = Date.now();
+                let tsum = 0;
+                let tcnt = 0;
+                while (true) {
+                    // засекаем время (начало) вызова
+                    const t1 = Date.now();
+                    const collectTime = (inst, succ) => {
+                        // засекаем время (конец) вызова
+                        const t2 = Date.now();
+                        const treq = t2 - t1;
+                        tcnt++;
+                        tsum += treq;
+                        // фиксируем время и успешность вызова
+                        this.collect(instId(inst), treq, succ);
+                        return {
+                            calls: tcnt,
+                            times: {
+                                summary: tsum,
+                                avg: (tcnt > 0 ? tsum / tcnt : 0)
+                            }
+                        };
+                    };
+                    // берем очередной экземпляр и делаем попытку вызова
+                    urli++;
+                    const inst = srvcUrls[(urli + this.roundRobinIndex) % srvcUrls.length];
+                    try {
+                        // получаем целевой адрес
+                        const targetUrl = inst.url + (firstSlash ? url : '/' + url);
+                        const attempt = urli;
+                        // делаем вызов
+                        this.log.request.call(targetUrl, attempt, tryMax);
+                        const res = yield axios_1.default.get(targetUrl, config);
+                        this.log.request.end(targetUrl, undefined, collectTime(inst.instance, true));
+                        // возвращаем результат
+                        return res;
+                    }
+                    catch (err) {
+                        // ведем учет общего времени на данный метод get
+                        const t2 = Date.now();
+                        const treq = t2 - t1;
+                        tcnt++;
+                        tsum += treq;
+                        // фиксируем ошибку вызова в статистике на данный экземпляр
+                        const x = collectTime(inst.instance, false);
+                        if (urli >= tryMax) {
+                            // кол-во вызовов превысело максимальное допустимое
+                            this.log.request.end(url, err, x);
+                            throw err;
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+//export default Client, InstanceStat;
 //# sourceMappingURL=EurekaClient.js.map

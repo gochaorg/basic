@@ -11,6 +11,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express = require("express");
 const eureka = require("./EurekaClient");
 const Num_1 = require("../common/Num");
+const CmdLine_1 = require("../common/CmdLine");
 //import ssleep = require('system-sleep');
 // #region Конфигурация
 // порт
@@ -25,54 +26,8 @@ let sleepMax = 0;
 let failurePercentage = 0;
 //#endregion
 /* #region обработка параметров к строки */
-const cmdline = {
-    args: [...process.argv],
-    shift: () => { return cmdline.args.shift(); },
-    match: (ptrn, cycle = true) => {
-        const parse = () => {
-            const arg = cmdline.shift();
-            if (arg) {
-                const mptr = ptrn[arg];
-                if (mptr) {
-                    if (mptr.int) {
-                        const arg2 = cmdline.shift();
-                        if (arg2) {
-                            const n = parseInt(arg2, 10);
-                            if (n !== NaN) {
-                                mptr.int(n);
-                            }
-                        }
-                    }
-                    if (mptr.num) {
-                        const arg2 = cmdline.shift();
-                        if (arg2) {
-                            const n = parseFloat(arg2);
-                            if (n !== NaN) {
-                                mptr.num(n);
-                            }
-                        }
-                    }
-                    if (mptr.str) {
-                        const arg2 = cmdline.shift();
-                        if (arg2) {
-                            mptr.str(arg2);
-                        }
-                    }
-                }
-            }
-        };
-        if (cycle) {
-            while (cmdline.args.length > 0) {
-                parse();
-            }
-        }
-        else {
-            parse();
-        }
-    }
-};
 let eurekaCmdLineParam = 0;
-cmdline.match({
+CmdLine_1.cmdline.match({
     "-port": {
         num: (n) => { port = n; }
     },
