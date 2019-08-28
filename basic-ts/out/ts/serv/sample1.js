@@ -24,6 +24,8 @@ let sleepMin = 0;
 let sleepMax = 0;
 // процент отказа
 let failurePercentage = 0;
+// интервал времени (сек) с которым проверять доступность сервиса
+let heartbeatInSecs = 10;
 //#endregion
 /* #region обработка параметров к строки */
 let eurekaCmdLineParam = 0;
@@ -39,14 +41,17 @@ CmdLine_1.cmdline.match({
             eurekaApi.push(url);
         }
     },
+    "-heartbeat.sec": {
+        int: (sec) => heartbeatInSecs = sec
+    },
     "-sleep.min": {
-        int: (n) => { sleepMin = n; }
+        int: (n) => sleepMin = n
     },
     "-sleep.max": {
-        int: (n) => { sleepMax = n; }
+        int: (n) => sleepMax = n
     },
     "-fail.pct": {
-        num: (n) => { failurePercentage = n; }
+        num: (n) => failurePercentage = n
     }
 });
 /* #endregion */
@@ -84,7 +89,12 @@ const httpServ = app.listen(port, () => {
             port: port,
             homePageUrl: `http://localhost:${port}/info`,
             ipAddr: '127.0.0.1',
-            status: "UP"
+            status: "UP",
+            leaseInfo: {
+                renewalIntervalInSecs: heartbeatInSecs,
+                durationInSecs: heartbeatInSecs * 3
+                //evictionDurationInSecs: evictionDurationInSecs*2
+            }
         }
     });
     euClient.start().then(() => {

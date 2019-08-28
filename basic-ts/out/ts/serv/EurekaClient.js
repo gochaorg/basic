@@ -19,6 +19,8 @@ class Client {
     /** Конструктор */
     constructor(conf) {
         this.clientStarted = false;
+        /** Возвращает интервал (мс) с которым посылается heartbeat запрос */
+        this.prefferedHeartbeatInterval = undefined;
         if (conf.eureka.api.length < 1) {
             throw new Error("conf.eureka.api.length<1");
         }
@@ -84,6 +86,16 @@ class Client {
         }
         data.healthCheckUrl = cfg.healthCheckUrl ? cfg.healthCheckUrl : cfg.homePageUrl;
         data.statusPageUrl = cfg.statusPageUrl ? cfg.statusPageUrl : cfg.homePageUrl;
+        if (cfg.leaseInfo) {
+            data.leaseInfo = {};
+            if (cfg.leaseInfo.durationInSecs) {
+                data.leaseInfo.durationInSecs = cfg.leaseInfo.durationInSecs;
+                this.prefferedHeartbeatInterval = cfg.leaseInfo.durationInSecs * 1000;
+            }
+            if (cfg.leaseInfo.renewalIntervalInSecs) {
+                data.leaseInfo.renewalIntervalInSecs = cfg.leaseInfo.renewalIntervalInSecs;
+            }
+        }
         const payload = {
             "instance": data
         };
@@ -97,7 +109,7 @@ class Client {
         const tryReg = () => {
             iurl++;
             const url = urls[(iurl % urls.length)];
-            console.log(`try registry ${cfg.app}`);
+            console.log(`try registry ${cfg.app}`, data);
             const promise = axios_1.default.post(url, payload, {
             // headers: {
             //     "Content-Type": "application/json"
@@ -176,8 +188,9 @@ class Client {
     onFailUnRegistry() {
         console.log("fail deRegistry");
     }
-    /** Возвращает интервал (мс) с которым посылается heartbeat запрос */
     get heartbeatInterval() {
+        if (this.prefferedHeartbeatInterval)
+            return this.prefferedHeartbeatInterval;
         return 1000 * 10;
     }
     /** Стартует таймер для посылки heartbeat запроса */
@@ -358,6 +371,7 @@ class Service {
         this.initFinished = false;
         /** инициализация завершена успешно */
         this.initSuccess = false;
+        this.reinitStartDate = undefined;
         this.roundRobinIndex = -1;
         /** логирование */
         this.log = {
@@ -366,6 +380,7 @@ class Service {
                 begin: (url, opts) => {
                     const ent = {};
                     ent.url = url;
+                    ent.state = "begin";
                     if (opts)
                         Object.keys(opts).forEach(k => { ent[k] = opts[k]; });
                     this.log.print(ent);
@@ -391,6 +406,7 @@ class Service {
                 end: (url, err, opts) => {
                     const ent = {};
                     ent.url = url;
+                    ent.state = "end";
                     if (opts)
                         Object.keys(opts).forEach(k => { ent[k] = opts[k]; });
                     this.log.print(ent);
@@ -407,10 +423,16 @@ class Service {
                         action: "init fail"
                     });
                 }
+            },
+            reinit: {
+                error: (err) => this.log.print({ method: "reinit", state: "error", error: err }),
+                success: () => this.log.print({ method: "reinit", state: "success" }),
+                started: () => this.log.print({ method: "reinit", state: "started" })
             }
         };
         /** статистика по экземплярам */
         this.stat = {};
+        this.eu = eu;
         this.initAppProm =
             eu.app(name).then(appInfo => {
                 this.instances = appInfo.application.instance;
@@ -437,6 +459,28 @@ class Service {
                 instance: i,
                 url: `http://${i.ipAddr}:${i.port.$}`
             };
+        });
+    }
+    /** Повторная инициализация */
+    reinit() {
+        return __awaiter(this, void 0, void 0, function* () {
+            this.log.reinit.started();
+            this.reinitStartDate = Date.now();
+            this.eu.app(name).then(appInfo => {
+                this.instances = appInfo.application.instance;
+                this.initFinished = true;
+                this.initSuccess = true;
+                this.instFetchDate = Date.now();
+                this.renewInstTimeout = this.instances.
+                    map(inst => inst.leaseInfo.renewalIntervalInSecs).
+                    map(sec => sec * 1000).
+                    reduce((a, b) => a < b ? a : b);
+                this.log.reinit.success();
+            }).catch(err => {
+                this.log.reinit.error(err);
+                //this.initFinished = true
+                //this.initSuccess = false
+            });
         });
     }
     /** проверка завершения инициализации */
@@ -472,7 +516,24 @@ class Service {
         return __awaiter(this, void 0, void 0, function* () {
             // ожидание инициализации
             yield this.checkInited();
-            this.log.request.begin(url);
+            // проверка необходимости повторной инициализации списка сервисов
+            if (this.renewInstTimeout && this.renewInstTimeout > 0) {
+                // определенно время последней инициализации
+                if (this.instFetchDate) {
+                    // подсчет сколько прошло времени
+                    const tdiff = Date.now() - this.instFetchDate;
+                    // проверка - вышел ли таймацт и требуется повторная инициализация
+                    if (tdiff >= this.renewInstTimeout) {
+                        // проверяем сколько прошло времени с последнего вызова повторной инициализации
+                        const tdiff2 = this.reinitStartDate ? Date.now() - this.reinitStartDate : this.renewInstTimeout * 2;
+                        if (tdiff2 >= this.renewInstTimeout) {
+                            // с повторной инициализации прошло достаточно времени, вызываем повторную инициализацю
+                            this.reinit();
+                        }
+                    }
+                }
+            }
+            this.log.request.begin(url, { method: "get" });
             const absAddr = url.startsWith('http:') || url.startsWith('https:');
             const firstSlash = url.startsWith('/');
             if (absAddr) {
@@ -531,10 +592,10 @@ class Service {
                     // берем очередной экземпляр и делаем попытку вызова
                     urli++;
                     const inst = srvcUrls[(urli + this.roundRobinIndex) % srvcUrls.length];
+                    // получаем целевой адрес
+                    const targetUrl = inst.url + (firstSlash ? url : '/' + url);
+                    const attempt = urli;
                     try {
-                        // получаем целевой адрес
-                        const targetUrl = inst.url + (firstSlash ? url : '/' + url);
-                        const attempt = urli;
                         // делаем вызов
                         this.log.request.call(targetUrl, attempt, tryMax);
                         const res = yield axios_1.default.get(targetUrl, config);
@@ -554,6 +615,9 @@ class Service {
                             // кол-во вызовов превысело максимальное допустимое
                             this.log.request.end(url, err, x);
                             throw err;
+                        }
+                        else {
+                            this.log.request.callFail(targetUrl, attempt, tryMax);
                         }
                     }
                 }

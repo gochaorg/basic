@@ -26,7 +26,12 @@ export interface Registry {
     //     "@class": "com.netflix.appinfo.InstanceInfo$DefaultDataCenterInfo", 
     //     "name": "MyOwn"
     // }
-    dataCenter?: DataCenter
+    dataCenter?: DataCenter,
+    leaseInfo?: {
+        renewalIntervalInSecs?: number,
+        durationInSecs?:number
+        //evictionDurationInSecs?: number
+    }
 }
 
 /**
@@ -179,6 +184,17 @@ export class Client {
         data.healthCheckUrl = cfg.healthCheckUrl ? cfg.healthCheckUrl : cfg.homePageUrl
         data.statusPageUrl = cfg.statusPageUrl ? cfg.statusPageUrl : cfg.homePageUrl
 
+        if( cfg.leaseInfo ){
+            data.leaseInfo = {}
+            if( cfg.leaseInfo.durationInSecs ){
+                data.leaseInfo.durationInSecs = cfg.leaseInfo.durationInSecs
+                this.prefferedHeartbeatInterval = cfg.leaseInfo.durationInSecs*1000
+            }
+            if( cfg.leaseInfo.renewalIntervalInSecs ){
+                data.leaseInfo.renewalIntervalInSecs = cfg.leaseInfo.renewalIntervalInSecs
+            }
+        }
+
         const payload = {
             "instance" : data
         }
@@ -196,7 +212,7 @@ export class Client {
             iurl++
             const url = urls[(iurl % urls.length)]
 
-            console.log(`try registry ${cfg.app}`)
+            console.log(`try registry ${cfg.app}`, data)
             const promise = aux.post( url, payload, {
                 // headers: {
                 //     "Content-Type": "application/json"
@@ -288,7 +304,9 @@ export class Client {
     protected heartbeatTimer? : NodeJS.Timeout
 
     /** Возвращает интервал (мс) с которым посылается heartbeat запрос */
+    private prefferedHeartbeatInterval : number | undefined = undefined
     get heartbeatInterval():number {
+        if( this.prefferedHeartbeatInterval )return this.prefferedHeartbeatInterval
         return 1000*10
     }
 
@@ -470,6 +488,9 @@ export class InstanceStat {
 
 /** Сервис который зарегистрирован в eureka */
 class Service {
+    /** клиент Eureka */
+    readonly eu:Client
+
     /** список экземпляров */
     instances:Instance[] = []
     
@@ -480,13 +501,13 @@ class Service {
     protected renewInstTimeout : number | undefined = undefined
 
     /** инициализация - промис для получения информации о сервисе */
-    private initAppProm : Promise<any>
+    protected initAppProm : Promise<any>
 
     /** инициализация завершена */
-    private initFinished = false
+    protected initFinished = false
 
     /** инициализация завершена успешно */
-    private initSuccess = false
+    protected initSuccess = false
     
     /**
      * Конструктор
@@ -494,6 +515,7 @@ class Service {
      * @param name имя сервиса
      */
     constructor( eu:Client, name:string ){
+        this.eu = eu
         this.initAppProm =
         eu.app(name).then( appInfo => {
                 this.instances = appInfo.application.instance
@@ -524,6 +546,41 @@ class Service {
         })
     }
 
+    protected reinitStartDate : number | undefined = undefined
+
+    /** Повторная инициализация */
+    protected async reinit() {
+        this.log.reinit.started()
+        this.reinitStartDate = Date.now()
+        this.eu.app(name).then( appInfo => {
+            this.instances = appInfo.application.instance
+            this.initFinished = true
+            this.initSuccess = true
+            this.instFetchDate = Date.now()
+            this.renewInstTimeout = this.instances.
+                map( inst => inst.leaseInfo.renewalIntervalInSecs ).
+                map( sec => sec * 1000 ).
+                reduce( (a,b) => a<b ? a : b )
+            this.log.reinit.success()
+        }).catch( err => {
+            this.log.reinit.error(err)
+            //this.initFinished = true
+            //this.initSuccess = false
+        })
+    }
+
+    /** проверка завершения инициализации */
+    protected async checkInited(){
+        if( !this.initFinished ){
+            this.log.checkInited.waitInit()
+            await this.initAppProm
+        }
+        if( !this.initSuccess ){
+            this.log.checkInited.initFail()
+            throw new Error("service is not initialized")
+        }
+    }
+
     protected roundRobinIndex = -1
 
     /** логирование */
@@ -533,6 +590,7 @@ class Service {
             begin:(url:string,opts?:any)=>{
                 const ent : {[name:string]:any} = {}
                 ent.url = url
+                ent.state = "begin"
                 if( opts )Object.keys(opts).forEach( k => { ent[k]=opts[k] })
                 this.log.print(ent)
             },
@@ -555,6 +613,7 @@ class Service {
             end:(url:string,err?:any,opts?:any)=>{
                 const ent : {[name:string]:any} = {}
                 ent.url = url
+                ent.state = "end"
                 if( opts )Object.keys(opts).forEach( k => { ent[k]=opts[k] })
                 this.log.print(ent)
             }
@@ -566,18 +625,11 @@ class Service {
             initFail: ()=>{ this.log.print({
                 action: "init fail"
             })}
-        }
-    }
-
-    /** проверка завершения инициализации */
-    protected async checkInited(){
-        if( !this.initFinished ){
-            this.log.checkInited.waitInit()
-            await this.initAppProm
-        }
-        if( !this.initSuccess ){
-            this.log.checkInited.initFail()
-            throw new Error("service is not initialized")
+        },
+        reinit: {
+            error: (err:any) => this.log.print({method:"reinit",state:"error",error:err}),
+            success: ()=> this.log.print({method:"reinit",state:"success"}),
+            started: ()=> this.log.print({method:"reinit",state:"started"})
         }
     }
 
@@ -605,7 +657,26 @@ class Service {
         // ожидание инициализации
         await this.checkInited()
 
-        this.log.request.begin(url)
+        // проверка необходимости повторной инициализации списка сервисов
+        if( this.renewInstTimeout && this.renewInstTimeout>0 ){
+            // определенно время последней инициализации
+            if( this.instFetchDate ){
+                // подсчет сколько прошло времени
+                const tdiff = Date.now() - this.instFetchDate
+                
+                // проверка - вышел ли таймацт и требуется повторная инициализация
+                if( tdiff>=this.renewInstTimeout ){
+                    // проверяем сколько прошло времени с последнего вызова повторной инициализации
+                    const tdiff2 = this.reinitStartDate ? Date.now() - this.reinitStartDate : this.renewInstTimeout*2
+                    if( tdiff2>=this.renewInstTimeout ){
+                        // с повторной инициализации прошло достаточно времени, вызываем повторную инициализацю
+                        this.reinit()
+                    }
+                }
+            }
+        }
+
+        this.log.request.begin(url,{method:"get"})
 
         const absAddr = url.startsWith('http:') || url.startsWith('https:')
         const firstSlash = url.startsWith('/')
@@ -672,11 +743,10 @@ class Service {
                 const inst = srvcUrls[
                     (urli + this.roundRobinIndex) % srvcUrls.length
                 ]
+                // получаем целевой адрес
+                const targetUrl = inst.url+(firstSlash ? url : '/'+url)
+                const attempt = urli
                 try {
-                    // получаем целевой адрес
-                    const targetUrl = inst.url+(firstSlash ? url : '/'+url)
-                    const attempt = urli
-                    
                     // делаем вызов
                     this.log.request.call(targetUrl,attempt,tryMax)
                     const res = await aux.get( targetUrl, config )
@@ -697,6 +767,8 @@ class Service {
                         // кол-во вызовов превысело максимальное допустимое
                         this.log.request.end(url,err,x)
                         throw err
+                    }else{
+                        this.log.request.callFail(targetUrl,attempt,tryMax)
                     }
                 }
             }

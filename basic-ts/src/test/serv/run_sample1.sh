@@ -3,14 +3,15 @@
 THIS_DIR=$(readlink -f $(dirname $0))
 BASE_DIR=$(readlink -f $THIS_DIR/../../..)
 START_JS=$(readlink -f $BASE_DIR/out/ts/serv/sample1.js)
+HEARBEAT="-heartbeat.sec 5"
 
 function start_sample1()
 {    
-    node $START_JS -port 3001 -sleep.min 200 -sleep.max 1000 -fail.pct 20 2>&1 >sample-1.log &
+    node $START_JS $HEARBEAT -port 3001 -sleep.min 200 -sleep.max 1000 -fail.pct 20 2>&1 >sample-1.log &
     SERVICE_PID1=$!
     echo "First SERVICE pid = $SERVICE_PID1"
 
-    node $START_JS -port 3002 -sleep.min 20 -sleep.max 300 -fail.pct 60 2>&1 >sample-2.log &
+    node $START_JS $HEARBEAT -port 3002 -sleep.min 20 -sleep.max 300 -fail.pct 60 2>&1 >sample-2.log &
     SERVICE_PID2=$!
     echo "Second SERVICE pid = $SERVICE_PID2" 
 }

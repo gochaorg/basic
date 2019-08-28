@@ -8,8 +8,16 @@ server:
 eureka:
   server:
     enable-self-preservation: false
+    response-cache-update-interval-ms: 4000
+  instance:
+    # С какой периодичностью обновлять инф о сервисе
+    leaseRenewalIntervalInSeconds: 10
+
+    # С какой периодич вычищать мертвые сервисы
+    leaseExpirationDurationInSeconds: 30
   client:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
       defaultZone: http://localhost:8701/eureka
+    initialInstanceInfoReplicationIntervalSeconds: 11
