@@ -1,0 +1,17 @@
+{
+  "name": "ts-basic-stdlib",
+  "version": "1.0.0",
+  "description": "ts-basic stdlib",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kamnev Georgiy <nt.gocha@gmail.com> (https://twitter.com/gocha)",
+  "license": "MIT",
+  "dependencies": {
+    "ts-basic-core": "file:../ts-basic-core"
+  },
+  "devDependencies": {
+    "typescript": "^3.6.2"
+  }
+}
