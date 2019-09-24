@@ -9,7 +9,7 @@
   "author": "Kamnev Georgiy <nt.gocha@gmail.com> (https://twitter.com/gocha)",
   "license": "MIT",
   "dependencies": {
-    "ts-basic-core": "file:../ts-basic-core"
+    "ts-basic-core": "file:../ts-basic-core/ts-basic-core-1.0.0.tgz"
   },
   "devDependencies": {
     "typescript": "^3.6.2"
