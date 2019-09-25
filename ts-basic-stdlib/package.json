@@ -4,7 +4,7 @@
   "description": "ts-basic stdlib",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node_modules/.bin/mocha -r ts-node/register test/**/*.ts"
   },
   "author": "Kamnev Georgiy <nt.gocha@gmail.com> (https://twitter.com/gocha)",
   "license": "MIT",
@@ -13,6 +13,16 @@
   },
   "devDependencies": {
     "ts-node": "^8.4.1",
-    "typescript": "^3.6.3"
+    "typescript": "^3.6.3",
+    "@types/chai": "^4.2.1",
+    "@types/mocha": "^5.2.7",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.0",
+    "nyc": "^14.1.1"
+  },
+  "nyc": {
+    "include": [
+      "out/src/**/*.js"
+    ]
   }
 }
