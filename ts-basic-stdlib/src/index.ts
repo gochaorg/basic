@@ -1,4 +1,4 @@
-import * as su from 'ts-basic-core/dist/src/vm/SourceUnit'
+import * as su from 'ts-basic-core/vm/SourceUnit'
 
 const a = su.parse( '10 REM cmnt\n'+
     '20 LET b = 10*2+7\n'+
