@@ -1,0 +1,28 @@
+{
+  "name": "ts-cmdline-prsr",
+  "version": "1.0.0",
+  "description": "parsing command line args",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gochaorg/basic.git"
+  },
+  "keywords": [
+    "parsing",
+    "command",
+    "line",
+    "args"
+  ],
+  "author": "Kamnev Georgiy <nt.gocha@gmail.com> (https://twitter.com/gocha)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gochaorg/basic/issues"
+  },
+  "homepage": "https://github.com/gochaorg/basic#readme",
+  "devDependencies": {
+    "@types/node": "^12.7.8"
+  }
+}
