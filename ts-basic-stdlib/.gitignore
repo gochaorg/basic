@@ -1,1 +1,3 @@
 .vscode
+dist/
+ts-basic-stdlib*.tgz
