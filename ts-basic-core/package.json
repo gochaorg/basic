@@ -1,6 +1,6 @@
 {
   "name": "ts-basic-core",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "basic language",
   "main": "index.js",
   "scripts": {
