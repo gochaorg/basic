@@ -11,3 +11,4 @@ tbasic/
 ts-basic-core/dist/
 ts-basic-stdlib/out/
 package-lock.json
+basic-ws.code-workspace

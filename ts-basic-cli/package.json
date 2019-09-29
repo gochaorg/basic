@@ -1,0 +1,46 @@
+{
+  "name": "ts-basic-cli",
+  "version": "1.0.0",
+  "description": "command line interface for basic language",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/.bin/mocha -r ts-node/register test/**/*.ts",
+    "build": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gochaorg/basic.git"
+  },
+  "keywords": [
+    "cli",
+    "basic",
+    "typescript",
+    "javascript",
+    "compiler"
+  ],
+  "author": "Kamnev Georgiy P",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/gochaorg/basic/issues"
+  },
+  "homepage": "https://github.com/gochaorg/basic#readme",
+  "devDependencies": {
+    "@types/chai": "^4.2.1",
+    "@types/mocha": "^5.2.7",
+    "chai": "^4.2.0",
+    "mocha": "^6.2.0",
+    "nyc": "^14.1.1",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.6.3"
+  },
+  "dependencies": {
+    "ts-basic-core": "^1.0.2",
+    "ts-basic-stdlib": "^1.0.0",
+    "ts-cmdline-prsr": "^1.0.2"
+  },
+  "nyc": {
+    "include": [
+      "dist/src/**/*.js"
+    ]
+  }
+}
