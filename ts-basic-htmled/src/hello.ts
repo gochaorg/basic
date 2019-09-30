@@ -96,8 +96,16 @@ class GWBASICApp {
                         sourceLineNumber:false
                     })).
                     append(ldiv);
-                wu.a({class:'goto',href:'#'}).text('goto').append(ldiv).onclick(e=>{
+                wu.a({class:'goto act',href:'#'}).text('goto').append(ldiv).onclick(e=>{
                     this.goto(line.index)
+                })
+                wu.a({class:'edit act',href:'#'}).text('edit').append(ldiv).onclick(e=>{
+                    if( this.ui.sourceCode ){
+                        this.ui.sourceCode.value = astToBasic(line.statement)
+                    }
+                })
+                wu.a({class:'del act',href:'#'}).text('del').append(ldiv).onclick(e=>{
+                    this.sourceUnit = this.sourceUnit.removeByIndex( line.index );
                 })
                 this.renderedSourceLines[line.index] = ldiv
                 if( this.vm.ip == line.index ){
