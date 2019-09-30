@@ -32,7 +32,9 @@
     "ts-node": "^8.3.0",
     "typescript": "^3.6.2"
   },
-  "dependencies": {},
+  "dependencies": {
+    "mermaid.cli": "^0.5.1"
+  },
   "nyc": {
     "include": [
       "dist/src/**/*.js"

@@ -134,6 +134,7 @@ export class Parser {
      *             | gosubStatement
      *             | returnStatement
      *             | printStatement
+     *             | callStatement
      */
     statement(opts?:Options):Statement|null {
         if( !opts ){ opts = this.options }

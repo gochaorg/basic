@@ -1,0 +1,20 @@
+digraph Lex {
+    node [shape="box"]
+
+    title [fillcolor=grey, style=filled, label="WhiteSpaceLex"]
+
+    N [label="\\n"]
+    R [label="\\r"]
+    T [label="\\t"]
+    S [label="space"]
+
+    #WS [shape="box"]
+
+    begin [style=bold, shape="ellipse"];
+    end [peripheries=2,style=bold, shape="ellipse"];
+
+    begin -> N -> end
+    begin -> R -> end
+    begin -> T -> end
+    begin -> S -> end
+}
