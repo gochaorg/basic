@@ -143,6 +143,36 @@ export class SourceUnit {
     }
 
     /**
+     * Удаляет строку исходного кода
+     * @param idx индекс строки
+     * @returns модифицированный исходный код
+     */
+    removeByIndex( idx:number ) : SourceUnit {
+        if( idx<0 )throw new Error(`argument idx(=${idx})<0`)
+        if( idx>=this.sourceLines.length )return this
+        
+        let cln = new SourceUnit(this)
+        cln.sourceLines.splice(idx,1)
+        return cln
+    }
+
+    /**
+     * Удялет строку исходного кода
+     * @param line номер строки
+     * @returns модифицированный исходный код
+     */
+    removeByLine( line:number ) : SourceUnit {
+        if( line<0 )throw new Error(`argument line(=${line})<0`)
+        const fnd = this.find(line)
+        if( fnd ){
+            let cln = new SourceUnit(this)
+            cln.sourceLines.splice(fnd.index,1)
+            return cln
+        }
+        return this
+    }
+
+    /**
      * Парсинг исходного текста
      * @param source исходный текст
      * @param presult результат парсинга
