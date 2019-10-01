@@ -1,0 +1,44 @@
+
+.syntax .lex.text {
+    color:#6c19b9;
+    font-weight:bold;
+}
+
+body > * {
+    margin-left: 4mm;
+}
+
+body > h1 {
+    padding-left: 4mm;
+    margin-left: 0mm;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Roboto', sans-serif;
+}
+
+a {
+    color: #2929bf;
+    text-decoration: none;
+}
+
+pre.syntax {
+    border-left: 1mm solid #656565;
+    padding-left: 1mm;
+    background-color: rgba(255,255,255,0.8)
+}
+
+a > h1,
+a > h2,
+a > h3,
+a > h4,
+h1 a,
+h2 a,
+h3 a,
+h4 a {
+    color: #132b40
+}
+
+.sourceLine .act { 
+    margin-left:1mm;
+}
