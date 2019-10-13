@@ -291,7 +291,7 @@ export class Client {
     private clientStarted:boolean = false
 
     /** Указывает зарегистрирован ли клиент как сервис в eureka */
-    get started():boolean { return this.started }
+    get started():boolean { return this.clientStarted }
 
     /**
      * Регистрация сервиса в eureka 
