@@ -1,0 +1,37 @@
+version: '3'
+services:
+  eureka1:
+    container_name: eureka1
+    build:
+      context: .
+      args:
+        mode: 1
+    environment:
+      EUREKA_MODE: 1
+    ports:
+    - "8701:8701"
+    # links:
+    # - eureka2
+    networks: 
+      default:
+        aliases:
+          - eureka2
+  eureka2:
+    container_name: eureka2
+    build:
+      context: .
+      args:
+        mode: 2
+    environment:
+      EUREKA_MODE: 2
+    ports:
+    - "8702:8702"
+    # links:
+    # - eureka1
+    networks: 
+      default:
+        aliases:
+          - eureka1
+networks:
+  default:
+    driver: bridge
