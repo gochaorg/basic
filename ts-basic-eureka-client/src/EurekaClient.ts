@@ -112,7 +112,13 @@ export interface EurekaConfig {
  */
 export interface ClientConfig {
     registry? : Registry
-    eureka: EurekaConfig
+    eureka: EurekaConfig,
+
+    /** Описывает стратегию повторных запросов */
+    retry? : {
+        /** Максимальное кол-во повторных запросов */
+        tryMax? : number
+    }
 }
 
 /** Описывает сетевой порт */
@@ -266,7 +272,21 @@ export class Client {
             ":"+this.conf.registry.app
     }
 
-    private get tryMax():number { return 10; }
+    /** Описывает стратегию повторных запросов */
+    get retry() {
+        const self = this
+        return {
+            /**
+             * Возвращает максимальное кол-во попыток повторынх запросов
+             */
+            get tryMax():number { 
+                if( self.conf && self.conf.retry && self.conf.retry.tryMax ){
+                    return self.conf.retry.tryMax;
+                }
+                return 10; 
+            }
+        }
+    }
 
     private clientStarted:boolean = false
 
@@ -353,7 +373,7 @@ export class Client {
                 succRes(this)
             }).catch(err=>{
                 console.log("fail registry:",err)
-                if( iurl < this.tryMax ){
+                if( iurl < this.retry.tryMax ){
                     tryReg()
                 }else{
                     this.onFailRegistry()
@@ -406,7 +426,7 @@ export class Client {
                 succRes(this)
             }).catch(res=>{
                 console.log("fail unregister")
-                if( iurl < this.tryMax ){
+                if( iurl < this.retry.tryMax ){
                     run()
                 }else{
                     this.onFailUnRegistry()
@@ -460,6 +480,11 @@ export class Client {
         }
     }
 
+    /**
+     * Возвращает url по которым посылаеться сигнал hearbeat
+     * @param appId имя сервиса
+     * @param instId идентификатор сервиса
+     */
     protected heartbeatUrl(appId:string, instId:string):string[] {
         return this.conf.eureka.api.map( api=>api+"/apps/"+appId+"/"+instId )
     }
@@ -489,7 +514,7 @@ export class Client {
                 succRes(this)
             }).catch(res=>{
                 console.log("fail hearbeat")
-                if( iurl < this.tryMax ){
+                if( iurl < this.retry.tryMax ){
                     run()
                 }else{
                     failRes(this)
@@ -522,7 +547,7 @@ export class Client {
                 succRes(res.data)
             }).catch(res=>{
                 console.log("fail apps query")
-                if( iurl < this.tryMax ){
+                if( iurl < this.retry.tryMax ){
                     run()
                 }else{
                     failRes(this)
@@ -556,7 +581,7 @@ export class Client {
                 succRes(res.data)
             }).catch(res=>{
                 console.log("fail app query")
-                if( iurl < this.tryMax ){
+                if( iurl < this.retry.tryMax ){
                     run()
                 }else{
                     failRes(this)
@@ -570,7 +595,7 @@ export class Client {
     }
 }
 
-/** Учет статистики взова */
+/** Учет статистики вызовов */
 export class InstanceStat {
     maxEntries:number = 100
 
