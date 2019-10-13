@@ -288,6 +288,16 @@ export class Client {
         }
     }
 
+    // /**
+    //  * Возвращает максимальное кол-во попыток повторынх запросов
+    //  */
+    // get tryMax():number { 
+    //     if( this.conf && this.conf.retry && this.conf.retry.tryMax ){
+    //         return this.conf.retry.tryMax;
+    //     }
+    //     return 10; 
+    // }
+
     private clientStarted:boolean = false
 
     /** Указывает зарегистрирован ли клиент как сервис в eureka */
