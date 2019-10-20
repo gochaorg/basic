@@ -1,13 +1,8 @@
-basic-s
-
 basic-ts/\.vscode/tasks\.json
-
 basic-ts/\.vscode/
 ts-basic-core/.nyc_output
 ts-basic-core/node_modules/
 ts-basic-stdlib/node_modules/
-scalajs-tutorial
-tbasic/
 ts-basic-core/dist/
 ts-basic-stdlib/out/
 package-lock.json
